@@ -25,6 +25,5 @@ python code_inspector <FILE.py | DIRECTORY>
   Then, per directory will create a:
 	- JsonFiles directory: with a Json file per file in the original directory
         - ControlFile directory: with one or two (depending of the FLAG_PNG) Control Flow files per file in the original directory
-
- Furthermore, a single JSON file with all the information found in given direcory is stored at:
-    -  **OutputDir/DirectoryInfo.json**
+  
+  Furthermore, a **single JSON file** with all the previous json information is stored at **OutputDir/DirectoryInfo.json**
