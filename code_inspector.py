@@ -26,7 +26,7 @@ class Code_Inspection:
         self.funcsInfo = self.inspect_functions()
         self.classesInfo = self.inspect_classes()
         self.depInfo = self.inspect_dependencies()
-        self.totalInfo = self.total_info()
+        self.fileJson = self.file_json()
 
 
     def parser_file(self):
@@ -101,18 +101,18 @@ class Code_Inspection:
         return depInfo 
 
 
-    def total_info(self):
-        totalDict={}
-        totalDict["file"]=self.fileInfo
-        totalDict["dependencies"]=self.depInfo
-        totalDict["classes"]=self.classesInfo
-        totalDict["functions"]=self.funcsInfo
-        totalDict["controlflow"]=self.controlFlowInfo
+    def file_json(self):
+        FileDict={}
+        FileDict["file"]=self.fileInfo
+        FileDict["dependencies"]=self.depInfo
+        FileDict["classes"]=self.classesInfo
+        FileDict["functions"]=self.funcsInfo
+        FileDict["controlflow"]=self.controlFlowInfo
 
         json_file=self.outJsonPath+"/" +self.fileInfo["fileNameBase"] + ".json" 
         with open(json_file, 'w') as outfile:
-           json.dump(totalDict, outfile)
-        return totalDict 
+           json.dump(FileDict, outfile)
+        return FileDict 
    
 
     def _f_definitions(self, functions_definitions):
@@ -235,6 +235,7 @@ def main(args=None):
         code_info=Code_Inspection(input_path,cfDir, jsonDir)
 
     else:
+       dirInfo={}
        for subdir, dirs, files in os.walk(input_path):
            dirs[:] = [d for d in dirs if not d.startswith('.')]
            dirs[:] = [d for d in dirs if not d.startswith('__')]
@@ -246,6 +247,11 @@ def main(args=None):
                    outputDir=outputPath+"/"+os.path.basename(subdir)
                    cfDir, jsonDir=create_ouput_dirs(outputDir)
                    code_info=Code_Inspection(path,cfDir, jsonDir)
+                   dirInfo[outputDir]=code_info.fileJson
+
+       json_file=outputPath + "/DirectoryInfo.json" 
+       with open(json_file, 'w') as outfile:
+           json.dump(dirInfo, outfile)
 
 
 if __name__ == "__main__":
