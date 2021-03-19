@@ -1,3 +1,17 @@
+"""Code Inspector
+
+This script allows the user to inspect a file or a directory
+and extract all the most relevant information, such as documentations,
+classes (and their methods), functions, etc. 
+
+This tool accepts (for now) only python code (.py)
+
+This script requires `ast`, `cdmcfparser` and `docsting_parse`
+be installed within the Python environment you are running 
+this script in.
+
+"""
+
 import ast
 import sys
 import json
@@ -18,6 +32,22 @@ FLAG_PNG=0
 
 class Code_Inspection:
     def __init__(self,path, outCfPath, outJsonPath, format="png"):
+        """
+        init method initiliazes the Code_Inspection object
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :param path: describe about parameter p2
+        :type_name path: str
+        :param outCfPath: describe about parameter p3
+        :type_name outCPath: str
+        :param outJsonPath: describe about parameter p3
+        :type_name outJsonPath: str
+        :param format: describe about parameter p3
+        :type_name outJsonPath: str
+        :default outJsonPath: png
+        """
+
         self.path = path
         self.outJsonPath = outJsonPath
         self.outCfPath = outCfPath
@@ -31,6 +61,15 @@ class Code_Inspection:
 
 
     def parser_file(self):
+        """
+        parse_file method parsers a file as an AST tree
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :return: the file as an ast tree
+        :rtype: ast.tree
+        """
+
         with tokenize.open(self.path) as f:
             return ast.parse(f.read(), filename=self.path)
 
