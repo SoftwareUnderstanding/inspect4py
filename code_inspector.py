@@ -9,11 +9,11 @@ from pprint import pprint
 from cdmcfparser import getControlFlowFromFile
 from staticfg import builder
 import argparse
-from docstring_parser import parse as doc_parse
+from docstring_parser import parse as docParse
 
 ### Path to store the results
 outputPath="OutputDir"
-FLAG_PNG=1
+FLAG_PNG=0
 ###
 
 class Code_Inspection:
@@ -74,7 +74,13 @@ class Code_Inspection:
         classesInfo={}
         for c in classes_definitions:
             classesInfo[c.name]={}
-            classesInfo[c.name]["doc"]=ast.get_docstring(c)
+            ds_c=ast.get_docstring(c)
+            docstring=docParse(ds_c)
+            classesInfo[c.name]["doc"]={}
+            classesInfo[c.name]["doc"]["long_description"]=docstring.long_description
+            classesInfo[c.name]["doc"]["short_description"]=docstring.short_description
+            classesInfo[c.name]["doc"]["full"]=ds_c
+
             try:
                 classesInfo[c.name]["extend"]=[b.id for b in c.bases]
             except:
@@ -123,9 +129,33 @@ class Code_Inspection:
         funcsInfo={}
         for f in functions_definitions:
             funcsInfo[f.name]={}
-            #docstring=doc_parse(ast.get_docstring(f))
-            #funcsInfo[f.name]["doc"]=docstring
-            #funcsInfo[f.name]["args"]=[a.arg for a in f.args.args]
+            ds_f=ast.get_docstring(f)
+            docstring=docParse(ds_f)
+            funcsInfo[f.name]["doc"]={}
+            funcsInfo[f.name]["doc"]["long_description"]=docstring.long_description
+            funcsInfo[f.name]["doc"]["short_description"]=docstring.short_description
+            #funcsInfo[f.name]["doc"]["full"]=ds_f
+            funcsInfo[f.name]["doc"]["args"]={}
+            for i in docstring.params:
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]={}
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["description"]=i.description
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["type_name"]=i.type_name
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"]=i.is_optional
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"]=i.default
+            if docstring.returns:
+                r=docstring.returns
+                funcsInfo[f.name]["doc"]["returns"]={}
+                funcsInfo[f.name]["doc"]["returns"]["description"]=r.description
+                funcsInfo[f.name]["doc"]["returns"]["type_name"]=r.type_name
+                funcsInfo[f.name]["doc"]["returns"]["is_generator"]=r.is_generator
+                funcsInfo[f.name]["doc"]["returns"]["return_name"]=r.return_name
+            funcsInfo[f.name]["doc"]["raises"]={}
+            for num, i in enumerate(docstring.raises):
+                funcsInfo[f.name]["doc"]["raises"][num]={}
+                funcsInfo[f.name]["doc"]["raises"][num]["description"]=i.description
+                funcsInfo[f.name]["doc"]["raises"][num]["type_name"]=i.type_name
+
+            funcsInfo[f.name]["args"]=[a.arg for a in f.args.args]
             rs = [ node for node in ast.walk(f) if isinstance(node, (ast.Return, ))]
             funcsInfo[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcsInfo[f.name]["min_max_lineno"] = self._compute_interval(f)
