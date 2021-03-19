@@ -74,6 +74,16 @@ class Code_Inspection:
             return ast.parse(f.read(), filename=self.path)
 
     def inspect_file(self):
+        """
+        inspec_file method extracts the features at file level.
+        Those features are path, fileNameBase, extension, docstring
+	The method support several levels of docstrings extraction.
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :return: a dictionary with the file information extracted
+        :rtype: dictionary
+        """
         fileInfo={}
         fileInfo["path"]=self.path
         fileName = os.path.basename(self.path).split(".")
@@ -111,10 +121,32 @@ class Code_Inspection:
         return controlInfo
     
     def inspect_functions(self):
+        """
+        inspec_functions method extracts the features at function level.
+        Those features are name , docstrings, args, returns, start and end of the line.
+	The method support several levels of docstrings extraction.
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :return: a dictionary with the all functions information extracted
+        :rtype: dictionary
+        """
+
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
         return self._f_definitions(functions_definitions)
 
     def inspect_classes(self):
+        """
+        inspec_functions method extracts the features at class level.
+        Those features are name , docstrings, extends, start and end of the line and methods.
+	The method support several levels of docstrings and methods extraction.
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :return: a dictionary with the all classes information extracted
+        :rtype: dictionary
+        """
+
         classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
         classesInfo={}
         for c in classes_definitions:
