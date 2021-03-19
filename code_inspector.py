@@ -7,12 +7,12 @@ from os.path import isfile, join
 import tokenize
 from pprint import pprint
 from cdmcfparser import getControlFlowFromFile
-from staticfg import CFGBuilder
+from staticfg import builder
 import argparse
 
 ### Path to store the results
 outputPath="OutputDir"
-FLAG_PNG=0
+FLAG_PNG=1
 ###
 
 class Code_Inspection:
@@ -53,7 +53,7 @@ class Code_Inspection:
         print("---> %s" % self.path)
 
         if FLAG_PNG:
-            cfg_visual = CFGBuilder().build_from_file(self.fileInfo["fileNameBase"], self.path)
+            cfg_visual = builder.CFGBuilder().build_from_file(self.fileInfo["fileNameBase"], self.path)
             cfg_path=self.outCfPath+"/"+ self.fileInfo["fileNameBase"]
             cfg_visual.build_visual(cfg_path, format=format, calls=False, show=False)
             controlInfo["png"]=cfg_path+"."+ format
