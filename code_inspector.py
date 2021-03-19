@@ -2,7 +2,11 @@
 
 This script allows the user to inspect a file or a directory
 and extract all the most relevant information, such as documentations,
-classes (and their methods), functions, etc. 
+classes (and their methods), functions, etc.
+
+To extract information from docstrings, we have started with the codes
+documented using Sphinx Style. But in the future we will extend the code
+to support others.  
 
 This tool accepts (for now) only python code (.py)
 
@@ -32,8 +36,7 @@ FLAG_PNG=0
 
 class Code_Inspection:
     def __init__(self,path, outCfPath, outJsonPath, format="png"):
-        """
-        init method initiliazes the Code_Inspection object
+        """ init method initiliazes the Code_Inspection object
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -61,8 +64,7 @@ class Code_Inspection:
 
 
     def parser_file(self):
-        """
-        parse_file method parsers a file as an AST tree
+        """ parse_file method parsers a file as an AST tree
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -74,8 +76,7 @@ class Code_Inspection:
             return ast.parse(f.read(), filename=self.path)
 
     def inspect_file(self):
-        """
-        inspec_file method extracts the features at file level.
+        """ inspec_file method extracts the features at file level.
         Those features are path, fileNameBase, extension, docstring
 	The method support several levels of docstrings extraction.
 
@@ -121,10 +122,8 @@ class Code_Inspection:
         return controlInfo
     
     def inspect_functions(self):
-        """
-        inspect_functions method extracts the features at function level.
-        Those features are name , docstrings, args, returns, start and end of the line.
-	The method support several levels of docstrings extraction.
+        """ inspect_functions detects all the functions in a AST tree, and calls
+        to _f_definitions method to extracts the features at function level.
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -136,10 +135,11 @@ class Code_Inspection:
         return self._f_definitions(functions_definitions)
 
     def inspect_classes(self):
-        """
-        inspect_classes method extracts the features at class level.
-        Those features are name , docstrings, extends, start and end of the line and methods.
-	The method support several levels of docstrings and methods extraction.
+        """ inspect_classes detecs all the classes and their methods,
+         and extracts their features. It also calls to _f_definitions method
+        to extract features at method level.
+
+        The features extracted are name, docstrings, extends, start and end of the line and methods.
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -169,8 +169,7 @@ class Code_Inspection:
         return classesInfo
 
     def inspect_dependencies(self):
-        """
-        inspect_dependencies method extracts the features at dependencies level.
+        """ inspect_dependencies method extracts the features at dependencies level.
         Those features are module , name, and alias 
 
         :param self: represent the instance of the class
@@ -200,8 +199,7 @@ class Code_Inspection:
 
 
     def file_json(self):
-        """
-        file_json method aggregates the features at file, 
+        """file_json method aggregates the features at file, 
         functions, classes and dependencies levels into the same dictionary.
         It also writes this new dictionary to a json file.
 
@@ -225,6 +223,17 @@ class Code_Inspection:
 
 
     def _f_definitions(self, functions_definitions):
+        """_f_definitions extract the name, args, doscstring (using Sphinx Style) 
+        returns, raises of a list of functions or a methods. 
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :param functions_definitions: represent a list with all functions or methods nodes
+        :type_name self: list
+        :return: a dictionary with the all the information at function/method level
+        :rtype: dictionary
+        """
+
         funcsInfo={}
         for f in functions_definitions:
             funcsInfo[f.name]={}
@@ -233,7 +242,6 @@ class Code_Inspection:
             funcsInfo[f.name]["doc"]={}
             funcsInfo[f.name]["doc"]["long_description"]=docstring.long_description
             funcsInfo[f.name]["doc"]["short_description"]=docstring.short_description
-            #funcsInfo[f.name]["doc"]["full"]=ds_f
             funcsInfo[f.name]["doc"]["args"]={}
             for i in docstring.params:
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]={}
