@@ -12,7 +12,7 @@ import argparse
 
 ### Path to store the results
 outputPath="OutputDir"
-FLAG_PNG=1
+FLAG_PNG=0
 ###
 
 class Code_Inspection:
@@ -50,7 +50,7 @@ class Code_Inspection:
         with open(cfg_txt_file, 'w') as outfile:
            outfile.write(cfg_txt)
         controlInfo["cfg"]= cfg_txt_file
-        print("---> %s" % self.path)
+        #print("---> %s" % self.path)
 
         if FLAG_PNG:
             cfg_visual = builder.CFGBuilder().build_from_file(self.fileInfo["fileNameBase"], self.path)
