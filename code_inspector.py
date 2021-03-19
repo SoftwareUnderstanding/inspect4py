@@ -122,7 +122,7 @@ class Code_Inspection:
     
     def inspect_functions(self):
         """
-        inspec_functions method extracts the features at function level.
+        inspect_functions method extracts the features at function level.
         Those features are name , docstrings, args, returns, start and end of the line.
 	The method support several levels of docstrings extraction.
 
@@ -137,7 +137,7 @@ class Code_Inspection:
 
     def inspect_classes(self):
         """
-        inspec_functions method extracts the features at class level.
+        inspect_classes method extracts the features at class level.
         Those features are name , docstrings, extends, start and end of the line and methods.
 	The method support several levels of docstrings and methods extraction.
 
@@ -169,6 +169,16 @@ class Code_Inspection:
         return classesInfo
 
     def inspect_dependencies(self):
+        """
+        inspect_dependencies method extracts the features at dependencies level.
+        Those features are module , name, and alias 
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :return: a dictionary with the all dependencies information extracted
+        :rtype: dictionary
+        """
+
         depInfo={}
         num=0
         for node in ast.iter_child_nodes(self.tree):
