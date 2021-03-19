@@ -12,7 +12,7 @@ import argparse
 
 ### Path to store the results
 outputPath="OutputDir"
-FLAG_PNG=0
+FLAG_PNG=1
 ###
 
 class Code_Inspection:
@@ -84,19 +84,21 @@ class Code_Inspection:
 
     def inspect_dependencies(self):
         depInfo={}
+        num=0
         for node in ast.iter_child_nodes(self.tree):
             if isinstance(node, ast.Import):
-                module = []
+                module=[]
             elif isinstance(node, ast.ImportFrom):  
                 module = node.module.split('.')
             else:
                 continue
-            for num, n in enumerate(node.names):
+            for n in node.names:
                 d_name="dep_"+str(num)
                 depInfo[d_name]={}
                 depInfo[d_name]["module"] = module
                 depInfo[d_name]["name"] = n.name.split('.')
                 depInfo[d_name]["alias"] = n.asname
+                num=num+1
 
         return depInfo 
 
