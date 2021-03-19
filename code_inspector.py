@@ -9,6 +9,7 @@ from pprint import pprint
 from cdmcfparser import getControlFlowFromFile
 from staticfg import builder
 import argparse
+from docstring_parser import parse as doc_parse
 
 ### Path to store the results
 outputPath="OutputDir"
@@ -20,9 +21,9 @@ class Code_Inspection:
         self.path = path
         self.outJsonPath = outJsonPath
         self.outCfPath = outCfPath
+        self.tree = self.parser_file()
         self.fileInfo = self.inspect_file() 
         self.controlFlowInfo = self.inspect_controlflow(format)
-        self.tree = self.parser_file()
         self.funcsInfo = self.inspect_functions()
         self.classesInfo = self.inspect_classes()
         self.depInfo = self.inspect_dependencies()
@@ -39,6 +40,7 @@ class Code_Inspection:
         fileName = os.path.basename(self.path).split(".")
         fileInfo["fileNameBase"]=fileName[0]
         fileInfo["extension"]=fileName[1]
+        fileInfo["doc"]=ast.get_docstring(self.tree)
         return fileInfo
 
     def inspect_controlflow(self,format):
@@ -115,18 +117,21 @@ class Code_Inspection:
         with open(json_file, 'w') as outfile:
            json.dump(FileDict, outfile)
         return FileDict 
-   
+
 
     def _f_definitions(self, functions_definitions):
         funcsInfo={}
         for f in functions_definitions:
             funcsInfo[f.name]={}
-            funcsInfo[f.name]["doc"]=ast.get_docstring(f)
-            funcsInfo[f.name]["args"]=[a.arg for a in f.args.args]
+            #docstring=doc_parse(ast.get_docstring(f))
+            #funcsInfo[f.name]["doc"]=docstring
+            #funcsInfo[f.name]["args"]=[a.arg for a in f.args.args]
             rs = [ node for node in ast.walk(f) if isinstance(node, (ast.Return, ))]
             funcsInfo[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcsInfo[f.name]["min_max_lineno"] = self._compute_interval(f)
         return funcsInfo
+
+
 
     def _get_ids(self,elt):
         """Extract identifiers if present. If not return None"""
