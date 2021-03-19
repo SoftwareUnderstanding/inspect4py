@@ -200,6 +200,17 @@ class Code_Inspection:
 
 
     def file_json(self):
+        """
+        file_json method aggregates the features at file, 
+        functions, classes and dependencies levels into the same dictionary.
+        It also writes this new dictionary to a json file.
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :return: a dictionary with the all information extracted (at file level)
+        :rtype: dictionary
+        """
+
         FileDict={}
         FileDict["file"]=self.fileInfo
         FileDict["dependencies"]=self.depInfo
