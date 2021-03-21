@@ -1,0 +1,2 @@
+cdmcfparser==2.3.2
+docstring_parser==0.7
