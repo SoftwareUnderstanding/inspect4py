@@ -32,10 +32,10 @@ Code_Inspector
 
   We have executed our tool with itself.
 
-  `python code_inspector.py code_inspector.py'
+  `python code_inspector.py code_inspector.py`
 
 
-  Results are available here:
+  Results of this test are available here:
 
 * [Json File](./OutputDir/JsonFiles) 
 * [Control Flow](./OutputDir/ControlFlow)
