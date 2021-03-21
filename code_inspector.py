@@ -78,7 +78,8 @@ class Code_Inspection:
     def inspect_file(self):
         """ inspec_file method extracts the features at file level.
         Those features are path, fileNameBase, extension, docstring
-	The method support several levels of docstrings extraction.
+	The method support several levels of docstrings extraction,
+        such as file's long, short a full descrition.
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -123,7 +124,7 @@ class Code_Inspection:
     
     def inspect_functions(self):
         """ inspect_functions detects all the functions in a AST tree, and calls
-        to _f_definitions method to extracts the features at function level.
+        to _f_definitions method to extracts all the features at function level.
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -139,7 +140,9 @@ class Code_Inspection:
          and extracts their features. It also calls to _f_definitions method
         to extract features at method level.
 
-        The features extracted are name, docstrings, extends, start and end of the line and methods.
+        The features extracted are name, docstring (this information is further analysed
+        and classified into several categories), extends, start
+        and end of the line and methods.
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -170,7 +173,7 @@ class Code_Inspection:
 
     def inspect_dependencies(self):
         """ inspect_dependencies method extracts the features at dependencies level.
-        Those features are module , name, and alias 
+        Those features are module , name, and alias.
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -199,8 +202,10 @@ class Code_Inspection:
 
 
     def file_json(self):
-        """file_json method aggregates the features at file, 
-        functions, classes and dependencies levels into the same dictionary.
+        """file_json method aggregates all the features previously
+        extracted from a given file such as, functions, classes 
+        and dependencies levels into the same dictionary.
+        
         It also writes this new dictionary to a json file.
 
         :param self: represent the instance of the class
@@ -223,8 +228,13 @@ class Code_Inspection:
 
 
     def _f_definitions(self, functions_definitions):
-        """_f_definitions extract the name, args, doscstring (using Sphinx Style) 
-        returns, raises of a list of functions or a methods. 
+        """_f_definitions extracts the name, args, doscstring 
+        returns, raises of a list of functions or a methods.
+
+        Furthermore, it also extracts automatically several values
+        from a docstring, such as long and short description, arguments' 
+        name, description, type, default values and if it they are optional
+        or not. 
 
         :param self: represent the instance of the class
         :type_name self: self
@@ -271,7 +281,16 @@ class Code_Inspection:
 
 
     def _get_ids(self,elt):
-        """Extract identifiers if present. If not return None"""
+        """_get_ids extracts identifiers if present. 
+         If not return None
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :param elt: AST node
+        :type_name elt: ast node
+        :return: list of identifiers
+        :rtype: list
+        """
         if isinstance(elt, (ast.List, )) or isinstance(elt, (ast.Tuple, )):
             # For tuple or list get id of each item if item is a Name
             return [x.id for x in elt.elts if isinstance(x, (ast.Name, ))]
@@ -279,6 +298,16 @@ class Code_Inspection:
             return [elt.id]
 
     def _compute_interval(self, node):
+        """_compute_interval extract the lines (min and max)
+         for a given class, function or method.
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :param node: AST node
+        :type_name node: ast node
+        :return: min and max lines
+        :rtype: set
+        """
         min_lineno = node.lineno
         max_lineno = node.lineno
         for node in ast.walk(node):
@@ -288,7 +317,17 @@ class Code_Inspection:
         return (min_lineno, max_lineno + 1)
 
     def _formatFlow(self, s):
-        """Reformats the control flow output"""
+        """_formatFlow reformats the control flow output
+        as a text.
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :param s: control flow graph 
+        :type_name s: cfg graph
+        :return: cfg formated as a text
+        :rtype: str
+        """
+
         result = ""
         shifts = []     # positions of opening '<'
         pos = 0         # symbol position in a line
@@ -342,7 +381,22 @@ class Code_Inspection:
         return result
 
 
-def create_ouput_dirs(outputDir):
+def create_output_dirs(outputDir):
+        """create_output_dirs creates two subdirectories
+        to save the results. ControlFlow to save the
+        cfg information (txt and PNG) and JsonFiles to
+        save the aggregated json file with all the information
+        extracted per file. 
+
+        :param outputDir: Output Directory in which the new subdirectories
+                          will be created.
+        :type_name self: str
+        """
+
+        result = ""
+        shifts = []     # positions of opening '<'
+        pos = 0         # symbol position in a line
+        nextIsList = False
 
        controlFlowDir=outputDir+"/ControlFlow"
 
@@ -375,7 +429,7 @@ def main(args=None):
         sys.exit()
 
     if os.path.isfile(input_path):
-        cfDir, jsonDir=create_ouput_dirs(outputPath)
+        cfDir, jsonDir=create_output_dirs(outputPath)
         code_info=Code_Inspection(input_path,cfDir, jsonDir)
 
     else:
@@ -389,7 +443,7 @@ def main(args=None):
                if ".py" in f: 
                    path=os.path.join(subdir, f)
                    outputDir=outputPath+"/"+os.path.basename(subdir)
-                   cfDir, jsonDir=create_ouput_dirs(outputDir)
+                   cfDir, jsonDir=create_output_dirs(outputDir)
                    code_info=Code_Inspection(path,cfDir, jsonDir)
                    dirInfo[outputDir]=code_info.fileJson
 
