@@ -394,21 +394,16 @@ class Code_Inspection:
 
 
 def create_output_dirs(outputDir):
-        """create_output_dirs creates two subdirectories
-        to save the results. ControlFlow to save the
-        cfg information (txt and PNG) and JsonFiles to
-        save the aggregated json file with all the information
-        extracted per file. 
+       """create_output_dirs creates two subdirectories
+       to save the results. ControlFlow to save the
+       cfg information (txt and PNG) and JsonFiles to
+       save the aggregated json file with all the information
+       extracted per file. 
 
-        :param outputDir: Output Directory in which the new subdirectories
+       :param outputDir: Output Directory in which the new subdirectories
                           will be created.
-        :type_name self: str
-        """
-
-        result = ""
-        shifts = []     # positions of opening '<'
-        pos = 0         # symbol position in a line
-        nextIsList = False
+       :type_name self: str
+       """
 
        controlFlowDir=outputDir+"/ControlFlow"
 
