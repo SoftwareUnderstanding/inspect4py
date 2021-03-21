@@ -101,6 +101,18 @@ class Code_Inspection:
         return fileInfo
 
     def inspect_controlflow(self,format):
+        """inspect_controlFlow uses two methods for 
+        extracting the controlflow of a file. One as a
+        text and another as a figure (PNG/PDF/DOT).   
+        
+
+        :param self: represent the instance of the class
+        :type_name self: self
+        :param format: represent the format to save the figure
+        :type_name format: str
+        :return: a dictionary with the all information extracted (at file level)
+        :rtype: dictionary
+        """
         controlInfo={}
         cfg = getControlFlowFromFile(self.path)
         cfg_txt=self._formatFlow(str(cfg))
