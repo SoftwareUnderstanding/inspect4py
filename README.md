@@ -45,10 +45,14 @@ Futhermore, out tool has saved the extracted information in a json file with the
 (in this case **code_inspector.py**). And it also has saved the control flow (as a text and as a figure) in a similar maner, 
 inside the ControlFlow directory (using also the same NameBase as the file to inspect). 
 
-  `> ls OuptuDir`
+See bellow for more clarity:
+
+```
+  > ls OuptuDir
    JsonFiles	ControlFlow
-  `> cd OutputDir`
-  `> ls JsonFiles/`
+  > cd OutputDir
+  > ls JsonFiles/
    code_inspector.json
-   `ls ControlFlow/`
-    code_inspector.png	code_inspector.txt`
+  > ls ControlFlow/
+    code_inspector.png	code_inspector.txt
+```
