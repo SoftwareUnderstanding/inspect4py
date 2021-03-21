@@ -42,7 +42,8 @@ Code_Inspector
 
 Notice how our tool, has automatically created two subdirectories inside **OuptuDir**, JsonFiles and ControlFlow.
 Futhermore, out tool has saved the extracted information in a json file with the same NameBase as the file to inspect
-(in this case **code_inspector.py**). And it also saved the control flow in a similar maner, inside the ControlFlow directory. 
+(in this case **code_inspector.py**). And it also has saved the control flow (as a text and as a figure) in a similar maner, 
+inside the ControlFlow directory (using also the same NameBase as the file to inspect). 
 
   `> ls OuptuDir
    JsonFiles	ControlFlow
