@@ -11,7 +11,7 @@ Code_Inspector
 
 ## Execution
 
-python code_inspector <FILE.py | DIRECTORY>
+`python code_inspector.py <FILE.py | DIRECTORY>`
 
 ## Output
 
@@ -27,3 +27,23 @@ python code_inspector <FILE.py | DIRECTORY>
         - ControlFile directory: with one or two (depending of the FLAG_PNG) Control Flow files per file in the original directory
   
   Furthermore, a **single JSON file** with all the previous json information is stored at **OutputDir/DirectoryInfo.json**
+
+## Test
+
+  We have executed our tool with itself.
+
+  `python code_inspector.py code_inspector.py'
+
+
+  Results are available here:
+
+  ** [Json File](./OutputDir/JsonFiles) 
+  ** [Control Flow](./OutputDir/ControlFlow)
+
+  `> ls OuptuDir
+   JsonFiles	ControlFlow
+   > cd OutputDir
+   > ls JsonFiles/
+   code_inspector.json
+   ls ControlFlow/
+   code_inspector.png	code_inspector.txt`
