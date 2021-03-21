@@ -5,7 +5,7 @@ and extract all the most relevant information, such as documentations,
 classes (and their methods), functions, etc.
 
 To extract information from docstrings, we have started with the codes
-documented using Sphinx Style. But in the future we will extend the code
+documented. But in the future we will extend the code
 to support others.  
 
 This tool accepts (for now) only python code (.py)
