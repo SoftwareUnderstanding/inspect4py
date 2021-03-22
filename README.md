@@ -45,12 +45,11 @@ For example, it can be used to inspect all the python files of a given GitHub re
 * Results are stored in **OutputDir** (created automatically) directory. If **OutputDir** exits, the tool will delete it, and create it again, deleting all previous 
 results stored in it. 
 
-* If the input is a **file**, the tool will create two directories:
+* If the input is a **file**, the tool will create automatically two subdirectories inside **OuptuDir**:
 	- **JsonFiles** directory: with a json file (with the name of the file + ".json") of the information extracted
 	- **ControlFlow** directory: with one or two (depending on the FLAG_PNG) Control Flow files will be created
 
-* If the input is a **directory**, the tool will create the previous directories (**JsonFiles** and **ControlFlow**) but per **directory** and its **subdirectories** instead, under **OutputDir**. The **OutputDir** directory will have the same subdirectory structure as the input directory. Furthermore, in order to facilitate
-the inspection of all the features extracted for a given directory (and its subdirectories), we have aggreagated all the previous json information in a **single json file** stored at **OutputDir/DirectoryInfo.json**. In other words, **OutputDir/DirectoryInfo.json**, represents the features extracted for a given directory (and its subdirectories). 
+* If the input is a **directory**, the tool will create the previous directories (**JsonFiles** and **ControlFlow**) but per **directory** and its **subdirectories** instead, under **OutputDir**, storing all the information extracted per file found in each directory and/or subdirectory. The **OutputDir** directory will have the same subdirectory structure as the input directory given by the user. Furthermore, in order to facilitate the inspection of all the features extracted for a given directory (and its subdirectories), we have aggreagated all the previous json information in a **single json file** stored at **OutputDir/DirectoryInfo.json**.In other words, **OutputDir/DirectoryInfo.json**, represents all the features extracted of all files found in a given directory (and its subdirectories). 
 
 ## Test
 
