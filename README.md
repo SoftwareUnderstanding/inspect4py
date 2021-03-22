@@ -89,8 +89,8 @@ For example, it can be used to inspect all the python files of a given GitHub re
 			- full
                 - extend
 		- min_max_lineno:
-			- 0
-			- 1
+			- min_lineno:
+			- max_lineno:
 		- methods (list of methods found within the class):
 			-<method_name>:
 				- doc:
@@ -121,8 +121,8 @@ For example, it can be used to inspect all the python files of a given GitHub re
 					- 0:
 					- ..:
 				- min_max_lineno:
-					- 0:
-					- 1:
+					- min_lineno:
+					- max_lineno:
 			-<method_name>:
 				- ...
 	-<class_name>:
@@ -163,8 +163,8 @@ For example, it can be used to inspect all the python files of a given GitHub re
 			- 0:
 			- ..:
                 - min_max_lineno:
-                	- 0:
-                        - 1:
+                	- min_lineno:
+                        - max_lineno:
 	-<function_name>:
                 - ...
 ```
