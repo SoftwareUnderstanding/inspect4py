@@ -29,7 +29,7 @@ Prepare a virtual Python3 enviroment and install the required packages.
 
 `pip install -r requirements.txt`
 
-- Libraries:
+- Dependencies: 
   - cdmcfparser
   - docstring_parser
 
