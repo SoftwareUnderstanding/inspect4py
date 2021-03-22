@@ -45,13 +45,16 @@ class Code_Inspection:
 
         :param self: represent the instance of the class
         :type_name self: self
-        :param path: describe about parameter p2
+        :param path: the file to inspect
         :type_name path: str
-        :param outCfPath: describe about parameter p3
+        :param outCfPath: the output directory to store the control
+			  flow information
         :type_name outCPath: str
-        :param outJsonPath: describe about parameter p3
+        :param outJsonPath: the output directory to store the json file
+			  with features extracted from the ast tree.
         :type_name outJsonPath: str
-        :param format: describe about parameter p3
+        :param format: format to store the control flow diagram
+	:default format: png
         :type_name outJsonPath: str
         :default outJsonPath: png
         """
