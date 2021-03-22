@@ -188,8 +188,8 @@ class Code_Inspection:
             for n in node.names:
                 d_name="dep_"+str(num)
                 depInfo[d_name]={}
-                depInfo[d_name]["module"] = module
-                depInfo[d_name]["name"] = n.name.split('.')
+                depInfo[d_name]["from_module"] = module
+                depInfo[d_name]["import"] = n.name.split('.')
                 depInfo[d_name]["alias"] = n.asname
                 num=num+1
 

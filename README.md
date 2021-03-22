@@ -69,10 +69,10 @@ For example, it can be used to inspect all the python files of a given GitHub re
 ```
 - dependencies: (list of dependencies)
 	-dep_<0>:
-		- module
+		- from_module
 		        - 0: 
                         - ..: 
-		- name
+		- import 
 			- 0:
 			- ..:
 		- alias
