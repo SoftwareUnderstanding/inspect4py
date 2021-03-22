@@ -298,7 +298,7 @@ class Code_Inspection:
             if hasattr(node, "lineno"):
                 min_lineno = min(min_lineno, node.lineno)
                 max_lineno = max(max_lineno, node.lineno)
-        return (min_lineno, max_lineno + 1)
+        return {"min_lineno" :min_lineno, "max_lineno": max_lineno + 1}
 
     def _formatFlow(self, s):
         """_formatFlow reformats the control flow output
