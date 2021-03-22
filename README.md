@@ -42,22 +42,15 @@ For example, it can be used to inspect all the python files of a given GitHub re
 
 ## Outputs
 
-* We store two types of results:
- - JSON file (per file in )
-
-* Results are stored in **OutputDir** (created automatically). If **OutputDir** exits, the tool will delete it, and create it again, deleting all previous 
+* Results are stored in **OutputDir** (created automatically) directory. If **OutputDir** exits, the tool will delete it, and create it again, deleting all previous 
 results stored in it. 
 
-* If the input is a **file**, the tool will create two folders:
-	- JsonFiles directory: with a json file (with the name of the file + ".json") of the information extracted
-	- ControlFile directory: with one or two (depending on the FLAG_PNG) Control Flow files will be created
+* If the input is a **file**, the tool will create two directories:
+	- **JsonFiles** directory: with a json file (with the name of the file + ".json") of the information extracted
+	- **ControlFlow** directory: with one or two (depending on the FLAG_PNG) Control Flow files will be created
 
-* If the input is a **directory**, the tool will create two folders per **directory** and its **subdirectories** under **OutputDir**.
-  Then, per directory will create a:
-	- JsonFiles directory: with a Json file per file in the original directory
-        - ControlFile directory: with one or two (depending of the FLAG_PNG) Control Flow files per file in the original directory
-  
-  Furthermore, a **single JSON file** with all the previous json information is stored at **OutputDir/DirectoryInfo.json**
+* If the input is a **directory**, the tool will create the previous directories (**JsonFiles** and **ControlFlow**) but per **directory** and its **subdirectories** instead, under **OutputDir**. The **OutputDir** directory will have the same subdirectory structure as the input directory. Furthermore, in order to facilitate
+the inspection of all the features extracted for a given directory (and its subdirectories), we have aggreagated all the previous json information in a **single json file** stored at **OutputDir/DirectoryInfo.json**. In other words, **OutputDir/DirectoryInfo.json**, represents the features extracted for a given directory (and its subdirectories). 
 
 ## Test
 
