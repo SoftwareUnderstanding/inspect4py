@@ -31,11 +31,6 @@ from docstring_parser import parse as docParse
 
 ### Path to store the results
 outputPath="OutputDir"
-try:
-   os.rmdir(outputPath)
-except:
-   pass
-
 FLAG_PNG=1
 ###
 
@@ -83,7 +78,7 @@ class Code_Inspection:
         such as file's long, short a full descrition.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :return: a dictionary with the file information extracted
         :rtype: dictionary
         """
@@ -108,9 +103,9 @@ class Code_Inspection:
         
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :param format: represent the format to save the figure
-        :type_name format: str
+        :type format: str
         :return: a dictionary with the all information extracted (at file level)
         :rtype: dictionary
         """
@@ -140,7 +135,7 @@ class Code_Inspection:
         to _f_definitions method to extracts all the features at function level.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :return: a dictionary with the all functions information extracted
         :rtype: dictionary
         """
@@ -158,7 +153,7 @@ class Code_Inspection:
         and end of the line and methods.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :return: a dictionary with the all classes information extracted
         :rtype: dictionary
         """
@@ -189,7 +184,7 @@ class Code_Inspection:
         Those features are module , name, and alias.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :return: a dictionary with the all dependencies information extracted
         :rtype: dictionary
         """
@@ -222,7 +217,7 @@ class Code_Inspection:
         It also writes this new dictionary to a json file.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :return: a dictionary with the all information extracted (at file level)
         :rtype: dictionary
         """
@@ -250,9 +245,9 @@ class Code_Inspection:
         or not. 
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :param functions_definitions: represent a list with all functions or methods nodes
-        :type_name self: list
+        :type self: list
         :return: a dictionary with the all the information at function/method level
         :rtype: dictionary
         """
@@ -298,9 +293,9 @@ class Code_Inspection:
          If not return None
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :param elt: AST node
-        :type_name elt: ast node
+        :type elt: ast node
         :return: list of identifiers
         :rtype: list
         """
@@ -315,9 +310,9 @@ class Code_Inspection:
          for a given class, function or method.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :param node: AST node
-        :type_name node: ast node
+        :type node: ast node
         :return: min and max lines
         :rtype: set
         """
@@ -334,9 +329,9 @@ class Code_Inspection:
         as a text.
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :param s: control flow graph 
-        :type_name s: cfg graph
+        :type s: cfg graph
         :return: cfg formated as a text
         :rtype: str
         """
@@ -403,7 +398,7 @@ def create_output_dirs(outputDir):
 
        :param outputDir: Output Directory in which the new subdirectories
                           will be created.
-       :type_name self: str
+       :type self: str
        """
 
        controlFlowDir=outputDir+"/ControlFlow"
