@@ -35,7 +35,8 @@ Prepare a virtual Python3 enviroment and install the required packages.
 
 ## Execution
 
-The tool can be executed with a file o
+The tool can be executed to inspect a file, or all the files of a given directory (and its subdirectories).
+For example, it can be used to inspect all the python files of a given GitHub repository (that has been previously cloned locally).
 
 `python code_inspector.py <FILE.py | DIRECTORY>`
 
