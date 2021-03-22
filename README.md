@@ -43,8 +43,7 @@ For example, it can be used to inspect all the python files of a given GitHub re
 
 ## Outputs
 
-* Results are stored in **OutputDir** (created automatically) directory.
-results stored in it. 
+* Results are stored inside the **OutputDir** directory, which is created automatically, if it is does not exits.
 
 * If the input is a **file**, the tool will create automatically two subdirectories inside **OuptuDir**:
 	- **JsonFiles** directory: with a json file (with the name of the file + ".json") of the information extracted
