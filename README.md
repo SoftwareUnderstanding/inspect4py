@@ -67,7 +67,7 @@ results stored in it.
 ```
 * Dependencies features: 
 ```
-- dependencies:
+- dependencies: (list of dependencies)
 	-dep_<0>:
 		- module
 		        - 0: 
@@ -79,7 +79,7 @@ results stored in it.
 ```
 * Classes features:
 ```
-- classes:
+- classes: (list of classes)
 	-<class_name>:
 		- doc:
 			- long_description
@@ -89,12 +89,12 @@ results stored in it.
 		- min_max_lineno:
 			- 0
 			- 1
-		- methods (a list of methods found within the class):
+		- methods (list of methods found within the class):
 			-<method_name>:
 				- doc:
 					- long_description
 					- short_description
-					- args (a list of arguments per method **documented**):
+					- args (list of arguments per method **documented**):
 						- <name_arg>:
 							- description
 							- type_name
@@ -107,15 +107,15 @@ results stored in it.
 						- type_name
 						- is_generator
 						- return_name
-					- raises:
+					- raises: (list of raises per method **documented**)
 						- 0:
 							- description
 							- type_name
 						- ...
-				- args (a list of arguments per method)
+				- args (list of arguments per method)
 					- 0:
 					- ..:
-				- returns (returns found within the method)
+				- returns (list of returns found within the method)
 					- 0:
 					- ..:
 				- min_max_lineno:
@@ -131,12 +131,12 @@ results stored in it.
 * Function features:
 
 ```
-- functions: (a list of functions found within the class):
+- functions: (list of functions found within the class):
  	-<function_name>:
         	- doc:
                 	- long_description
                         - short_description
-                        - args (a list of arguments per method **documented**):
+                        - args (list of arguments per function **documented**):
                         	- <name_arg>:
                                 	- description
                                         - type_name
@@ -149,15 +149,15 @@ results stored in it.
 				- type_name
 				- is_generator
 				- return_name
-			- raises:
+			- raises:(list of raises per function *documented**)
 				- 0:
 					- description
 					- type_name
 				- ...
-                - args (a list of arguments per function)
+                - args (list of arguments per function)
                 	- 0:
                         - ..:
-		- returns (returns found within the function)
+		- returns (list of returns found within the function)
 			- 0:
 			- ..:
                 - min_max_lineno:
@@ -169,8 +169,8 @@ results stored in it.
 * ControlFlow features:
 ```
 - controlflow:
-	- cfg
-	- png
+	- cfg: Path of the cfg as a txt
+	- png: Path of the cfg as a PNG
 
 ```
 ## Test
