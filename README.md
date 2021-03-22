@@ -51,6 +51,118 @@ results stored in it.
 
 * If the input is a **directory**, the tool will create the previous directories (**JsonFiles** and **ControlFlow**) but per **directory** and its **subdirectories** instead, under **OutputDir**, storing all the information extracted per file found in each directory and/or subdirectory. The **OutputDir** directory will have the same subdirectory structure as the input directory given by the user. Furthermore, in order to facilitate the inspection of all the features extracted for a given directory (and its subdirectories), we have aggreagated all the previous json information in a **single json file** stored at **OutputDir/DirectoryInfo.json**.In other words, **OutputDir/DirectoryInfo.json**, represents all the features extracted of all files found in a given directory (and its subdirectories). 
 
+## JSON FILE
+
+* File features:
+	- file: 
+		- path: <file_name>.py
+                - fileNameBase: <file_name>
+                - extension: py
+                - doc:
+                	- long_description
+                	- short_description
+                	- full
+
+* Dependencies features: 
+	- dependencies:
+		-dep_<0>:
+			- module
+		        	- 0: 
+                                - ..: 
+			- name
+			- alias
+		-dep_<1>:
+               		- ...
+* Classes features:
+	- classes:
+		-<class_name>:
+			- doc:
+				- long_description
+				- short_description
+				- full
+                        - extend
+			- min_max_lineno:
+				- 0
+				- 1
+			- methods (a list of methods found within the class):
+				-<method_name>:
+					- doc:
+						- long_description
+						- short_description
+						- args (a list of arguments per method **documented**):
+							- <name_arg>:
+								- description
+								- type_name
+								- is_optional
+								- default
+							- <name_arg>:
+								 ....
+						- returns: (information about the return *documented*)
+							- description
+							- type_name
+							- is_generator
+							- return_name
+						- raises:
+							- 0:
+								- description
+								- type_name
+							- ...
+					- args (a list of arguments per method)
+						- 0:
+						- ..:
+					- returns (returns found within the method)
+						- 0:
+						- ..:
+					- min_max_lineno:
+						- 0:
+						- 1:
+				-<method_name>:
+					- ...
+		-<class_name>:
+			- ...				
+   
+
+* Function features:
+
+- functions: (a list of functions found within the class):
+ 	-<function_name>:
+        	- doc:
+                	- long_description
+                        - short_description
+                        - args (a list of arguments per method **documented**):
+                        	- <name_arg>:
+                                	- description
+                                        - type_name
+                                        - is_optional
+                                        - default
+                                - <name_arg>:
+                                        - ....
+			- returns:
+				- description
+				- type_name
+				- is_generator
+				- return_name
+			- raises:
+				- 0:
+					- description
+					- type_name
+				- ...
+                - args (a list of arguments per function)
+                	- 0:
+                        - ..:
+		- returns (returns found within the function)
+			- 0:
+			- ..:
+                - min_max_lineno:
+                	- 0:
+                        - 1:
+	-<function_name>:
+                - ...
+* ControlFlow features:
+- controlflow:
+	- cfg
+	- png
+
 ## Test
 
   We have executed our tool with itself.
