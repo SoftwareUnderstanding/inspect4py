@@ -247,15 +247,15 @@ class Code_Inspection:
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]={}
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]["description"]=i.description
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]["type_name"]=i.type_name
-                #funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"]=i.is_optional
-                #funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"]=i.default
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"]=i.is_optional
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"]=i.default
             if docstring.returns:
                 r=docstring.returns
                 funcsInfo[f.name]["doc"]["returns"]={}
                 funcsInfo[f.name]["doc"]["returns"]["description"]=r.description
                 funcsInfo[f.name]["doc"]["returns"]["type_name"]=r.type_name
-                #funcsInfo[f.name]["doc"]["returns"]["is_generator"]=r.is_generator
-                #funcsInfo[f.name]["doc"]["returns"]["return_name"]=r.return_name
+                funcsInfo[f.name]["doc"]["returns"]["is_generator"]=r.is_generator
+                funcsInfo[f.name]["doc"]["returns"]["return_name"]=r.return_name
             funcsInfo[f.name]["doc"]["raises"]={}
             for num, i in enumerate(docstring.raises):
                 funcsInfo[f.name]["doc"]["raises"][num]={}
