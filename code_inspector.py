@@ -110,7 +110,6 @@ class Code_Inspection:
         with open(cfg_txt_file, 'w') as outfile:
            outfile.write(cfg_txt)
         controlInfo["cfg"]= cfg_txt_file
-        #print("---> %s" % self.path)
 
         if FLAG_PNG:
             cfg_visual = builder.CFGBuilder().build_from_file(self.fileInfo["fileNameBase"], self.path)
