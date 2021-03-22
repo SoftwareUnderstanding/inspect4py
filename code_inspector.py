@@ -62,10 +62,8 @@ class Code_Inspection:
     def parser_file(self):
         """ parse_file method parsers a file as an AST tree
 
-        :param self: represent the instance of the class
-        :type self: self
-        :return: the file as an ast tree
-        :rtype: ast.tree
+        :param self self: represent the instance of the class
+        :return ast.tree: the file as an ast tree
         """
 
         with tokenize.open(self.path) as f:
@@ -77,10 +75,8 @@ class Code_Inspection:
 	The method support several levels of docstrings extraction,
         such as file's long, short a full descrition.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :return: a dictionary with the file information extracted
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :return dictionary a dictionary with the file information extracted
         """
         fileInfo={}
         fileInfo["path"]=self.path
@@ -102,12 +98,9 @@ class Code_Inspection:
         text and another as a figure (PNG/PDF/DOT).   
         
 
-        :param self: represent the instance of the class
-        :type self: self
-        :param format: represent the format to save the figure
-        :type format: str
-        :return: a dictionary with the all information extracted (at file level)
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :param str format: represent the format to save the figure
+        :return dictionary: a dictionary with the all information extracted (at file level)
         """
         controlInfo={}
         cfg = getControlFlowFromFile(self.path)
@@ -134,10 +127,8 @@ class Code_Inspection:
         """ inspect_functions detects all the functions in a AST tree, and calls
         to _f_definitions method to extracts all the features at function level.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :return: a dictionary with the all functions information extracted
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :return dictionary: a dictionary with the all functions information extracted
         """
 
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
@@ -152,10 +143,8 @@ class Code_Inspection:
         and classified into several categories), extends, start
         and end of the line and methods.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :return: a dictionary with the all classes information extracted
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :return dictionary: a dictionary with the all classes information extracted
         """
 
         classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
@@ -183,10 +172,8 @@ class Code_Inspection:
         """ inspect_dependencies method extracts the features at dependencies level.
         Those features are module , name, and alias.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :return: a dictionary with the all dependencies information extracted
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :return dictionary: a dictionary with the all dependencies information extracted
         """
 
         depInfo={}
@@ -216,10 +203,8 @@ class Code_Inspection:
         
         It also writes this new dictionary to a json file.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :return: a dictionary with the all information extracted (at file level)
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :return dictionary: a dictionary with the all information extracted (at file level)
         """
 
         FileDict={}
@@ -244,12 +229,9 @@ class Code_Inspection:
         name, description, type, default values and if it they are optional
         or not. 
 
-        :param self: represent the instance of the class
-        :type self: self
-        :param functions_definitions: represent a list with all functions or methods nodes
-        :type self: list
-        :return: a dictionary with the all the information at function/method level
-        :rtype: dictionary
+        :param self self: represent the instance of the class
+        :param list functions_definitions: represent a list with all functions or methods nodes
+        :return dictionary: a dictionary with the all the information at function/method level
         """
 
         funcsInfo={}
@@ -265,15 +247,15 @@ class Code_Inspection:
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]={}
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]["description"]=i.description
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]["type_name"]=i.type_name
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"]=i.is_optional
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"]=i.default
+                #funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"]=i.is_optional
+                #funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"]=i.default
             if docstring.returns:
                 r=docstring.returns
                 funcsInfo[f.name]["doc"]["returns"]={}
                 funcsInfo[f.name]["doc"]["returns"]["description"]=r.description
                 funcsInfo[f.name]["doc"]["returns"]["type_name"]=r.type_name
-                funcsInfo[f.name]["doc"]["returns"]["is_generator"]=r.is_generator
-                funcsInfo[f.name]["doc"]["returns"]["return_name"]=r.return_name
+                #funcsInfo[f.name]["doc"]["returns"]["is_generator"]=r.is_generator
+                #funcsInfo[f.name]["doc"]["returns"]["return_name"]=r.return_name
             funcsInfo[f.name]["doc"]["raises"]={}
             for num, i in enumerate(docstring.raises):
                 funcsInfo[f.name]["doc"]["raises"][num]={}
@@ -292,12 +274,9 @@ class Code_Inspection:
         """_get_ids extracts identifiers if present. 
          If not return None
 
-        :param self: represent the instance of the class
-        :type self: self
-        :param elt: AST node
-        :type elt: ast node
-        :return: list of identifiers
-        :rtype: list
+        :param self self: represent the instance of the class
+        :param ast.node elt: AST node
+        :return list: list of identifiers
         """
         if isinstance(elt, (ast.List, )) or isinstance(elt, (ast.Tuple, )):
             # For tuple or list get id of each item if item is a Name
@@ -309,12 +288,9 @@ class Code_Inspection:
         """_compute_interval extract the lines (min and max)
          for a given class, function or method.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :param node: AST node
-        :type node: ast node
-        :return: min and max lines
-        :rtype: set
+        :param self self: represent the instance of the class
+        :param ast.node node: AST node
+        :return set: min and max lines
         """
         min_lineno = node.lineno
         max_lineno = node.lineno
@@ -328,12 +304,9 @@ class Code_Inspection:
         """_formatFlow reformats the control flow output
         as a text.
 
-        :param self: represent the instance of the class
-        :type self: self
-        :param s: control flow graph 
-        :type s: cfg graph
-        :return: cfg formated as a text
-        :rtype: str
+        :param self self: represent the instance of the class
+        :param cfg_graph s: control flow graph 
+        :return str: cfg formated as a text
         """
 
         result = ""
@@ -396,9 +369,8 @@ def create_output_dirs(outputDir):
        save the aggregated json file with all the information
        extracted per file. 
 
-       :param outputDir: Output Directory in which the new subdirectories
+       :param str outputDir: Output Directory in which the new subdirectories
                           will be created.
-       :type self: str
        """
 
        controlFlowDir=outputDir+"/ControlFlow"
