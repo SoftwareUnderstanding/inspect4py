@@ -54,76 +54,83 @@ results stored in it.
 ## JSON FILE
 
 * File features:
-	- file: 
-		- path: <file_name>.py
-                - fileNameBase: <file_name>
-                - extension: py
-                - doc:
-                	- long_description
-                	- short_description
-                	- full
+```
+- file: 
+	- path: <file_name>.py
+        - fileNameBase: <file_name>
+        - extension: py
+        - doc:
+               - long_description
+               - short_description
+               - full
 
+```
 * Dependencies features: 
-	- dependencies:
-		-dep_<0>:
-			- module
-		        	- 0: 
-                                - ..: 
-			- name
-			- alias
-		-dep_<1>:
-               		- ...
+```
+- dependencies:
+	-dep_<0>:
+		- module
+		        - 0: 
+                        - ..: 
+		- name
+		- alias
+	-dep_<1>:
+               	- ...
+```
 * Classes features:
-	- classes:
-		-<class_name>:
-			- doc:
-				- long_description
-				- short_description
-				- full
-                        - extend
-			- min_max_lineno:
-				- 0
-				- 1
-			- methods (a list of methods found within the class):
-				-<method_name>:
-					- doc:
-						- long_description
-						- short_description
-						- args (a list of arguments per method **documented**):
-							- <name_arg>:
-								- description
-								- type_name
-								- is_optional
-								- default
-							- <name_arg>:
-								 ....
-						- returns: (information about the return *documented*)
+```
+- classes:
+	-<class_name>:
+		- doc:
+			- long_description
+			- short_description
+			- full
+                - extend
+		- min_max_lineno:
+			- 0
+			- 1
+		- methods (a list of methods found within the class):
+			-<method_name>:
+				- doc:
+					- long_description
+					- short_description
+					- args (a list of arguments per method **documented**):
+						- <name_arg>:
 							- description
 							- type_name
-							- is_generator
-							- return_name
-						- raises:
-							- 0:
-								- description
-								- type_name
-							- ...
-					- args (a list of arguments per method)
+							- is_optional
+							- default
+						- <name_arg>:
+							-  ...
+					- returns: (information about the return *documented*)
+						- description
+						- type_name
+						- is_generator
+						- return_name
+					- raises:
 						- 0:
-						- ..:
-					- returns (returns found within the method)
-						- 0:
-						- ..:
-					- min_max_lineno:
-						- 0:
-						- 1:
-				-<method_name>:
-					- ...
-		-<class_name>:
-			- ...				
+							- description
+							- type_name
+						- ...
+				- args (a list of arguments per method)
+					- 0:
+					- ..:
+				- returns (returns found within the method)
+					- 0:
+					- ..:
+				- min_max_lineno:
+					- 0:
+					- 1:
+			-<method_name>:
+				- ...
+	-<class_name>:
+		- ...				
+```
    
 
 * Function features:
 
+```
 - functions: (a list of functions found within the class):
  	-<function_name>:
         	- doc:
@@ -158,11 +165,14 @@ results stored in it.
                         - 1:
 	-<function_name>:
                 - ...
+```
 * ControlFlow features:
+```
 - controlflow:
 	- cfg
 	- png
 
+```
 ## Test
 
   We have executed our tool with itself.
