@@ -43,20 +43,13 @@ class Code_Inspection:
     def __init__(self,path, outCfPath, outJsonPath, format="png"):
         """ init method initiliazes the Code_Inspection object
 
-        :param self: represent the instance of the class
-        :type_name self: self
-        :param path: the file to inspect
-        :type_name path: str
-        :param outCfPath: the output directory to store the control
+        :param self self: represent the instance of the class
+        :param str path: the file to inspect
+        :param str outCfPath: the output directory to store the control
 			  flow information
-        :type_name outCPath: str
-        :param outJsonPath: the output directory to store the json file
+        :param str outJsonPath: the output directory to store the json file
 			  with features extracted from the ast tree.
-        :type_name outJsonPath: str
-        :param format: format to store the control flow diagram
-	:default format: png
-        :type_name outJsonPath: str
-        :default outJsonPath: png
+        :param str format: format to store the control flow diagram
         """
 
         self.path = path
@@ -75,7 +68,7 @@ class Code_Inspection:
         """ parse_file method parsers a file as an AST tree
 
         :param self: represent the instance of the class
-        :type_name self: self
+        :type self: self
         :return: the file as an ast tree
         :rtype: ast.tree
         """
