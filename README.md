@@ -42,7 +42,7 @@ For example, it can be used to inspect all the python files of a given GitHub re
 
 ## Outputs
 
-* Results are stored in **OutputDir** (created automatically) directory. If **OutputDir** exits, the tool will delete it, and create it again, deleting all previous 
+* Results are stored in **OutputDir** (created automatically) directory.
 results stored in it. 
 
 * If the input is a **file**, the tool will create automatically two subdirectories inside **OuptuDir**:
