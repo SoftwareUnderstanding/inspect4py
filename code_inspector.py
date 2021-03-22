@@ -1,8 +1,8 @@
 """Code Inspector
 
-This script allows the user to inspect a file or a directory
-and extract all the most relevant information, such as documentations,
-classes (and their methods), functions, etc.
+This script allows the user to inspect a file or files within directory 
+(and its subdirectories) and extract all the most relevant information, 
+such as documentations, classes (and their methods), functions, etc.
 
 To extract information from docstrings, we have started with the codes
 documented. But in the future we will extend the code
@@ -31,7 +31,12 @@ from docstring_parser import parse as docParse
 
 ### Path to store the results
 outputPath="OutputDir"
-FLAG_PNG=0
+try:
+   os.rmdir(outputPath)
+except:
+   pass
+
+FLAG_PNG=1
 ###
 
 class Code_Inspection:
