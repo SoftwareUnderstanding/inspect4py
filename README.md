@@ -1,5 +1,27 @@
 # code_inspector
-Code_Inspector
+
+The code_inspector allows the user to inspect a file or files within directory 
+(and its subdirectories) and extract all the most relevant information, 
+such as documentations, classes (and their methods), functions, etc.
+
+It uses [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
+the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating
+a tree of objects (per file) whose classes all inherit from [ast.AST](https://docs.python.org/3/library/ast.html#ast.AST).
+
+code_inspector parsers each of the input file(s) as an ast tree, and walks across them, extracting
+the relevant information, storing it as a JSON file.  Furthermore, it also captures the control
+flow of each input file(s), by using another two libraries:
+
+-[cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
+
+-[staticfg](./staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), but given a bug in the package's source code, we forked it, and fixed it in our [repository](./staticfg)  
+
+ 
+
+## Ideas for tool's name:
+ - kodeXplain
+ - sofexplain
+ - kode_inspector
 
 ## Requirements
 
@@ -13,11 +35,17 @@ Prepare a virtual Python3 enviroment and install the required packages.
 
 ## Execution
 
+The tool can be executed with a file o
+
 `python code_inspector.py <FILE.py | DIRECTORY>`
 
-## Output
+## Outputs
 
-* Results are stored in **OutputDir** (created automatically)
+* We store two types of results:
+ - JSON file (per file in )
+
+* Results are stored in **OutputDir** (created automatically). If **OutputDir** exits, the tool will delete it, and create it again, deleting all previous 
+results stored in it. 
 
 * If the input is a **file**, the tool will create two folders:
 	- JsonFiles directory: with a json file (with the name of the file + ".json") of the information extracted
