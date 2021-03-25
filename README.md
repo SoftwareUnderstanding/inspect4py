@@ -203,3 +203,11 @@ See bellow for more clarity:
   > ls ControlFlow/
     code_inspector.png	code_inspector.txt
 ```
+
+## Visualizing results
+
+```
+python code_visualization.py OutputDir/JsonFiles/<FILE>.json 
+```
+
+![visualization](./visual_code.png )
