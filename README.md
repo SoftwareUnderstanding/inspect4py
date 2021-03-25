@@ -210,4 +210,11 @@ See bellow for more clarity:
 python code_visualization.py OutputDir/JsonFiles/<FILE>.json 
 ```
 
-![visualization](./visual_code.png )
+#### Example 1: visualizing the code_visualization.py
+
+![visualization_code_visualization](./visual_code.png )
+
+#### Example 2: visualizing the code_inspector.py
+
+![visualization_code_inspector](./visual_code_inspector.png)
+
