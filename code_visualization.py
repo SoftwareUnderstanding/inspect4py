@@ -67,10 +67,11 @@ def walk(node):
                                  G.add_edge(e,f)
                                  print("15. Adding %s to %s" %(f,e))
                      else:
-                         G.add_edge(e,node[key][i][e])
-                         print("16. Adding %s to %s" %(node[key][i][e],e))
+                         if e!="long_description":
+                            G.add_edge(e,node[key][i][e])
+                            print("16. Adding %s to %s" %(node[key][i][e],e))
              else:
-                 G.add_edge(i,node[key][i])
+                 G.add_edge(i,node[key][i][:10])
                  print("17. Adding %s to %s" %(node[key][i],i))
 
 if __name__ == "__main__":
@@ -81,6 +82,7 @@ if __name__ == "__main__":
     G=nx.Graph()
     for key in js.keys():
         G.add_edge('ROOT',key, color='r',weight=2)
+
     walk(js)
     color_map = []
     node_size = []
