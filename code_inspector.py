@@ -86,10 +86,10 @@ class Code_Inspection:
         ds_m=ast.get_docstring(self.tree)
         docstring=docParse(ds_m)
         fileInfo["doc"]={}
-        fileInfo["doc"]["long_description"]=docstring.long_description
-        fileInfo["doc"]["short_description"]=docstring.short_description
-        fileInfo["doc"]["full"]=ds_m
-        #fileInfo["doc"]["meta"]=docstring.meta
+        fileInfo["doc"]["long_description"]=docstring.long_description if docstring.long_description else {}
+        fileInfo["doc"]["short_description"]=docstring.short_description if docstring.short_description else {}
+        fileInfo["doc"]["full"]=ds_m if ds_m else {}
+        #fileInfo["doc"]["meta"]=docstring.meta if docstring.meta else {}
         return fileInfo
 
     def inspect_controlflow(self,format):
@@ -153,10 +153,10 @@ class Code_Inspection:
             ds_c=ast.get_docstring(c)
             docstring=docParse(ds_c)
             classesInfo[c.name]["doc"]={}
-            classesInfo[c.name]["doc"]["long_description"]=docstring.long_description
-            classesInfo[c.name]["doc"]["short_description"]=docstring.short_description
-            classesInfo[c.name]["doc"]["full"]=ds_c
-            #classesInfo[c.name]["doc"]["meta"]=docstring.meta
+            classesInfo[c.name]["doc"]["long_description"]=docstring.long_description if docstring.long_description else {} 
+            classesInfo[c.name]["doc"]["short_description"]=docstring.short_description if docstring.short_description else {}
+            classesInfo[c.name]["doc"]["full"]=ds_c if ds_c else {}
+            #classesInfo[c.name]["doc"]["meta"]=docstring.meta if docstring.meta else {}
 
             try:
                 classesInfo[c.name]["extend"]=[b.id for b in c.bases]
@@ -239,8 +239,8 @@ class Code_Inspection:
             ds_f=ast.get_docstring(f)
             docstring=docParse(ds_f)
             funcsInfo[f.name]["doc"]={}
-            funcsInfo[f.name]["doc"]["long_description"]=docstring.long_description
-            funcsInfo[f.name]["doc"]["short_description"]=docstring.short_description
+            funcsInfo[f.name]["doc"]["long_description"]=docstring.long_description if docstring.long_description else {}
+            funcsInfo[f.name]["doc"]["short_description"]=docstring.short_description if docstring.short_description else {}
             funcsInfo[f.name]["doc"]["args"]={}
             for i in docstring.params:
                 funcsInfo[f.name]["doc"]["args"][i.arg_name]={}
