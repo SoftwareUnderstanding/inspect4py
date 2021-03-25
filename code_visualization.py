@@ -32,6 +32,8 @@ def walk(node):
                                                    print("6. Adding %s to %s" %(c,b))
                                                    if isinstance(node[key][i][e][f][a][b][c], Mapping):
                                                        for d in node[key][i][e][f][a][b][c]:
+                                                           G.add_edge(c, d)
+                                                           print("7a. Adding %s to %s" %(d,c))
                                                            G.add_edge(d, node[key][i][e][f][a][b][c][d])
                                                            print("7. Adding %s to %s" %(node[key][i][e][f][a][b][c][d],d))
                                                    else:
@@ -86,24 +88,23 @@ if __name__ == "__main__":
         if node == "ROOT": 
              color_map.append('red')
              node_size.append(100)
-        elif node in js.keys():
-             if node == "file":
-                 color_map.append('lavender')
-                 node_size.append(100)
-             elif node == "dependencies":
-                 color_map.append('orange')
-                 node_size.append(100)
-             elif node == "classes":
-                 color_map.append('lightgreen')
-                 node_size.append(100)
-             elif node == "functions":
-                 color_map.append('yellow')
-                 node_size.append(100)
-             elif node == "controlflow":
-                 color_map.append('gold')
-                 node_size.append(100)
+        elif node == "file" or node in js["file"].keys():
+             color_map.append('lavender')
+             node_size.append(100)
+        elif node == "dependencies" or node in js["dependencies"].keys():
+             color_map.append('orange')
+             node_size.append(100)
+        elif node == "classes" or node in js["classes"].keys():
+             color_map.append('yellowgreen')
+             node_size.append(100)
+        elif node == "functions" or node in js["functions"].keys():
+             color_map.append('turquoise')
+             node_size.append(100)
+        elif node == "controlflow":
+             color_map.append('lightcoral')
+             node_size.append(100)
         elif node == "doc":
-            color_map.append('pink')
+            color_map.append('orchid')
             node_size.append(100)
         elif node == "args":
             color_map.append('whitesmoke')
@@ -112,7 +113,7 @@ if __name__ == "__main__":
             color_map.append('whitesmoke')
             node_size.append(100)
         elif node == "min_max_lineno":
-            color_map.append('tan')
+            color_map.append('khaki')
             node_size.append(100)
         elif node == "min_lineno":
             color_map.append('khaki')
@@ -121,19 +122,19 @@ if __name__ == "__main__":
             color_map.append('khaki')
             node_size.append(100)
         elif node == "extension":
-            color_map.append('magenta')
+            color_map.append('bisque')
             node_size.append(100)
         elif node == "fileNameBase":
             color_map.append('bisque')
             node_size.append(100)
         elif node == "path":
-            color_map.append('beige')
+            color_map.append('bisque')
             node_size.append(100)
         elif node == "cfg":
-            color_map.append('navajowhite')
+            color_map.append('lightcoral')
             node_size.append(100)
         elif node == "png":
-            color_map.append('navajowhite')
+            color_map.append('lightcoral')
             node_size.append(100)
         elif node == "full":
             color_map.append('orchid')
@@ -159,7 +160,7 @@ if __name__ == "__main__":
        
  
         else:
-            color_map.append('skyblue')
+            color_map.append('silver')
             node_size.append(100)
     
     plt.figure(figsize=(20,10))
