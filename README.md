@@ -210,6 +210,8 @@ See bellow for more clarity:
 python code_visualization.py OutputDir/JsonFiles/<FILE>.json 
 ```
 
+**Note**: For simplicy I have commented the "long_description" of docs to avoid displaying them in the figures. 
+
 #### Example 1: visualizing the code_visualization.py
 
 ![visualization_code_visualization](./visual_code.png )
