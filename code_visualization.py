@@ -9,51 +9,67 @@ def walk(node):
     for key, item in node.items():
         for i in item:
              G.add_edge(key,i)
+             print("1. Adding %s to %s" %(i,key))
              if isinstance(node[key][i], Mapping):
                  for e in node[key][i]:
                      G.add_edge(i,e)
+                     print("2. Adding %s to %s" %(e,i))
                      if isinstance(node[key][i][e], Mapping):
                          for f in node[key][i][e]:
                              G.add_edge(e,f)
+                             print("3. Adding %s to %s" %(f,e))
                              if isinstance(node[key][i][e][f], Mapping):
                                 for a in node[key][i][e][f]:
                                    G.add_edge(f,a)
+                                   print("4. Adding %s to %s" %(a,f))
                                    if isinstance(node[key][i][e][f][a], Mapping):
                                        for b in node[key][i][e][f][a]:
                                            G.add_edge(a,b)
+                                           print("5. Adding %s to %s" %(b,a))
                                            if isinstance(node[key][i][e][f][a][b], Mapping):
                                                for c in node[key][i][e][f][a][b]:
                                                    G.add_edge(b,c)
+                                                   print("6. Adding %s to %s" %(c,b))
                                                    if isinstance(node[key][i][e][f][a][b][c], Mapping):
                                                        for d in node[key][i][e][f][a][b][c]:
-                                                           G.add_edge(d, node[key][i][e][f][a][b][c][d]) 
+                                                           G.add_edge(d, node[key][i][e][f][a][b][c][d])
+                                                           print("7. Adding %s to %s" %(node[key][i][e][f][a][b][c][d],d))
                                                    else:
-                                                       G.add_edge(c, node[key][i][e][f][a][b][c]) 
+                                                       G.add_edge(c, node[key][i][e][f][a][b][c])
+                                                       print("8. Adding %s to %s" %(node[key][i][e][f][a][b][c],c))
                                            else:
                                                G.add_edge(a, node[key][i][e][f][a][b])
-           
+                                               print("9. Adding %s to %s" %(node[key][i][e][f][a][b],a))
                                    elif isinstance(node[key][i][e][f][a], list):
                                        for b in node[key][i][e][f][a]:
                                            if isinstance(b, list):
                                                for c in b:
                                                    G.add_edge(a,c)
+                                                   print("10. Adding %s to %s" %(c,a))
                                            else:
                                                G.add_edge(a,b)
+                                               print("11. Adding %s to %s" %(b,a))
                                    else:
                                        G.add_edge(a,node[key][i][e][f][a])
+                                       print("12. Adding %s to %s" %(node[key][i][e][f][a],a))
                              else:
-                                G.add_edge(f,node[key][i][e][f])
+                                 G.add_edge(f,node[key][i][e][f])
+                                 print("13. Adding %s to %s" %(node[key][i][e][f],f))
                      elif isinstance(node[key][i][e], list):
                          for f in node[key][i][e]:
                              if isinstance(f, list):
                                  for g in f:
                                      G.add_edge(e,g)
+                                     print("14. Adding %s to %s" %(g,e))
                              else:
                                  G.add_edge(e,f)
+                                 print("15. Adding %s to %s" %(f,e))
                      else:
                          G.add_edge(e,node[key][i][e])
+                         print("16. Adding %s to %s" %(node[key][i][e],e))
              else:
                  G.add_edge(i,node[key][i])
+                 print("17. Adding %s to %s" %(node[key][i],i))
 
 if __name__ == "__main__":
     input_path = sys.argv[1]
