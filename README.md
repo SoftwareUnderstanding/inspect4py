@@ -204,6 +204,12 @@ See bellow for more clarity:
     code_inspector.png	code_inspector.txt
 ```
 
+We have loaded the [code_inspector.json](./OutputDir/JsonFiles/code_inspector.json) into a 
+[online json viewer](http://jsonviewer.stack.hu/), and the result was this:    
+
+
+[!code_inspector_json_viewer](./code_inspector_json_viewer.png)
+
 ## Visualizing results
 
 ```
