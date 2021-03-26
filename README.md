@@ -208,7 +208,7 @@ We have loaded the [code_inspector.json](./OutputDir/JsonFiles/code_inspector.js
 [online json viewer](http://jsonviewer.stack.hu/), and the result was this:    
 
 
-[!code_inspector_json_viewer](./code_inspector_json_viewer.png)
+![code_inspector_json_viewer](./code_inspector_json_viewer.png)
 
 ## Visualizing results
 
