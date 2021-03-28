@@ -23,5 +23,6 @@ COPY ./code_inspector.py ${HOME}/.
 RUN mkdir ${HOME}/staticfg
 ADD ./staticfg ${HOME}/staticfg/.
 
-#ENTRYPOINT bash ${HOME}/workflow_cmip6/tracking_master.sh ${HOME}/workflow_cmip6 ${HOME}/results ${HOME}/workflow_cmip6/cyclone_config_CMIP6.json ${HOME}/workflow_cmip6/config_cmip6.txt ${HOME}/workflow_cmip6/input_files.txt
+RUN python ${HOME}/code_inspector.py ${HOME}/defoe/defoe/query_utils.py
+
 
