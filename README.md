@@ -232,6 +232,8 @@ Create a Docker to clone a repository and run the code_inspector
 
 ```
 docker build --tag repository_inspector:1.0 .
+```
+
+Notes:
 docker run -it --entrypoint "/bin/bash" repository_inspector:1.0
 docker image rm -f repository_inspector:1.0
-```
