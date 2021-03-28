@@ -226,3 +226,12 @@ python code_visualization.py OutputDir/JsonFiles/<FILE>.json
 
 ![visualization_code_inspector](./visual_code_inspector.png)
 
+### Experiment - Code Inspector & Docker
+
+Create a Docker to clone a repository and run the code_inspector
+
+```
+docker build --tag repository_inspector:1.0 .
+docker run -it --entrypoint "/bin/bash" repository_inspector:1.0
+docker image rm -f repository_inspector:1.0
+```
