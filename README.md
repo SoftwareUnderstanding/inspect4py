@@ -236,6 +236,7 @@ docker build --tag repository_inspector:1.0 .
 
 Notes - Useful commands
 ```
+docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
 docker run -it --entrypoint "/bin/bash" repository_inspector:1.0
 docker image rm -f repository_inspector:1.0
 ```
