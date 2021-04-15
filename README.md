@@ -24,15 +24,24 @@ For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/d
  - sofexplain
  - kode_inspector
 
-## Requirements
+## Install
 
-Prepare a virtual Python3 enviroment and install the required packages.
+First, make sure you have graphviz installed:
+
+```
+sudo apt-get install graphviz
+```
+
+Then, prepare a virtual Python3 enviroment and install the required packages.
 
 `pip install -r requirements.txt`
 
 - Dependencies: 
-  - cdmcfparser
-  - docstring_parser
+  - cdmcfparser==2.3.2
+  - docstring_parser==0.7
+  - astor
+  - graphviz
+
 
 ## Execution
 
