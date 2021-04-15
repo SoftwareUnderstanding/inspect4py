@@ -11,3 +11,4 @@ Scripts/*
 .idea/*
 *.json
 *.ttl
+OutputDir/
