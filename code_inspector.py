@@ -186,7 +186,6 @@ class Code_Inspection:
             if isinstance(node, ast.Import):
                 module=[]
             elif isinstance(node, ast.ImportFrom):
-                print("--Node.Module is %s and node is %s" % (node.module, node))
                 try: 
                     module = node.module.split('.')
                 except:
@@ -425,12 +424,15 @@ def main(args=None):
            files = [f for f in files if not f.startswith('.')]
            files = [f for f in files if not f.startswith('__')]
            for f in files:
-               if ".py" in f: 
-                   path=os.path.join(subdir, f)
-                   outputDir=p.output+"/"+os.path.basename(subdir)
-                   cfDir, jsonDir=create_output_dirs(outputDir)
-                   code_info=Code_Inspection(path,cfDir, jsonDir, p.fig)
-                   dirInfo[outputDir]=code_info.fileJson
+               if ".py" in f:
+                   try: 
+                       path=os.path.join(subdir, f)
+                       outputDir=p.output+"/"+os.path.basename(subdir)
+                       cfDir, jsonDir=create_output_dirs(outputDir)
+                       code_info=Code_Inspection(path,cfDir, jsonDir, p.fig)
+                       dirInfo[outputDir]=code_info.fileJson
+                   except:
+                       continue
 
        json_file=outputPath + "/DirectoryInfo.json" 
        with open(json_file, 'w') as outfile:
