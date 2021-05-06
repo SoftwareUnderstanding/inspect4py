@@ -162,7 +162,11 @@ class Code_Inspection:
             try:
                 classesInfo[c.name]["extend"]=[b.id for b in c.bases]
             except:
-                classesInfo[c.name]["extend"]=[b.value.func.id if isinstance(b,ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b, 'value') else "" for b in c.bases]
+                try:
+                    classesInfo[c.name]["extend"]=[b.value.func.id if isinstance(b,ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b, 'value') else "" for b in c.bases]
+                except:
+                    classesInfo[c.name]["extend"]=[]
+                 
             classesInfo[c.name]["min_max_lineno"] = self._compute_interval(c)
             methods_definitions=[node for node in c.body if isinstance(node, ast.FunctionDef)]
             classesInfo[c.name]["methods"]=self._f_definitions(methods_definitions)
@@ -181,8 +185,12 @@ class Code_Inspection:
         for node in ast.iter_child_nodes(self.tree):
             if isinstance(node, ast.Import):
                 module=[]
-            elif isinstance(node, ast.ImportFrom):  
-                module = node.module.split('.')
+            elif isinstance(node, ast.ImportFrom):
+                print("--Node.Module is %s and node is %s" % (node.module, node))
+                try: 
+                    module = node.module.split('.')
+                except:
+                    module=[]
             else:
                 continue
             for n in node.names:
