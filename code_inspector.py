@@ -26,12 +26,9 @@ import tokenize
 from pprint import pprint
 from cdmcfparser import getControlFlowFromFile
 from staticfg import builder
-import argparse
+import click
 from docstring_parser import parse as docParse
 
-### Path to store the results
-outputPath="OutputDir"
-###
 
 class Code_Inspection:
     def __init__(self,path, outCfPath, outJsonPath, flag_png):
@@ -396,29 +393,23 @@ def create_output_dirs(outputDir):
            pass
        return controlFlowDir, jsonDir
         
+@click.command()
+@click.option('-p', '--input_path', type=str, required=True, help="input path of the file or directory to inspect")
+@click.option('-f', '--fig', type=bool, is_flag=True,  help="activate the control_flow figure generator")
+@click.option('-o', '--output_dir', type = str, default ="OutputDir", help = "output directory path to store results. If the directory does not exit, the tool will create it")
 
-
-def main(args=None):
-
-
-    parser = argparse.ArgumentParser(description='Inspecting a Code Repository.')
-    parser.add_argument('-p', '--path', type=str, required=True, help="input path (file or directory) to inspect")
-    parser.add_argument('-f', '--fig', type=bool, nargs='?', const=True , default=False,  help="activate the control_flow figure generator")
-    parser.add_argument('-o', '--output', type = str, required=False, default ="OutputDir", help = "output directory path to store results. If the directory does not exit, the tool will create it")
-
-    p = parser.parse_args()
-
-    if (not os.path.isfile(p.path)) and (not os.path.isdir(p.path)):
+def main(input_path,fig, output_dir):
+    if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
-    if os.path.isfile(p.path):
-        cfDir, jsonDir=create_output_dirs(p.output)
-        code_info=Code_Inspection(p.path,cfDir, jsonDir, p.fig)
+    if os.path.isfile(input_path):
+        cfDir, jsonDir=create_output_dirs(output_dir)
+        code_info=Code_Inspection(input_path,cfDir, jsonDir, fig)
 
     else:
        dirInfo={}
-       for subdir, dirs, files in os.walk(p.path):
+       for subdir, dirs, files in os.walk(input_path):
            dirs[:] = [d for d in dirs if not d.startswith('.')]
            dirs[:] = [d for d in dirs if not d.startswith('__')]
            files = [f for f in files if not f.startswith('.')]
@@ -427,9 +418,9 @@ def main(args=None):
                if ".py" in f:
                    try: 
                        path=os.path.join(subdir, f)
-                       outputDir=p.output+"/"+os.path.basename(subdir)
+                       outputDir=output_dir+"/"+os.path.basename(subdir)
                        cfDir, jsonDir=create_output_dirs(outputDir)
-                       code_info=Code_Inspection(path,cfDir, jsonDir, p.fig)
+                       code_info=Code_Inspection(path,cfDir, jsonDir, fig)
                        dirInfo[outputDir]=code_info.fileJson
                    except:
                        continue

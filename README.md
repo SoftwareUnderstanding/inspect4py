@@ -50,22 +50,23 @@ For example, it can be used to inspect all the python files of a given GitHub re
 
 The tool by default stores the results in the "OutputDir" directory, but users can specify their own directory name by using -o or --output flags.
 
-And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use -f 1 or --figures 1.  
+And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use -f or --fig.  
 
 
-`python code_inspector.py --path <FILE.py | DIRECTORY> [--fig , --output "OutputDir"]`
+`python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir"]`
 
 For clarity, we have added the help option to explain each input parameters
 
-`python code_inspector.py -h
-optional arguments:
-  -h, --help            show this help message and exit
-  -p PATH, --path PATH  input path (file or directory) to inspect
-  -f [FIG], --fig [FIG]
-                        activate the control_flow figure generator
-  -o OUTPUT, --output OUTPUT
-                        output directory path to store results. If the
-                        directory does not exit, the tool will create it
+`python code_inspector.py --help
+Usage: code_inspector.py [OPTIONS]
+
+Options:
+  -p, --input_path TEXT  input path of the file or directory to inspect
+                         [required]
+  -f, --fig              activate the control_flow figure generator
+  -o, --output_dir TEXT  output directory path to store results. If the
+                         directory does not exit, the tool will create it
+  --help                 Show this message and exit.
 `
 
 ## Outputs
