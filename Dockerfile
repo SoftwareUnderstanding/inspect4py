@@ -23,6 +23,6 @@ COPY ./code_inspector.py ${HOME}/.
 RUN mkdir ${HOME}/staticfg
 ADD ./staticfg ${HOME}/staticfg/.
 
-RUN python ${HOME}/code_inspector.py ${HOME}/defoe/defoe/query_utils.py
+RUN python ${HOME}/code_inspector.py -p ${HOME}/defoe/defoe/query_utils.py -f
 
 

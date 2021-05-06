@@ -31,11 +31,10 @@ from docstring_parser import parse as docParse
 
 ### Path to store the results
 outputPath="OutputDir"
-FLAG_PNG=1
 ###
 
 class Code_Inspection:
-    def __init__(self,path, outCfPath, outJsonPath, format="png"):
+    def __init__(self,path, outCfPath, outJsonPath, flag_png):
         """ init method initiliazes the Code_Inspection object
 
         :param self self: represent the instance of the class
@@ -44,14 +43,16 @@ class Code_Inspection:
 			  flow information
         :param str outJsonPath: the output directory to store the json file
 			  with features extracted from the ast tree.
-        :param str format: format to store the control flow diagram
+        :param int flag_png: flag to indicate to generate or not contol flow figures 
         """
 
         self.path = path
+        self.flag_png = flag_png
         self.outJsonPath = outJsonPath
         self.outCfPath = outCfPath
         self.tree = self.parser_file()
         self.fileInfo = self.inspect_file() 
+        format="png"
         self.controlFlowInfo = self.inspect_controlflow(format)
         self.funcsInfo = self.inspect_functions()
         self.classesInfo = self.inspect_classes()
@@ -111,7 +112,7 @@ class Code_Inspection:
            outfile.write(cfg_txt)
         controlInfo["cfg"]= cfg_txt_file
 
-        if FLAG_PNG:
+        if self.flag_png:
             cfg_visual = builder.CFGBuilder().build_from_file(self.fileInfo["fileNameBase"], self.path)
             cfg_path=self.outCfPath+"/"+ self.fileInfo["fileNameBase"]
             cfg_visual.build_visual(cfg_path, format=format, calls=False, show=False)
@@ -392,23 +393,25 @@ def create_output_dirs(outputDir):
 
 def main(args=None):
 
-    if len(sys.argv) < 2:
-        print('You need to specify the file to inspect')
-        sys.exit()
 
-    input_path = sys.argv[1]
+    parser = argparse.ArgumentParser(description='Inspecting a Code Repository.')
+    parser.add_argument('-p', '--path', type=str, required=True, help="input path (file or directory) to inspect")
+    parser.add_argument('-f', '--fig', type=bool, nargs='?', const=True , default=False,  help="activate the control_flow figure generator")
+    parser.add_argument('-o', '--output', type = str, required=False, default ="OutputDir", help = "output directory path to store results. If the directory does not exit, the tool will create it")
 
-    if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
+    p = parser.parse_args()
+
+    if (not os.path.isfile(p.path)) and (not os.path.isdir(p.path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
-    if os.path.isfile(input_path):
-        cfDir, jsonDir=create_output_dirs(outputPath)
-        code_info=Code_Inspection(input_path,cfDir, jsonDir)
+    if os.path.isfile(p.path):
+        cfDir, jsonDir=create_output_dirs(p.output)
+        code_info=Code_Inspection(p.path,cfDir, jsonDir, p.fig)
 
     else:
        dirInfo={}
-       for subdir, dirs, files in os.walk(input_path):
+       for subdir, dirs, files in os.walk(p.path):
            dirs[:] = [d for d in dirs if not d.startswith('.')]
            dirs[:] = [d for d in dirs if not d.startswith('__')]
            files = [f for f in files if not f.startswith('.')]
@@ -416,9 +419,9 @@ def main(args=None):
            for f in files:
                if ".py" in f: 
                    path=os.path.join(subdir, f)
-                   outputDir=outputPath+"/"+os.path.basename(subdir)
+                   outputDir=p.output+"/"+os.path.basename(subdir)
                    cfDir, jsonDir=create_output_dirs(outputDir)
-                   code_info=Code_Inspection(path,cfDir, jsonDir)
+                   code_info=Code_Inspection(path,cfDir, jsonDir, p.fig)
                    dirInfo[outputDir]=code_info.fileJson
 
        json_file=outputPath + "/DirectoryInfo.json" 

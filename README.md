@@ -48,11 +48,29 @@ Then, prepare a virtual Python3 enviroment and install the required packages.
 The tool can be executed to inspect a file, or all the files of a given directory (and its subdirectories).
 For example, it can be used to inspect all the python files of a given GitHub repository (that has been previously cloned locally).
 
-`python code_inspector.py <FILE.py | DIRECTORY>`
+The tool by default stores the results in the "OutputDir" directory, but users can specify their own directory name by using -o or --output flags.
+
+And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use -f 1 or --figures 1.  
+
+
+`python code_inspector.py --path <FILE.py | DIRECTORY> [--fig , --output "OutputDir"]`
+
+For clarity, we have added the help option to explain each input parameters
+
+`python code_inspector.py -h
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PATH, --path PATH  input path (file or directory) to inspect
+  -f [FIG], --fig [FIG]
+                        activate the control_flow figure generator
+  -o OUTPUT, --output OUTPUT
+                        output directory path to store results. If the
+                        directory does not exit, the tool will create it
+`
 
 ## Outputs
 
-* Results are stored inside the **OutputDir** directory, which is created automatically, if it is does not exits.
+* Results are stored by default inside the **OutputDir** directory, which is created automatically, if it is does not exits. Users have also the possibility to indicate their own directory name. 
 
 * If the input is a **file**, the tool will create automatically two subdirectories inside **OuptuDir**:
 	- **JsonFiles** directory: with a json file (with the name of the file + ".json") of the information extracted
@@ -188,7 +206,7 @@ For example, it can be used to inspect all the python files of a given GitHub re
 
   We have executed our tool with itself.
 
-  `python code_inspector.py code_inspector.py`
+  `python code_inspector.py -p code_inspector.py -f`
 
 
   Results of this test are available here:
@@ -249,3 +267,4 @@ docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
 docker run -it --entrypoint "/bin/bash" repository_inspector:1.0
 docker image rm -f repository_inspector:1.0
 ```
+
