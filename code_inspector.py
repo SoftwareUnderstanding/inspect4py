@@ -1,12 +1,11 @@
 """Code Inspector
 
-This script allows the user to inspect a file or files within directory 
-(and its subdirectories) and extract all the most relevant information, 
-such as documentations, classes (and their methods), functions, etc.
+This script parses a file or files within directory
+(and its subdirectories) to extract all the relevant information,
+such as documentation, classes (and their methods), functions, etc.
 
 To extract information from docstrings, we have started with the codes
-documented. But in the future we will extend the code
-to support others.  
+documented.
 
 This tool accepts (for now) only python code (.py)
 
@@ -17,30 +16,27 @@ this script in.
 """
 
 import ast
-import sys
 import json
 import os
-from os import listdir
-from os.path import isfile, join
+import sys
 import tokenize
-from pprint import pprint
-from cdmcfparser import getControlFlowFromFile
-from staticfg import builder
+
 import click
+from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as docParse
 
+from staticfg import builder
 
-class Code_Inspection:
-    def __init__(self,path, outCfPath, outJsonPath, flag_png):
+
+class CodeInspection:
+    def __init__(self, path, outCfPath, outJsonPath, flag_png):
         """ init method initiliazes the Code_Inspection object
 
         :param self self: represent the instance of the class
         :param str path: the file to inspect
-        :param str outCfPath: the output directory to store the control
-			  flow information
-        :param str outJsonPath: the output directory to store the json file
-			  with features extracted from the ast tree.
-        :param int flag_png: flag to indicate to generate or not contol flow figures 
+        :param str outCfPath: the output directory to store the control flow information
+        :param str outJsonPath: the output directory to store the json file with features extracted from the ast tree.
+        :param int flag_png: flag to indicate to generate or not control flow figures
         """
 
         self.path = path
@@ -48,14 +44,13 @@ class Code_Inspection:
         self.outJsonPath = outJsonPath
         self.outCfPath = outCfPath
         self.tree = self.parser_file()
-        self.fileInfo = self.inspect_file() 
-        format="png"
+        self.fileInfo = self.inspect_file()
+        format = "png"
         self.controlFlowInfo = self.inspect_controlflow(format)
         self.funcsInfo = self.inspect_functions()
         self.classesInfo = self.inspect_classes()
         self.depInfo = self.inspect_dependencies()
         self.fileJson = self.file_json()
-
 
     def parser_file(self):
         """ parse_file method parsers a file as an AST tree
@@ -76,21 +71,21 @@ class Code_Inspection:
         :param self self: represent the instance of the class
         :return dictionary a dictionary with the file information extracted
         """
-        fileInfo={}
-        fileInfo["path"]=self.path
+        fileInfo = {}
+        fileInfo["path"] = self.path
         fileName = os.path.basename(self.path).split(".")
-        fileInfo["fileNameBase"]=fileName[0]
-        fileInfo["extension"]=fileName[1]
-        ds_m=ast.get_docstring(self.tree)
-        docstring=docParse(ds_m)
-        fileInfo["doc"]={}
-        fileInfo["doc"]["long_description"]=docstring.long_description if docstring.long_description else {}
-        fileInfo["doc"]["short_description"]=docstring.short_description if docstring.short_description else {}
-        fileInfo["doc"]["full"]=ds_m if ds_m else {}
-        #fileInfo["doc"]["meta"]=docstring.meta if docstring.meta else {}
+        fileInfo["fileNameBase"] = fileName[0]
+        fileInfo["extension"] = fileName[1]
+        ds_m = ast.get_docstring(self.tree)
+        docstring = docParse(ds_m)
+        fileInfo["doc"] = {}
+        fileInfo["doc"]["long_description"] = docstring.long_description if docstring.long_description else {}
+        fileInfo["doc"]["short_description"] = docstring.short_description if docstring.short_description else {}
+        fileInfo["doc"]["full"] = ds_m if ds_m else {}
+        # fileInfo["doc"]["meta"]=docstring.meta if docstring.meta else {}
         return fileInfo
 
-    def inspect_controlflow(self,format):
+    def inspect_controlflow(self, format):
         """inspect_controlFlow uses two methods for 
         extracting the controlflow of a file. One as a
         text and another as a figure (PNG/PDF/DOT).   
@@ -100,26 +95,26 @@ class Code_Inspection:
         :param str format: represent the format to save the figure
         :return dictionary: a dictionary with the all information extracted (at file level)
         """
-        controlInfo={}
+        controlInfo = {}
         cfg = getControlFlowFromFile(self.path)
-        cfg_txt=self._formatFlow(str(cfg))
-        cfg_txt_file=self.outCfPath+"/"+ self.fileInfo["fileNameBase"] + ".txt" 
-        
+        cfg_txt = self._formatFlow(str(cfg))
+        cfg_txt_file = self.outCfPath + "/" + self.fileInfo["fileNameBase"] + ".txt"
+
         with open(cfg_txt_file, 'w') as outfile:
-           outfile.write(cfg_txt)
-        controlInfo["cfg"]= cfg_txt_file
+            outfile.write(cfg_txt)
+        controlInfo["cfg"] = cfg_txt_file
 
         if self.flag_png:
             cfg_visual = builder.CFGBuilder().build_from_file(self.fileInfo["fileNameBase"], self.path)
-            cfg_path=self.outCfPath+"/"+ self.fileInfo["fileNameBase"]
+            cfg_path = self.outCfPath + "/" + self.fileInfo["fileNameBase"]
             cfg_visual.build_visual(cfg_path, format=format, calls=False, show=False)
-            controlInfo["png"]=cfg_path+"."+ format
-            #delete the second file generated by the cfg_visual (not needed!)
+            controlInfo["png"] = cfg_path + "." + format
+            # delete the second file generated by the cfg_visual (not needed!)
             os.remove(cfg_path)
         else:
-            controlInfo["png"]="None"
+            controlInfo["png"] = "None"
         return controlInfo
-    
+
     def inspect_functions(self):
         """ inspect_functions detects all the functions in a AST tree, and calls
         to _f_definitions method to extracts all the features at function level.
@@ -145,28 +140,33 @@ class Code_Inspection:
         """
 
         classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
-        classesInfo={}
+        classesInfo = {}
         for c in classes_definitions:
-            classesInfo[c.name]={}
-            ds_c=ast.get_docstring(c)
-            docstring=docParse(ds_c)
-            classesInfo[c.name]["doc"]={}
-            classesInfo[c.name]["doc"]["long_description"]=docstring.long_description if docstring.long_description else {} 
-            classesInfo[c.name]["doc"]["short_description"]=docstring.short_description if docstring.short_description else {}
-            classesInfo[c.name]["doc"]["full"]=ds_c if ds_c else {}
-            #classesInfo[c.name]["doc"]["meta"]=docstring.meta if docstring.meta else {}
+            classesInfo[c.name] = {}
+            ds_c = ast.get_docstring(c)
+            docstring = docParse(ds_c)
+            classesInfo[c.name]["doc"] = {}
+            classesInfo[c.name]["doc"][
+                "long_description"] = docstring.long_description if docstring.long_description else {}
+            classesInfo[c.name]["doc"][
+                "short_description"] = docstring.short_description if docstring.short_description else {}
+            classesInfo[c.name]["doc"]["full"] = ds_c if ds_c else {}
+            # classesInfo[c.name]["doc"]["meta"]=docstring.meta if docstring.meta else {}
 
             try:
-                classesInfo[c.name]["extend"]=[b.id for b in c.bases]
+                classesInfo[c.name]["extend"] = [b.id for b in c.bases]
             except:
                 try:
-                    classesInfo[c.name]["extend"]=[b.value.func.id if isinstance(b,ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b, 'value') else "" for b in c.bases]
+                    classesInfo[c.name]["extend"] = [
+                        b.value.func.id if isinstance(b, ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b,
+                                                                                                                      'value') else ""
+                        for b in c.bases]
                 except:
-                    classesInfo[c.name]["extend"]=[]
-                 
+                    classesInfo[c.name]["extend"] = []
+
             classesInfo[c.name]["min_max_lineno"] = self._compute_interval(c)
-            methods_definitions=[node for node in c.body if isinstance(node, ast.FunctionDef)]
-            classesInfo[c.name]["methods"]=self._f_definitions(methods_definitions)
+            methods_definitions = [node for node in c.body if isinstance(node, ast.FunctionDef)]
+            classesInfo[c.name]["methods"] = self._f_definitions(methods_definitions)
         return classesInfo
 
     def inspect_dependencies(self):
@@ -177,28 +177,27 @@ class Code_Inspection:
         :return dictionary: a dictionary with the all dependencies information extracted
         """
 
-        depInfo={}
-        num=0
+        depInfo = {}
+        num = 0
         for node in ast.iter_child_nodes(self.tree):
             if isinstance(node, ast.Import):
-                module=[]
+                module = []
             elif isinstance(node, ast.ImportFrom):
-                try: 
+                try:
                     module = node.module.split('.')
                 except:
-                    module=[]
+                    module = []
             else:
                 continue
             for n in node.names:
-                d_name="dep_"+str(num)
-                depInfo[d_name]={}
+                d_name = "dep_" + str(num)
+                depInfo[d_name] = {}
                 depInfo[d_name]["from_module"] = module
                 depInfo[d_name]["import"] = n.name.split('.')
                 depInfo[d_name]["alias"] = n.asname
-                num=num+1
+                num = num + 1
 
-        return depInfo 
-
+        return depInfo
 
     def file_json(self):
         """file_json method aggregates all the features previously
@@ -211,18 +210,17 @@ class Code_Inspection:
         :return dictionary: a dictionary with the all information extracted (at file level)
         """
 
-        FileDict={}
-        FileDict["file"]=self.fileInfo
-        FileDict["dependencies"]=self.depInfo
-        FileDict["classes"]=self.classesInfo
-        FileDict["functions"]=self.funcsInfo
-        FileDict["controlflow"]=self.controlFlowInfo
+        FileDict = {}
+        FileDict["file"] = self.fileInfo
+        FileDict["dependencies"] = self.depInfo
+        FileDict["classes"] = self.classesInfo
+        FileDict["functions"] = self.funcsInfo
+        FileDict["controlflow"] = self.controlFlowInfo
 
-        json_file=self.outJsonPath+"/" +self.fileInfo["fileNameBase"] + ".json" 
+        json_file = self.outJsonPath + "/" + self.fileInfo["fileNameBase"] + ".json"
         with open(json_file, 'w') as outfile:
-           json.dump(FileDict, outfile)
-        return FileDict 
-
+            json.dump(FileDict, outfile)
+        return FileDict
 
     def _f_definitions(self, functions_definitions):
         """_f_definitions extracts the name, args, doscstring 
@@ -238,43 +236,43 @@ class Code_Inspection:
         :return dictionary: a dictionary with the all the information at function/method level
         """
 
-        funcsInfo={}
+        funcsInfo = {}
         for f in functions_definitions:
-            funcsInfo[f.name]={}
-            ds_f=ast.get_docstring(f)
-            docstring=docParse(ds_f)
-            funcsInfo[f.name]["doc"]={}
-            funcsInfo[f.name]["doc"]["long_description"]=docstring.long_description if docstring.long_description else {}
-            funcsInfo[f.name]["doc"]["short_description"]=docstring.short_description if docstring.short_description else {}
-            funcsInfo[f.name]["doc"]["args"]={}
+            funcsInfo[f.name] = {}
+            ds_f = ast.get_docstring(f)
+            docstring = docParse(ds_f)
+            funcsInfo[f.name]["doc"] = {}
+            funcsInfo[f.name]["doc"][
+                "long_description"] = docstring.long_description if docstring.long_description else {}
+            funcsInfo[f.name]["doc"][
+                "short_description"] = docstring.short_description if docstring.short_description else {}
+            funcsInfo[f.name]["doc"]["args"] = {}
             for i in docstring.params:
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]={}
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["description"]=i.description
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["type_name"]=i.type_name
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"]=i.is_optional
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"]=i.default
+                funcsInfo[f.name]["doc"]["args"][i.arg_name] = {}
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["description"] = i.description
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["type_name"] = i.type_name
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"] = i.is_optional
+                funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"] = i.default
             if docstring.returns:
-                r=docstring.returns
-                funcsInfo[f.name]["doc"]["returns"]={}
-                funcsInfo[f.name]["doc"]["returns"]["description"]=r.description
-                funcsInfo[f.name]["doc"]["returns"]["type_name"]=r.type_name
-                funcsInfo[f.name]["doc"]["returns"]["is_generator"]=r.is_generator
-                funcsInfo[f.name]["doc"]["returns"]["return_name"]=r.return_name
-            funcsInfo[f.name]["doc"]["raises"]={}
+                r = docstring.returns
+                funcsInfo[f.name]["doc"]["returns"] = {}
+                funcsInfo[f.name]["doc"]["returns"]["description"] = r.description
+                funcsInfo[f.name]["doc"]["returns"]["type_name"] = r.type_name
+                funcsInfo[f.name]["doc"]["returns"]["is_generator"] = r.is_generator
+                funcsInfo[f.name]["doc"]["returns"]["return_name"] = r.return_name
+            funcsInfo[f.name]["doc"]["raises"] = {}
             for num, i in enumerate(docstring.raises):
-                funcsInfo[f.name]["doc"]["raises"][num]={}
-                funcsInfo[f.name]["doc"]["raises"][num]["description"]=i.description
-                funcsInfo[f.name]["doc"]["raises"][num]["type_name"]=i.type_name
+                funcsInfo[f.name]["doc"]["raises"][num] = {}
+                funcsInfo[f.name]["doc"]["raises"][num]["description"] = i.description
+                funcsInfo[f.name]["doc"]["raises"][num]["type_name"] = i.type_name
 
-            funcsInfo[f.name]["args"]=[a.arg for a in f.args.args]
-            rs = [ node for node in ast.walk(f) if isinstance(node, (ast.Return, ))]
+            funcsInfo[f.name]["args"] = [a.arg for a in f.args.args]
+            rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
             funcsInfo[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcsInfo[f.name]["min_max_lineno"] = self._compute_interval(f)
         return funcsInfo
 
-
-
-    def _get_ids(self,elt):
+    def _get_ids(self, elt):
         """_get_ids extracts identifiers if present. 
          If not return None
 
@@ -282,10 +280,10 @@ class Code_Inspection:
         :param ast.node elt: AST node
         :return list: list of identifiers
         """
-        if isinstance(elt, (ast.List, )) or isinstance(elt, (ast.Tuple, )):
+        if isinstance(elt, (ast.List,)) or isinstance(elt, (ast.Tuple,)):
             # For tuple or list get id of each item if item is a Name
-            return [x.id for x in elt.elts if isinstance(x, (ast.Name, ))]
-        if isinstance(elt, (ast.Name, )):
+            return [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
+        if isinstance(elt, (ast.Name,)):
             return [elt.id]
 
     def _compute_interval(self, node):
@@ -302,7 +300,7 @@ class Code_Inspection:
             if hasattr(node, "lineno"):
                 min_lineno = min(min_lineno, node.lineno)
                 max_lineno = max(max_lineno, node.lineno)
-        return {"min_lineno" :min_lineno, "max_lineno": max_lineno + 1}
+        return {"min_lineno": min_lineno, "max_lineno": max_lineno + 1}
 
     def _formatFlow(self, s):
         """_formatFlow reformats the control flow output
@@ -314,8 +312,8 @@ class Code_Inspection:
         """
 
         result = ""
-        shifts = []     # positions of opening '<'
-        pos = 0         # symbol position in a line
+        shifts = []  # positions of opening '<'
+        pos = 0  # symbol position in a line
         nextIsList = False
 
         def IsNextList(index, maxIndex, buf):
@@ -327,7 +325,7 @@ class Code_Inspection:
                 if buf[index + 1] == '\n' and buf[index + 2] == '<':
                     return True
             return False
-  
+
         maxIndex = len(s) - 1
         for index in range(len(s)):
             sym = s[index]
@@ -366,68 +364,69 @@ class Code_Inspection:
         return result
 
 
-def create_output_dirs(outputDir):
-       """create_output_dirs creates two subdirectories
+def create_output_dirs(output_dir):
+    """create_output_dirs creates two subdirectories
        to save the results. ControlFlow to save the
        cfg information (txt and PNG) and JsonFiles to
        save the aggregated json file with all the information
        extracted per file. 
 
-       :param str outputDir: Output Directory in which the new subdirectories
+       :param str output_dir: Output Directory in which the new subdirectories
                           will be created.
        """
 
-       controlFlowDir=outputDir+"/ControlFlow"
+    control_flow_dir = output_dir + "/ControlFlow"
 
-       if not os.path.exists(controlFlowDir):
-           print("Creating cf %s" % controlFlowDir)
-           os.makedirs(controlFlowDir)
-       else:
-           pass
-       jsonDir= outputDir+"/JsonFiles"
+    if not os.path.exists(control_flow_dir):
+        print("Creating cf %s" % control_flow_dir)
+        os.makedirs(control_flow_dir)
+    else:
+        pass
+    jsonDir = output_dir + "/JsonFiles"
 
-       if not os.path.exists(jsonDir):
-           print("Creating jsDir:%s" %jsonDir)
-           os.makedirs(jsonDir)
-       else:
-           pass
-       return controlFlowDir, jsonDir
-        
+    if not os.path.exists(jsonDir):
+        print("Creating jsDir:%s" % jsonDir)
+        os.makedirs(jsonDir)
+    else:
+        pass
+    return control_flow_dir, jsonDir
+
+
 @click.command()
-@click.option('-p', '--input_path', type=str, required=True, help="input path of the file or directory to inspect")
-@click.option('-f', '--fig', type=bool, is_flag=True,  help="activate the control_flow figure generator")
-@click.option('-o', '--output_dir', type = str, default ="OutputDir", help = "output directory path to store results. If the directory does not exist, the tool will create it")
-
-def main(input_path,fig, output_dir):
+@click.option('-p', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
+@click.option('-f', '--fig', type=bool, is_flag=True, help="activate the control_flow figure generator.")
+@click.option('-o', '--output_dir', type=str, default="OutputDir",
+              help="output directory path to store results. If the directory does not exist, the tool will create it.")
+def main(input_path, fig, output_dir):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
     if os.path.isfile(input_path):
-        cfDir, jsonDir=create_output_dirs(output_dir)
-        code_info=Code_Inspection(input_path,cfDir, jsonDir, fig)
+        cfDir, jsonDir = create_output_dirs(output_dir)
+        code_info = CodeInspection(input_path, cfDir, jsonDir, fig)
 
     else:
-       dirInfo={}
-       for subdir, dirs, files in os.walk(input_path):
-           dirs[:] = [d for d in dirs if not d.startswith('.')]
-           dirs[:] = [d for d in dirs if not d.startswith('__')]
-           files = [f for f in files if not f.startswith('.')]
-           files = [f for f in files if not f.startswith('__')]
-           for f in files:
-               if ".py" in f:
-                   try: 
-                       path=os.path.join(subdir, f)
-                       outputDir=output_dir+"/"+os.path.basename(subdir)
-                       cfDir, jsonDir=create_output_dirs(outputDir)
-                       code_info=Code_Inspection(path,cfDir, jsonDir, fig)
-                       dirInfo[outputDir]=code_info.fileJson
-                   except:
-                       continue
+        dirInfo = {}
+        for subdir, dirs, files in os.walk(input_path):
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            dirs[:] = [d for d in dirs if not d.startswith('__')]
+            files = [f for f in files if not f.startswith('.')]
+            files = [f for f in files if not f.startswith('__')]
+            for f in files:
+                if ".py" in f:
+                    try:
+                        path = os.path.join(subdir, f)
+                        outputDir = output_dir + "/" + os.path.basename(subdir)
+                        cfDir, jsonDir = create_output_dirs(outputDir)
+                        code_info = CodeInspection(path, cfDir, jsonDir, fig)
+                        dirInfo[outputDir] = code_info.fileJson
+                    except:
+                        continue
 
-       json_file=outputPath + "/DirectoryInfo.json" 
-       with open(json_file, 'w') as outfile:
-           json.dump(dirInfo, outfile)
+        json_file = output_dir + "/DirectoryInfo.json"
+        with open(json_file, 'w') as outfile:
+            json.dump(dirInfo, outfile)
 
 
 if __name__ == "__main__":
