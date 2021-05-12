@@ -207,17 +207,17 @@ class CodeInspection:
         :return dictionary: a dictionary with the all information extracted (at file level)
         """
 
-        FileDict = {}
-        FileDict["file"] = self.fileInfo
-        FileDict["dependencies"] = self.depInfo
-        FileDict["classes"] = self.classesInfo
-        FileDict["functions"] = self.funcsInfo
-        FileDict["controlflow"] = self.controlFlowInfo
+        file_dict = {}
+        file_dict["file"] = self.fileInfo
+        file_dict["dependencies"] = self.depInfo
+        file_dict["classes"] = self.classesInfo
+        file_dict["functions"] = self.funcsInfo
+        file_dict["controlflow"] = self.controlFlowInfo
 
         json_file = self.outJsonPath + "/" + self.fileInfo["fileNameBase"] + ".json"
         with open(json_file, 'w') as outfile:
-            json.dump(FileDict, outfile)
-        return FileDict
+            json.dump(prune_json(file_dict), outfile)
+        return file_dict
 
     def _f_definitions(self, functions_definitions):
         """_f_definitions extracts the name, args, doscstring 
