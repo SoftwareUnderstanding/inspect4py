@@ -8,9 +8,14 @@ Given a folder with code, `code_inspector` will:
 
 - Extract all classes in the code
 - For each class, extract all its methods.
-- For each class and method, extract its docum
+- For each class, extract all its imported modules and how each module is imported as.
+- For each class and method, extract its documentation, including parameters, and accepted values.
+- Record the control flow of each doe file.
 
-Code inspector currently works only for Python projects
+All metadata is extracted as a JSON file.
+
+
+Code inspector currently works **only for Python projects**.
 
 ## Dependencies:
 
