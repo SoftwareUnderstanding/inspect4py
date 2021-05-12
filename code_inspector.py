@@ -177,7 +177,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all dependencies information extracted
         """
 
-        depInfo = []#{}
+        depInfo = []
         for node in ast.iter_child_nodes(self.tree):
             if isinstance(node, ast.Import):
                 module = []
@@ -207,17 +207,17 @@ class CodeInspection:
         :return dictionary: a dictionary with the all information extracted (at file level)
         """
 
-        FileDict = {}
-        FileDict["file"] = self.fileInfo
-        FileDict["dependencies"] = self.depInfo
-        FileDict["classes"] = self.classesInfo
-        FileDict["functions"] = self.funcsInfo
-        FileDict["controlflow"] = self.controlFlowInfo
+        file_dict = {}
+        file_dict["file"] = self.fileInfo
+        file_dict["dependencies"] = self.depInfo
+        file_dict["classes"] = self.classesInfo
+        file_dict["functions"] = self.funcsInfo
+        file_dict["controlflow"] = self.controlFlowInfo
 
         json_file = self.outJsonPath + "/" + self.fileInfo["fileNameBase"] + ".json"
         with open(json_file, 'w') as outfile:
-            json.dump(FileDict, outfile)
-        return FileDict
+            json.dump(prune_json(file_dict), outfile)
+        return file_dict
 
     def _f_definitions(self, functions_definitions):
         """_f_definitions extracts the name, args, doscstring 
@@ -417,14 +417,50 @@ def main(input_path, fig, output_dir):
                         out_dir = output_dir + "/" + os.path.basename(subdir)
                         cf_dir, json_dir = create_output_dirs(out_dir)
                         code_info = CodeInspection(path, cf_dir, json_dir, fig)
-                        dir_info[out_dir] = code_info.fileJson
+                        if out_dir not in dir_info:
+                            dir_info[out_dir] = [code_info.fileJson]
+                        else:
+                            dir_info[out_dir].append(code_info.fileJson)
                     except:
-                        print("Error when processing "+f)
+                        print("Error when processing "+f+": ", sys.exc_info()[0])
                         continue
 
         json_file = output_dir + "/DirectoryInfo.json"
+        pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
-            json.dump(prune_json(dir_info), outfile)
+            json.dump(pruned_json, outfile)
+        print_summary(dir_info)
+
+
+def print_summary(json_dict):
+    """
+    This method prints a small summary of the classes and properties recognized during the analysis.
+    At the moment this method is only invoked when a directory with multiple files is passed.
+    """
+    folders = 0
+    files = 0
+    dependencies = 0
+    functions = 0
+    classes = 0
+    for key, value in json_dict.items():
+        if "/" in key:
+            folders += 1
+        if isinstance(value, list):
+            for element in value:
+                files += 1
+                if element["dependencies"]:
+                    dependencies += len(element["dependencies"])
+                if element["functions"]:
+                    functions += len(element["functions"])
+                if element["classes"]:
+                    classes += len(element["classes"])
+    print("Analysis completed")
+    print("Total number of folders processed (root folder is considered a folder):", folders)
+    print("Total number of files found: ", files)
+    print("Total number of classes found: ", classes)
+    print("Total number of dependencies found in those files", dependencies)
+    print("Total number of functions parsed: ", functions)
+
 
 def prune_json(json_dict):
     """
