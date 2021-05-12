@@ -177,7 +177,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all dependencies information extracted
         """
 
-        depInfo = []#{}
+        depInfo = []
         for node in ast.iter_child_nodes(self.tree):
             if isinstance(node, ast.Import):
                 module = []
@@ -417,14 +417,25 @@ def main(input_path, fig, output_dir):
                         out_dir = output_dir + "/" + os.path.basename(subdir)
                         cf_dir, json_dir = create_output_dirs(out_dir)
                         code_info = CodeInspection(path, cf_dir, json_dir, fig)
-                        dir_info[out_dir] = code_info.fileJson
+                        if out_dir not in dir_info:
+                            dir_info[out_dir] = [code_info.fileJson]
+                        else:
+                            dir_info[out_dir].append(code_info.fileJson)
                     except:
-                        print("Error when processing "+f)
+                        print("Error when processing "+f+": ", sys.exc_info()[0])
                         continue
 
         json_file = output_dir + "/DirectoryInfo.json"
         with open(json_file, 'w') as outfile:
             json.dump(prune_json(dir_info), outfile)
+
+
+def print_summary(json_dict):
+    """
+    This method prints a small summary of the classes and properties recognized during the analysis.
+    At the moment this method is only invoked when a directory with multiple files is passed.
+    """
+
 
 def prune_json(json_dict):
     """
