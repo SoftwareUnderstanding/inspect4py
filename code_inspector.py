@@ -403,11 +403,11 @@ def main(input_path, fig, output_dir):
         sys.exit()
 
     if os.path.isfile(input_path):
-        cfDir, jsonDir = create_output_dirs(output_dir)
-        code_info = CodeInspection(input_path, cfDir, jsonDir, fig)
+        cf_dir, json_dir = create_output_dirs(output_dir)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
 
     else:
-        dirInfo = {}
+        dir_info = {}
         for subdir, dirs, files in os.walk(input_path):
             dirs[:] = [d for d in dirs if not d.startswith('.')]
             dirs[:] = [d for d in dirs if not d.startswith('__')]
@@ -417,17 +417,47 @@ def main(input_path, fig, output_dir):
                 if ".py" in f:
                     try:
                         path = os.path.join(subdir, f)
-                        outputDir = output_dir + "/" + os.path.basename(subdir)
-                        cfDir, jsonDir = create_output_dirs(outputDir)
-                        code_info = CodeInspection(path, cfDir, jsonDir, fig)
-                        dirInfo[outputDir] = code_info.fileJson
+                        out_dir = output_dir + "/" + os.path.basename(subdir)
+                        cf_dir, json_dir = create_output_dirs(out_dir)
+                        code_info = CodeInspection(path, cf_dir, json_dir, fig)
+                        dir_info[out_dir] = code_info.fileJson
                     except:
+                        print("Error when processing "+f)
                         continue
 
         json_file = output_dir + "/DirectoryInfo.json"
         with open(json_file, 'w') as outfile:
-            json.dump(dirInfo, outfile)
+            json.dump(prune_json(dir_info), outfile)
+
+def prune_json(json_dict):
+    """
+    Method that given a JSON object, removes all its empty fields.
+    This method simplifies the resultant JSON.
+
+    :param json_dict input JSON file to prune
+    :return JSON file removing empty values
+    """
+    final_dict = {}
+    if not (isinstance(json_dict, dict)):
+        # Ensure the element provided is a dict
+        return json_dict
+    else:
+        for a, b in json_dict.items():
+            if b:
+                if isinstance(b, dict):
+                    aux_dict = prune_json(b)
+                    if aux_dict: # Remove empty dicts
+                        final_dict[a] = aux_dict
+                elif isinstance(b, list):
+                    aux_list = list(filter(None, [prune_json(i) for i in b]))
+                    if len(aux_list) >0: # Remove empty lists
+                        final_dict[a] = aux_list
+                else:
+                    final_dict[a] = b
+    return final_dict
 
 
 if __name__ == "__main__":
     main()
+
+
