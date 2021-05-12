@@ -426,8 +426,10 @@ def main(input_path, fig, output_dir):
                         continue
 
         json_file = output_dir + "/DirectoryInfo.json"
+        pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
-            json.dump(prune_json(dir_info), outfile)
+            json.dump(pruned_json, outfile)
+        print_summary(dir_info)
 
 
 def print_summary(json_dict):
@@ -435,6 +437,29 @@ def print_summary(json_dict):
     This method prints a small summary of the classes and properties recognized during the analysis.
     At the moment this method is only invoked when a directory with multiple files is passed.
     """
+    folders = 0
+    files = 0
+    dependencies = 0
+    functions = 0
+    classes = 0
+    for key, value in json_dict.items():
+        if "/" in key:
+            folders += 1
+        if isinstance(value, list):
+            for element in value:
+                files += 1
+                if element["dependencies"]:
+                    dependencies += len(element["dependencies"])
+                if element["functions"]:
+                    functions += len(element["functions"])
+                if element["classes"]:
+                    classes += len(element["classes"])
+    print("Analysis completed")
+    print("Total number of folders processed (root folder is considered a folder):", folders)
+    print("Total number of files found: ", files)
+    print("Total number of classes found: ", classes)
+    print("Total number of dependencies found in those files", dependencies)
+    print("Total number of functions parsed: ", functions)
 
 
 def prune_json(json_dict):
