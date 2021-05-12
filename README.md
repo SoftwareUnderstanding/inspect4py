@@ -1,8 +1,18 @@
 # code_inspector
 
-The code_inspector allows the user to inspect a file or files within directory 
-(and its subdirectories) and extract all the most relevant information, 
-such as documentations, classes (and their methods), functions, etc.
+Library to allow users inspect a software project folder (i.e., a directory and its subdirectories) and extract all the most relevant information, such as class, method and parameter documentation, classes (and their methods), functions, etc.
+
+## Features:
+
+Given a folder with code, `code_inspector` will:
+
+- Extract all classes in the code
+- For each class, extract all its methods.
+- For each class and method, extract its docum
+
+Code inspector currently works only for Python projects
+
+## Dependencies:
 
 It uses [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
 the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating
@@ -26,6 +36,8 @@ For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/d
 
 ## Install
 
+### Installation from code
+
 First, make sure you have graphviz installed:
 
 ```
@@ -41,7 +53,39 @@ Then, prepare a virtual Python3 enviroment and install the required packages.
   - docstring_parser==0.7
   - astor
   - graphviz
+  - click
 
+### Installation through Docker
+
+First, you will need to have [Docker](https://docs.docker.com/get-started/) installed.
+
+Next, clone this repository:
+
+```
+git clone https://github.com/rosafilgueira/code_inspector/
+```
+
+Generate a Docker image for code_inspector:
+
+```
+docker build --tag inspector:1.0 .
+```
+
+Run code_inspector (you will have to copy the target data inside the image for analysis):
+
+```
+docker run -it --rm --entrypoint "/bin/bash" inspector:1.0
+```
+
+And then run `code_inspector` following the commands outlined in the sections below
+
+
+Other useful commands when using Docker:
+```
+docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
+docker run -it --entrypoint "/bin/bash" inspector:1.0
+docker image rm -f inspector:1.0
+```
 
 ## Execution
 
@@ -53,11 +97,13 @@ The tool by default stores the results in the "OutputDir" directory, but users c
 And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use -f or --fig.  
 
 
-`python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir"]`
+```
+python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir"]
+```
 
 For clarity, we have added the help option to explain each input parameters
 
-`python code_inspector.py --help
+```python code_inspector.py --help
 Usage: code_inspector.py [OPTIONS]
 
 Options:
@@ -65,9 +111,9 @@ Options:
                          [required]
   -f, --fig              activate the control_flow figure generator
   -o, --output_dir TEXT  output directory path to store results. If the
-                         directory does not exit, the tool will create it
+                         directory does not exist, the tool will create it
   --help                 Show this message and exit.
-`
+```
 
 ## Outputs
 
@@ -79,7 +125,7 @@ Options:
 
 * If the input is a **directory**, the tool will create the previous directories (**JsonFiles** and **ControlFlow**) but per **directory** and its **subdirectories** instead, under **OutputDir**, storing all the information extracted per file found in each directory and/or subdirectory. The **OutputDir** directory will have the same subdirectory structure as the input directory given by the user. Furthermore, in order to facilitate the inspection of all the features extracted for a given directory (and its subdirectories), we have aggreagated all the previous json information in a **single json file** stored at **OutputDir/DirectoryInfo.json**.In other words, **OutputDir/DirectoryInfo.json**, represents all the features extracted of all files found in a given directory (and its subdirectories). 
 
-## JSON FILE
+### JSON FILE
 
 * File features:
 ```
@@ -203,69 +249,30 @@ Options:
 	- png: Path of the cfg as a PNG
 
 ```
-## Test
+## Example
 
-  We have executed our tool with itself.
+The easiest example is to run `code_inspector` against itself:
 
   `python code_inspector.py -p code_inspector.py -f`
 
 
-  Results of this test are available here:
+Results of this run include a JSON file and a control flow file
 
-* [Json File](./OutputDir/JsonFiles) 
-* [Control Flow](./OutputDir/ControlFlow)
-
-Notice how our tool, has automatically created two subdirectories inside **OuptuDir**, JsonFiles and ControlFlow.
-Futhermore, out tool has saved the extracted information in a json file with the same NameBase as the file to inspect
-(in this case **code_inspector.py**). And it also has saved the control flow (as a text and as a figure) in a similar maner, 
-inside the ControlFlow directory (using also the same NameBase as the file to inspect). 
-
-See bellow for more clarity:
-
-```
-  > ls OuptuDir
-   JsonFiles	ControlFlow
-  > cd OutputDir
-  > ls JsonFiles/
-   code_inspector.json
-  > ls ControlFlow/
-    code_inspector.png	code_inspector.txt
-```
-
-We have loaded the [code_inspector.json](./OutputDir/JsonFiles/code_inspector.json) into a 
-[online json viewer](http://jsonviewer.stack.hu/), and the result was this:    
-
-
-![code_inspector_json_viewer](./code_inspector_json_viewer.png)
+If no output directory is specified, `code_inspector` will place the documentation in **OuptuDir**, including a JSON File and a control flow file for each code file found in the analyzed directory.
 
 ## Visualizing results
+
+We include visualization tools to explore the results in an easy manner. Below we show some visualizations of the results for `code_inspector` code:
 
 ```
 python code_visualization.py OutputDir/JsonFiles/<FILE>.json 
 ```
+ 
 
-**Note**: For simplicy I have commented the "long_description" of docs to avoid displaying them in the figures. 
+### Example 1: visualizing code_visualization.py
 
-#### Example 1: visualizing the code_visualization.py
+![visualization_code_visualization](docs/images/visual_code.png )
 
-![visualization_code_visualization](./visual_code.png )
+### Example 2: visualizing code_inspector.py
 
-#### Example 2: visualizing the code_inspector.py
-
-![visualization_code_inspector](./visual_code_inspector.png)
-
-### Experiment - Code Inspector & Docker
-
-Create a Docker to clone a repository and run the code_inspector
-
-```
-docker build --tag repository_inspector:1.0 .
-```
-
-Notes - Useful commands
-```
-docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
-docker run -it --entrypoint "/bin/bash" repository_inspector:1.0
-docker image rm -f repository_inspector:1.0
-```
-
+![visualization_code_inspector](docs/images/visual_code_inspector.png)
