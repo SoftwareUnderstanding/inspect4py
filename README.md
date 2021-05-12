@@ -112,7 +112,7 @@ For clarity, we have added the help option to explain each input parameters
 Usage: code_inspector.py [OPTIONS]
 
 Options:
-  -p, --input_path TEXT  input path of the file or directory to inspect
+  -i, --input_path TEXT  input path of the file or directory to inspect
                          [required]
   -f, --fig              activate the control_flow figure generator
   -o, --output_dir TEXT  output directory path to store results. If the
@@ -258,7 +258,7 @@ Options:
 
 The easiest example is to run `code_inspector` against itself:
 
-  `python code_inspector.py -p code_inspector.py -f`
+  `python code_inspector.py -i code_inspector.py -f`
 
 
 Results of this run include a JSON file and a control flow file

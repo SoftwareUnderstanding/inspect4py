@@ -393,7 +393,7 @@ def create_output_dirs(output_dir):
 
 
 @click.command()
-@click.option('-p', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
+@click.option('-i', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
 @click.option('-f', '--fig', type=bool, is_flag=True, help="activate the control_flow figure generator.")
 @click.option('-o', '--output_dir', type=str, default="OutputDir",
               help="output directory path to store results. If the directory does not exist, the tool will create it.")
