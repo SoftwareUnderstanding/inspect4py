@@ -177,8 +177,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all dependencies information extracted
         """
 
-        depInfo = {}
-        num = 0
+        depInfo = []#{}
         for node in ast.iter_child_nodes(self.tree):
             if isinstance(node, ast.Import):
                 module = []
@@ -190,12 +189,10 @@ class CodeInspection:
             else:
                 continue
             for n in node.names:
-                d_name = "dep_" + str(num)
-                depInfo[d_name] = {}
-                depInfo[d_name]["from_module"] = module
-                depInfo[d_name]["import"] = n.name.split('.')
-                depInfo[d_name]["alias"] = n.asname
-                num = num + 1
+                current_dep = {"from_module": module,
+                               "import": n.name.split('.'),
+                               "alias": n.asname}
+                depInfo.append(current_dep)
 
         return depInfo
 
