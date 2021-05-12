@@ -12,3 +12,4 @@ Scripts/*
 *.json
 *.ttl
 OutputDir/
+defoe/*
