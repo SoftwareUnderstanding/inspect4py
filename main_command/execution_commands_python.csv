@@ -1,0 +1,68 @@
+repository,type,command,mandatory parameters,parameters,comments
+rosafilgueira/code_inspector,script,python code_inspector.py,-i (alias: --input_path),"  -i, --input_path TEXT  input path of the file or directory to inspect
+                         [required]
+  -f, --fig              activate the control_flow figure generator
+  -o, --output_dir TEXT  output directory path to store results. If the
+                         directory does not exist, the tool will create it
+  --help                 Show this message and exit.",Not considering “help” or “version” as options for running the software
+KnowledgeCaptureAndDiscovery/somef/,package,"somef [describe, configure]",somef describe [-r|-d|-i] [-o|-c|-g],"Usage: somef describe [OPTIONS]
+
+  Running the Command Line Interface
+
+Options:
+  -t, --threshold FLOAT           Threshold to classify the text  [required]
+  Input: [mutually_exclusive, required]
+    -r, --repo_url URL            Github Repository URL
+    -d, --doc_src PATH            Path to the README file source
+    -i, --in_file PATH            A file of newline separated links to GitHub
+                                  repositories
+
+  Output: [required_any]
+    -o, --output PATH             Path to the output file. If supplied, the
+                                  output will be in JSON
+
+    -c, --codemeta_out PATH       Path to an output codemeta file
+    -g, --graph_out PATH          Path to the output Knowledge Graph export
+                                  file. If supplied, the output will be a
+                                  Knowledge Graph, in the format given in the
+                                  --format option chosen (turtle, json-ld)
+
+  -f, --graph_format [turtle|json-ld]
+                                  If the --graph_out option is given, this is
+                                  the format that the graph will be stored in
+
+  -p, --pretty                    Pretty print the JSON output file so that it
+                                  is easy to compare to another JSON output
+                                  file.
+
+  -m, --missing                   JSON report with the missing metadata fields
+                                  SOMEF was not able to find. The report will
+                                  be placed in  $PATH_missing.json, where
+                                  $PATH is -o, -c or -g.
+
+  -h, --help                      Show this message and exit.",
+usc-isi-i2/kgtk/,package,kgtk [command] [options],kgtk [command] [-i] [-o],too many to show,Can we try to find the commands that are usually important?
+LinkedEarth/Pyleoclim_util,library,import pyleoclim,no parameters,N/A,Is this within our scope? Shall we recognize what are the callable functions?
+ PyLops/pylops ,library,import pylops,no parameters,N/A,We could recognize all commands/functions.
+Toblerity/Shapely,library,"from shapely.geaometry import mapping, shape",no parameters,N/A,We could recognize all commands/functions.
+zhiqiangdon/CU-Net,script,python main.py,"--root_path ~/data --video_path kinetics_videos/jpg --annotation_path kinetics.json \
+--result_path results --dataset kinetics --model resnet \
+--model_depth 50 --n_classes 700 --batch_size 128 --n_threads 4 --checkpoint 5",Not sure if they are mandatory or optional,
+pyvista/pyvista,library,import pyvista,no parameters,N/A,We could recognize all commands/functions.
+usc-isi-i2/kgtk-browser,service,flask run,,,Need to export a few parameters before running
+usc-isi-i2/wikidata-property-finder,service,python app.py,,,"You would run it with http://localhost:12576/search?label=<str> Shall we look for how to actually do the request using the service? This may require understanding an API, which is not trivial"
+oeg-upm/Chowlk,service,python app.py,,,"Questions: What is the URL, port where it is deployed?"
+oeg-upm/morph-csv,script,python3 morphcsv.py,-c path-to-config-file.json -q path-to-query-file.rq,Everything is through configurations,
+modflowpy/flopy,library,import flopy,,"Example: sim = flopy.mf6.MFSimulation(sim_name=name, sim_ws=ws, exe_name='mf6')",
+mintproject/cromo,package,cromo,search start,,
+pySRURGS/pySRURGS,package,python3 pySRURGS.py,[train | iters],"[-memoize_funcs] [-run_ID RUN_ID] [-single] [-count]
+                   [-benchmarks] [-plotting]
+                   [-funcs_arity_two FUNCS_ARITY_TWO]
+                   [-funcs_arity_one FUNCS_ARITY_ONE]
+                   [-max_num_fit_params MAX_NUM_FIT_PARAMS]
+                   [-max_permitted_trees MAX_PERMITTED_TREES]
+                   [-path_to_db PATH_TO_DB]",
+gacou54/pyorthanc/,library,from pyorthanc import Orthanc,,,
+KnowledgeCaptureAndDiscovery/ClimComp,script,python ClimComp.py,path dataset_source flagP min_lon max_lon min_lat max_lat min_month max_month year,no optional parameters,
+clementranc/moana,library,import moana,,,
+Maarten-vd-Sande/qnorm/,package,qnorm ,table (input),[-h | -v],
