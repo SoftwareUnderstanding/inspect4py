@@ -34,11 +34,6 @@ flow of each input file(s), by using another two libraries:
 For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
  
 
-## Ideas for tool's name:
- - kodeXplain
- - sofexplain
- - kode_inspector
-
 ## Install
 
 ### Installation from code
