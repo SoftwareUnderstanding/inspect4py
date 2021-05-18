@@ -24,8 +24,9 @@ import tokenize
 import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as docParse
-
+from structure_tree import DisplayablePath
 from staticfg import builder
+from pathlib import Path
 
 
 class CodeInspection:
@@ -425,6 +426,7 @@ def main(input_path, fig, output_dir):
                         print("Error when processing "+f+": ", sys.exc_info()[0])
                         continue
 
+        repository_tree(input_path)
         json_file = output_dir + "/DirectoryInfo.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
@@ -488,6 +490,12 @@ def prune_json(json_dict):
                 else:
                     final_dict[a] = b
     return final_dict
+
+
+def repository_tree(input_path): 
+    paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda path: True if path.name not in ('.git',  '__pycache__') else False)
+    for path in paths:
+        print(path.displayable())
 
 
 if __name__ == "__main__":
