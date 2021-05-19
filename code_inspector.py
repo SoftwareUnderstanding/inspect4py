@@ -24,7 +24,7 @@ import tokenize
 import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as docParse
-from structure_tree import DisplayablePath
+from structure_tree import DisplayablePath, get_directory_structure
 from staticfg import builder
 from pathlib import Path
 
@@ -426,11 +426,13 @@ def main(input_path, fig, output_dir):
                         print("Error when processing "+f+": ", sys.exc_info()[0])
                         continue
 
-        repository_tree(input_path)
+        dir_tree=directory_tree(input_path, 1)
+        dir_info["dir_tree"]=dir_tree
         json_file = output_dir + "/DirectoryInfo.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
             json.dump(pruned_json, outfile)
+            #json.dump(dir_info, outfile)
         print_summary(dir_info)
 
 
@@ -492,10 +494,15 @@ def prune_json(json_dict):
     return final_dict
 
 
-def repository_tree(input_path): 
-    paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda path: True if path.name not in ('.git',  '__pycache__') else False)
-    for path in paths:
-        print(path.displayable())
+def directory_tree(input_path, visual=0): 
+    ignore_set = ('.git', '__pycache__')
+    if visual:
+        paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda path: True if path.name not in ignore_set else False)
+        for path in paths:
+            print(path.displayable())
+    
+    dir=get_directory_structure(input_path, ignore_set)
+    return dir
 
 
 if __name__ == "__main__":
