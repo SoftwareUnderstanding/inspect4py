@@ -426,13 +426,13 @@ def main(input_path, fig, output_dir):
                         print("Error when processing "+f+": ", sys.exc_info()[0])
                         continue
 
+        #Note:1 for visualising the tree, nothing or 0 for not.
         dir_tree=directory_tree(input_path, 1)
         dir_info["dir_tree"]=dir_tree
         json_file = output_dir + "/DirectoryInfo.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
             json.dump(pruned_json, outfile)
-            #json.dump(dir_info, outfile)
         print_summary(dir_info)
 
 
