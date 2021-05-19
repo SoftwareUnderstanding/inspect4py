@@ -1,5 +1,7 @@
 from pathlib import Path
+from functools import reduce
 import sys
+import os
 
 class DisplayablePath(object):
     display_filename_prefix_middle = '├──'
@@ -75,4 +77,35 @@ class DisplayablePath(object):
             parent = parent.parent
 
         return ''.join(reversed(parts))
+
+
+def get_directory_structure(rootdir, ignore_set):
+    """
+    Creates a nested dictionary that represents the folder structure of rootdir
+    """
+    dir = {}
+    rootdir = rootdir.rstrip(os.sep)
+    start = rootdir.rfind(os.sep) + 1
+    for path, dirs, files in os.walk(rootdir):
+         ignore=0
+         folders = path[start:].split(os.sep)
+         for i in ignore_set:
+             if i in folders:
+                 ignore=1
+             
+         if not ignore:
+             subdir = dict.fromkeys(files)
+             subdir=  dict_clean(subdir) 
+             parent = reduce(dict.get, folders[:-1], dir)
+             parent[folders[-1]] = subdir
+    
+    return dir
+
+def dict_clean(dict):
+    result = {}
+    for key, value in dict.items():
+        if value is None:
+            value = 'file'
+        result[key] = value
+    return result
 
