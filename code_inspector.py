@@ -197,6 +197,37 @@ class CodeInspection:
 
         return depInfo
 
+
+   
+    def _ast_if_main(self):
+        """ method for getting if the file has a if __name__ == "__main__"
+            and if it calls a method (e.g. main, version) or not. 
+        :param self self: represent the instance of the class
+        :return main_info : dictionary with a flag stored in "main_flag" (1 if the if __name__ == main is found, 0 otherwise) 
+         and then "main_function" with the name of the function that is called.
+        """
+        
+        if_main_definitions = [node for node in self.tree.body if isinstance(node, ast.If)]
+        if_main_flag = 0 
+        if_main_func = ""
+        main_info={}
+ 
+        for x in if_main_definitions:
+            try:
+                if x.test.comparators[0].s == "__main__" :
+                    if_main_flag = 1 
+            
+                for i in x.body:
+                    if i.value.func.id:
+                        if_main_func = i.value.func.id
+                break 
+            except:
+                pass
+
+        main_info["main_flag"] = if_main_flag
+        main_info["main_function"] = if_main_func
+        return main_info
+
     def file_json(self):
         """file_json method aggregates all the features previously
         extracted from a given file such as, functions, classes 
@@ -214,6 +245,7 @@ class CodeInspection:
         file_dict["classes"] = self.classesInfo
         file_dict["functions"] = self.funcsInfo
         file_dict["controlflow"] = self.controlFlowInfo
+        file_dict["main_info"] = self._ast_if_main()
 
         json_file = self.outJsonPath + "/" + self.fileInfo["fileNameBase"] + ".json"
         with open(json_file, 'w') as outfile:
