@@ -515,7 +515,7 @@ def prune_json(json_dict):
 
 
 def directory_tree(input_path, visual=0): 
-    ignore_set = ('.git', '__pycache__')
+    ignore_set = ('.git', '__pycache__', '.pyc')
     if visual:
         paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda path: True if path.name not in ignore_set else False)
         for path in paths:
