@@ -27,7 +27,10 @@ from docstring_parser import parse as docParse
 from structure_tree import DisplayablePath, get_directory_structure
 from staticfg import builder
 from pathlib import Path
-
+from distutils.core import run_setup
+from unittest import mock
+import setuptools
+import tempfile
 
 class CodeInspection:
     def __init__(self, path, outCfPath, outJsonPath, flag_png):
@@ -467,6 +470,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
         #Note:1 for visualising the tree, nothing or 0 for not.
         dir_tree=directory_tree(input_path, 1)
         dir_info["dir_tree"]=dir_tree
+        dir_info["dir_type"]=directory_type(dir_info, input_path)
         json_file = output_dir + "/DirectoryInfo.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
@@ -541,6 +545,63 @@ def directory_tree(input_path, visual=0):
     
     dir=get_directory_structure(input_path, ignore_set)
     return dir
+
+
+def inspect_setup(parent_dir):
+    sys.path.insert(0, parent_dir)
+    current_dir = os.getcwd()
+    os.chdir(parent_dir)
+    with tempfile.NamedTemporaryFile(prefix="setup_temp_", mode='w', dir=parent_dir, suffix='.py') as temp_fh:
+        with open(os.path.join(parent_dir, "setup.py"), 'r') as setup_fh:
+            temp_fh.write(setup_fh.read())
+            temp_fh.flush()
+        try:
+            with mock.patch.object(setuptools, 'setup') as mock_setup:
+                module_name = os.path.basename(temp_fh.name).split(".")[0]
+                __import__(module_name)
+        finally:
+            # need to blow away the pyc
+            try:
+                os.remove("%sc"%temp_fh.name)
+            except:
+                pass
+        args, kwargs = mock_setup.call_args
+        package_name = kwargs.get('name', "")
+        os.chdir(current_dir)
+        if "console_scripts" in sorted(kwargs.get('entry_points', [])):
+            return "package, pip install " + package_name
+        else:
+            return "library, import " + package_name
+
+
+def directory_type(dir_info, input_path):
+
+   for dir in dir_info["dir_tree"]:
+       for elem in dir_info["dir_tree"][dir]:
+          if "setup.py" == elem or "setup.cfg" == elem : 
+                  type=inspect_setup(input_path)
+                  return type
+
+   for key in dir_info:
+       for elem in dir_info[key]:
+           try:
+              for dep in elem["dependencies"]:
+                   for import_dep in dep["import"]:
+                        if ("Flask" in import_dep) or ("flask" in import_dep) or ("flask_restful" in import_dep):
+                                return "service"
+                   for from_mod_dep in dep["from_module"]:
+                        if ("Flask" in from_mod_dep) or ("flask" in from_mod_dep) or ("flask_restful" in from_mod_dep):
+                                return "service"
+           except:
+              pass
+
+   for key in dir_info:
+       for elem in dir_info[key]:
+           if "main_info" in elem:
+                   if elem["main_info"]["main_flag"]:
+                       return "script, python "+ elem["file"]["path"]
+   return "unknown"
+          
 
 
 if __name__ == "__main__":
