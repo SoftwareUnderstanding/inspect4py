@@ -425,9 +425,13 @@ def create_output_dirs(output_dir):
 @click.command()
 @click.option('-i', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
 @click.option('-f', '--fig', type=bool, is_flag=True, help="activate the control_flow figure generator.")
-@click.option('-o', '--output_dir', type=str, default="OutputDir",
+@click.option('-o', '--output_dir', type=str, default="OutputDir", 
               help="output directory path to store results. If the directory does not exist, the tool will create it.")
-def main(input_path, fig, output_dir):
+@click.option('-ignore_dir', '--ignore_dir_pattern', multiple=True, default=["."], 
+              help="ignore directories starting with a certain pattern. This parameter can be provided multiple times to ignore multiple directory patterns.")
+@click.option('-ignore_file', '--ignore_file_pattern', multiple=True, default=["."], 
+              help="ignore files starting with a certain pattern. This parameter can be provided multiple times to ignore multiple file patterns.")
+def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -439,10 +443,12 @@ def main(input_path, fig, output_dir):
     else:
         dir_info = {}
         for subdir, dirs, files in os.walk(input_path):
-            dirs[:] = [d for d in dirs if not d.startswith('.')]
-            dirs[:] = [d for d in dirs if not d.startswith('__')]
-            files = [f for f in files if not f.startswith('.')]
-            files = [f for f in files if not f.startswith('__')]
+            
+            for ignore_d in ignore_dir_pattern:
+                dirs[:] = [d for d in dirs if not d.startswith(ignore_d)]
+            
+            for ignore_f in ignore_dir_pattern:
+                files = [f for f in files if not f.startswith(ignore_f)]
             for f in files:
                 if ".py" in f:
                     try:
