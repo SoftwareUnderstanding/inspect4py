@@ -550,7 +550,7 @@ def inspect_setup(parent_dir):
         package_name = kwargs.get('name', "")
         os.chdir(current_dir)
         if "console_scripts" in sorted(kwargs.get('entry_points', [])):
-            return "package, pip install " + package_name + ", " + package_name + " + OPTIONS" 
+            return "package, pip install " + package_name + ", " + package_name + " --help" 
         else:
             return "library, pip install " + package_name + " import " + package_name
 
@@ -580,7 +580,7 @@ def directory_type(dir_info, input_path):
        for elem in dir_info[key]:
            if "main_info" in elem:
                    if elem["main_info"]["main_flag"]:
-                       return "script, python "+ elem["file"]["path"]
+                       return "script, python "+ elem["file"]["path"] + " --help"
    
    python_files=[]
    for dir in dir_info["dir_tree"]:
@@ -590,7 +590,7 @@ def directory_type(dir_info, input_path):
                python_files.append(elem)
 
    if len(python_files) == 1:
-       return "script, python " + python_files[0]
+       return "script, python " + python_files[0] 
    else:
        return "unknown, problably calling python with one of these files: " + ' '.join(map(str, python_files))     
 
