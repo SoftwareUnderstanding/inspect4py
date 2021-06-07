@@ -432,7 +432,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
             for ignore_f in ignore_dir_pattern:
                 files = [f for f in files if not f.startswith(ignore_f)]
             for f in files:
-                if ".py" in f:
+                if ".py" in f and not ".pyc" in f:
                     try:
                         path = os.path.join(subdir, f)
                         out_dir = output_dir + "/" + os.path.basename(subdir)
