@@ -600,8 +600,18 @@ def directory_type(dir_info, input_path):
            if "main_info" in elem:
                    if elem["main_info"]["main_flag"]:
                        return "script, python "+ elem["file"]["path"]
-   return "unknown"
-          
+   
+   python_files=[]
+   for dir in dir_info["dir_tree"]:
+       for elem in dir_info["dir_tree"][dir]:
+           print("elem is %s" % elem)
+           if ".py" in elem:
+               python_files.append(elem)
+
+   if len(python_files) == 1:
+       return "script, python " + python_files[0]
+   else:
+       return "unknown, problably calling python with one of these files: " + ' '.join(map(str, python_files))     
 
 
 if __name__ == "__main__":
