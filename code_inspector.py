@@ -550,9 +550,9 @@ def inspect_setup(parent_dir):
         package_name = kwargs.get('name', "")
         os.chdir(current_dir)
         if "console_scripts" in sorted(kwargs.get('entry_points', [])):
-            return "package, pip install " + package_name
+            return "package, pip install " + package_name + ", " + package_name + " + OPTIONS" 
         else:
-            return "library, import " + package_name
+            return "library, pip install " + package_name + " import " + package_name
 
 
 def directory_type(dir_info, input_path):
