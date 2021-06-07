@@ -1,18 +1,13 @@
 """Code Inspector
-
 This script parses a file or files within directory
 (and its subdirectories) to extract all the relevant information,
 such as documentation, classes (and their methods), functions, etc.
-
 To extract information from docstrings, we have started with the codes
 documented.
-
 This tool accepts (for now) only python code (.py)
-
 This script requires `ast`, `cdmcfparser` and `docsting_parse`
 be installed within the Python environment you are running 
 this script in.
-
 """
 
 import ast
@@ -27,7 +22,6 @@ from docstring_parser import parse as docParse
 from structure_tree import DisplayablePath, get_directory_structure
 from staticfg import builder
 from pathlib import Path
-from distutils.core import run_setup
 from unittest import mock
 import setuptools
 import tempfile
@@ -35,7 +29,6 @@ import tempfile
 class CodeInspection:
     def __init__(self, path, outCfPath, outJsonPath, flag_png):
         """ init method initiliazes the Code_Inspection object
-
         :param self self: represent the instance of the class
         :param str path: the file to inspect
         :param str outCfPath: the output directory to store the control flow information
@@ -58,7 +51,6 @@ class CodeInspection:
 
     def parser_file(self):
         """ parse_file method parsers a file as an AST tree
-
         :param self self: represent the instance of the class
         :return ast.tree: the file as an ast tree
         """
@@ -71,7 +63,6 @@ class CodeInspection:
         Those features are path, fileNameBase, extension, docstring
 	The method support several levels of docstrings extraction,
         such as file's long, short a full descrition.
-
         :param self self: represent the instance of the class
         :return dictionary a dictionary with the file information extracted
         """
@@ -94,7 +85,6 @@ class CodeInspection:
         extracting the controlflow of a file. One as a
         text and another as a figure (PNG/PDF/DOT).   
         
-
         :param self self: represent the instance of the class
         :param str format: represent the format to save the figure
         :return dictionary: a dictionary with the all information extracted (at file level)
@@ -122,7 +112,6 @@ class CodeInspection:
     def inspect_functions(self):
         """ inspect_functions detects all the functions in a AST tree, and calls
         to _f_definitions method to extracts all the features at function level.
-
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all functions information extracted
         """
@@ -134,11 +123,9 @@ class CodeInspection:
         """ inspect_classes detecs all the classes and their methods,
          and extracts their features. It also calls to _f_definitions method
         to extract features at method level.
-
         The features extracted are name, docstring (this information is further analysed
         and classified into several categories), extends, start
         and end of the line and methods.
-
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all classes information extracted
         """
@@ -176,7 +163,6 @@ class CodeInspection:
     def inspect_dependencies(self):
         """ inspect_dependencies method extracts the features at dependencies level.
         Those features are module , name, and alias.
-
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all dependencies information extracted
         """
@@ -237,7 +223,6 @@ class CodeInspection:
         and dependencies levels into the same dictionary.
         
         It also writes this new dictionary to a json file.
-
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all information extracted (at file level)
         """
@@ -258,12 +243,10 @@ class CodeInspection:
     def _f_definitions(self, functions_definitions):
         """_f_definitions extracts the name, args, doscstring 
         returns, raises of a list of functions or a methods.
-
         Furthermore, it also extracts automatically several values
         from a docstring, such as long and short description, arguments' 
         name, description, type, default values and if it they are optional
         or not. 
-
         :param self self: represent the instance of the class
         :param list functions_definitions: represent a list with all functions or methods nodes
         :return dictionary: a dictionary with the all the information at function/method level
@@ -308,7 +291,6 @@ class CodeInspection:
     def _get_ids(self, elt):
         """_get_ids extracts identifiers if present. 
          If not return None
-
         :param self self: represent the instance of the class
         :param ast.node elt: AST node
         :return list: list of identifiers
@@ -322,7 +304,6 @@ class CodeInspection:
     def _compute_interval(self, node):
         """_compute_interval extract the lines (min and max)
          for a given class, function or method.
-
         :param self self: represent the instance of the class
         :param ast.node node: AST node
         :return set: min and max lines
@@ -338,7 +319,6 @@ class CodeInspection:
     def _formatFlow(self, s):
         """_formatFlow reformats the control flow output
         as a text.
-
         :param self self: represent the instance of the class
         :param cfg_graph s: control flow graph 
         :return str: cfg formated as a text
@@ -403,7 +383,6 @@ def create_output_dirs(output_dir):
        cfg information (txt and PNG) and JsonFiles to
        save the aggregated json file with all the information
        extracted per file. 
-
        :param str output_dir: Output Directory in which the new subdirectories
                           will be created.
        """
@@ -430,9 +409,9 @@ def create_output_dirs(output_dir):
 @click.option('-f', '--fig', type=bool, is_flag=True, help="activate the control_flow figure generator.")
 @click.option('-o', '--output_dir', type=str, default="OutputDir", 
               help="output directory path to store results. If the directory does not exist, the tool will create it.")
-@click.option('-ignore_dir', '--ignore_dir_pattern', multiple=True, default=["."], 
+@click.option('-ignore_dir', '--ignore_dir_pattern', multiple=True, default=[".", "__pycache__"], 
               help="ignore directories starting with a certain pattern. This parameter can be provided multiple times to ignore multiple directory patterns.")
-@click.option('-ignore_file', '--ignore_file_pattern', multiple=True, default=["."], 
+@click.option('-ignore_file', '--ignore_file_pattern', multiple=True, default=[".", "__pycache__"], 
               help="ignore files starting with a certain pattern. This parameter can be provided multiple times to ignore multiple file patterns.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
@@ -512,7 +491,6 @@ def prune_json(json_dict):
     """
     Method that given a JSON object, removes all its empty fields.
     This method simplifies the resultant JSON.
-
     :param json_dict input JSON file to prune
     :return JSON file removing empty values
     """
@@ -559,6 +537,9 @@ def inspect_setup(parent_dir):
             with mock.patch.object(setuptools, 'setup') as mock_setup:
                 module_name = os.path.basename(temp_fh.name).split(".")[0]
                 __import__(module_name)
+        except:
+            os.chdir(current_dir)
+            return "uknown package/library, could not import setup.[py|cfg]"
         finally:
             # need to blow away the pyc
             try:
@@ -616,5 +597,3 @@ def directory_type(dir_info, input_path):
 
 if __name__ == "__main__":
     main()
-
-
