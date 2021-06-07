@@ -611,7 +611,7 @@ def directory_type(dir_info, input_path):
    if len(python_files) == 1:
        return "script, python " + python_files[0]
    else:
-       return "unknown, problably calling python with one of these: " + ' '.join(map(str, python_files))     
+       return "unknown, problably calling python with one of these files: " + ' '.join(map(str, python_files))     
 
 
 if __name__ == "__main__":
