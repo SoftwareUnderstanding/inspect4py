@@ -32,7 +32,8 @@ flow of each input file(s), by using another two libraries:
 -[staticfg](./staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), but given a bug in the package's source code, we forked it, and fixed it in our [repository](./staticfg)  
 
 For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
- 
+
+It also usese [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (-r) has to be indicated when we run the code_inspector.  
 
 ## Install
 
@@ -53,7 +54,8 @@ Then, prepare a virtual Python3 enviroment and install the required packages.
   - docstring_parser==0.7
   - astor
   - graphviz
-  - click
+  - Click
+  - setuptools == 54.2.0
 
 ### Installation through Docker
 
@@ -98,7 +100,7 @@ And the tools allows users to specify if control flow figures will be generated 
 
 
 ```
-python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir"]
+python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements]
 ```
 
 For clarity, we have added the help option to explain each input parameters
@@ -107,12 +109,25 @@ For clarity, we have added the help option to explain each input parameters
 Usage: code_inspector.py [OPTIONS]
 
 Options:
-  -i, --input_path TEXT  input path of the file or directory to inspect
-                         [required]
-  -f, --fig              activate the control_flow figure generator
-  -o, --output_dir TEXT  output directory path to store results. If the
-                         directory does not exist, the tool will create it
-  --help                 Show this message and exit.
+  -i, --input_path TEXT           input path of the file or directory to
+                                  inspect.  [required]
+  -f, --fig                       activate the control_flow figure generator.
+  -o, --output_dir TEXT           output directory path to store results. If
+                                  the directory does not exist, the tool will
+                                  create it.
+  -ignore_dir, --ignore_dir_pattern TEXT
+                                  ignore directories starting with a certain
+                                  pattern. This parameter can be provided
+                                  multiple times to ignore multiple directory
+                                  patterns.
+  -ignore_file, --ignore_file_pattern TEXT
+                                  ignore files starting with a certain
+                                  pattern. This parameter can be provided
+                                  multiple times to ignore multiple file
+                                  patterns.
+  -r, --requirements              find the requirements of the repository.
+  --help                          Show this message and exit.
+
 ```
 
 ## Outputs
