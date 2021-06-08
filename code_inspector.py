@@ -25,6 +25,7 @@ from pathlib import Path
 from unittest import mock
 import setuptools
 import tempfile
+import subprocess
 
 class CodeInspection:
     def __init__(self, path, outCfPath, outJsonPath, flag_png):
@@ -538,8 +539,9 @@ def inspect_setup(parent_dir):
                 module_name = os.path.basename(temp_fh.name).split(".")[0]
                 __import__(module_name)
         except:
+            package_name=subprocess.getoutput("python setup.py --name")
             os.chdir(current_dir)
-            return "uknown package/library, could not import setup.[py|cfg]"
+            return "package, pip install " + package_name + ", " + package_name + " --help" 
         finally:
             # need to blow away the pyc
             try:
