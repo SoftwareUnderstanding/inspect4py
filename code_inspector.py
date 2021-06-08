@@ -414,7 +414,10 @@ def create_output_dirs(output_dir):
               help="ignore directories starting with a certain pattern. This parameter can be provided multiple times to ignore multiple directory patterns.")
 @click.option('-ignore_file', '--ignore_file_pattern', multiple=True, default=[".", "__pycache__"], 
               help="ignore files starting with a certain pattern. This parameter can be provided multiple times to ignore multiple file patterns.")
-def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
+
+@click.option('-r', '--requirements', type=bool, is_flag=True, help="find the requirements of the repository.")
+
+def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -449,6 +452,9 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
 
         #Note:1 for visualising the tree, nothing or 0 for not.
         dir_tree=directory_tree(input_path, 1)
+        if requirements:
+            dir_requirements=find_requirements(input_path)
+            dir_info["requirements"]= dir_requirements
         dir_info["dir_tree"]=dir_tree
         dir_info["dir_type"]=directory_type(dir_info, input_path)
         json_file = output_dir + "/DirectoryInfo.json"
@@ -595,6 +601,40 @@ def directory_type(dir_info, input_path):
        return "script, python " + python_files[0] 
    else:
        return "unknown, problably calling python with one of these files: " + ' '.join(map(str, python_files))     
+
+
+def find_requirements(input_path):
+        print("Finding the requirements with PIGAR for %s" %input_path)
+        try:
+           file_name= 'requirements_'+ os.path.basename(input_path) +'.txt'
+
+           #Atention: we can modify the output of pigar, if we use echo N.
+           #Answering yes (echo y), we allow for searching PyPI 
+           #for the missing modules and filter some unnecessary modules. 
+
+           cmd='echo y | pigar -P ' + input_path + ' --without-referenced-comments -p '+ file_name 
+           #print("cmd: %s" %cmd)
+           proc=subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+           stdout, stderr = proc.communicate()
+           reqDict={}
+           with open(file_name, "r") as file:
+               lines = file.readlines()[1:]
+           file.close()
+           for line in lines:
+               try:
+                   if line!="\n":
+                       splitLine = line.split(" == ")
+                       reqDict[splitLine[0]]=splitLine[1].split("\n")[0]
+               except:
+                    pass 
+           #Atention: I am deleting the requirements file created by Pigar.
+           #in the future we might want to keep it (just comenting the line bellow)
+           os.system('rm ' + file_name)
+           return reqDict
+
+        except:
+             print("Error finding the requirements in" % input_path)
 
 
 if __name__ == "__main__":
