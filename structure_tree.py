@@ -106,7 +106,7 @@ def dict_clean(dict):
     for key, value in dict.items():
         if value is None and 'pyc' not in key:
             key_extension= key.split(".")[-1]
-            if 'py' in key_extension:
+            if 'py' in key_extension and 'ipynb' not in key_extension:
                 value = 'python script'
             elif 'txt' in key_extension  or 'md' in key_extension or 'LICENSE' in key:
                 value = "text file"
@@ -126,7 +126,7 @@ def dict_clean(dict):
             elif 'json' in key_extension:
                  value = 'json file'
 
-            elif 'ipynb' in key:
+            elif 'ipynb' in key_extension:
                  value = 'notebook file'
 
             elif 'yml' in key_extension or 'yaml' in key_extension:
