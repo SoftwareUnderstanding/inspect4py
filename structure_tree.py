@@ -122,8 +122,17 @@ def dict_clean(dict):
             elif 'Dockerfile' in key:
                  value = 'docker file'
 
+            elif '.json' in key:
+                 value = 'json file'
+
+            elif '.ipynb' in key:
+                 value = 'notebook file'
+
+            elif '.yml' in key or '.yaml' in key:
+                 value = 'yml file'
             else:
                  value = 'other type of file'
+
         result[key] = value
     return result
 
