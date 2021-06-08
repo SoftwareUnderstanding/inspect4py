@@ -104,7 +104,7 @@ def get_directory_structure(rootdir, ignore_set):
 def dict_clean(dict):
     result = {}
     for key, value in dict.items():
-        if value is None:
+        if value is None and 'pyc' not in key:
             value = 'file'
         result[key] = value
     return result

@@ -15,7 +15,7 @@ import json
 import os
 import sys
 import tokenize
-
+import glob
 import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as docParse
@@ -432,7 +432,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern):
             for ignore_f in ignore_dir_pattern:
                 files = [f for f in files if not f.startswith(ignore_f)]
             for f in files:
-                if ".py" in f and not ".pyc" in f:
+                if ".py" in f and not f.endswith(".pyc"):
                     try:
                         path = os.path.join(subdir, f)
                         out_dir = output_dir + "/" + os.path.basename(subdir)
@@ -515,9 +515,9 @@ def prune_json(json_dict):
 
 
 def directory_tree(input_path, visual=0): 
-    ignore_set = ('.git', '__pycache__', '.pyc')
+    ignore_set = ('.git', '__pycache__')
     if visual:
-        paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda path: True if path.name not in ignore_set else False)
+        paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda path: True if path.name not in ignore_set and not os.path.join("./", path.name).endswith(".pyc") else False)
         for path in paths:
             print(path.displayable())
     
