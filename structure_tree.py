@@ -105,7 +105,25 @@ def dict_clean(dict):
     result = {}
     for key, value in dict.items():
         if value is None and 'pyc' not in key:
-            value = 'file'
+            if '.py' in key:
+                value = 'python script'
+            elif '.txt' in key  or '.md' in key or 'LICENSE' in key:
+                value = "text file"
+
+            elif '.pdf' in key:
+                value = 'pdf file'
+
+            elif '.csv' in key:
+                value = 'csv file'
+
+            elif '.png' in key or '.PNG' in key or '.svg' in key or '.SVG' in key:
+                 value = 'plot file'
+
+            elif 'Dockerfile' in key:
+                 value = 'docker file'
+
+            else:
+                 value = 'other type of file'
         result[key] = value
     return result
 
