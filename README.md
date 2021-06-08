@@ -56,6 +56,7 @@ Then, prepare a virtual Python3 enviroment and install the required packages.
   - graphviz
   - Click
   - setuptools == 54.2.0
+  - json2html
 
 ### Installation through Docker
 
@@ -100,7 +101,7 @@ And the tools allows users to specify if control flow figures will be generated 
 
 
 ```
-python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements]
+python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
 ```
 
 For clarity, we have added the help option to explain each input parameters
@@ -126,6 +127,8 @@ Options:
                                   multiple times to ignore multiple file
                                   patterns.
   -r, --requirements              find the requirements of the repository.
+  -html, --html_output            generates an html file of the DirJson in the
+                                  output directory.
   --help                          Show this message and exit.
 
 ```

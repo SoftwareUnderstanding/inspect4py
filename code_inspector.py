@@ -26,6 +26,7 @@ from unittest import mock
 import setuptools
 import tempfile
 import subprocess
+from json2html import *
 
 class CodeInspection:
     def __init__(self, path, outCfPath, outJsonPath, flag_png):
@@ -417,7 +418,9 @@ def create_output_dirs(output_dir):
 
 @click.option('-r', '--requirements', type=bool, is_flag=True, help="find the requirements of the repository.")
 
-def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements):
+@click.option('-html', '--html_output', type=bool, is_flag=True, help="generates an html file of the DirJson in the output directory.")
+
+def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -462,6 +465,10 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
         with open(json_file, 'w') as outfile:
             json.dump(pruned_json, outfile)
         print_summary(dir_info)
+        if html_output:
+             output_file_html= output_dir + "/DirectoryInfo.html"
+             generate_output_html(pruned_json, output_file_html)
+
 
 
 def print_summary(json_dict):
@@ -636,6 +643,13 @@ def find_requirements(input_path):
         except:
              print("Error finding the requirements in" % input_path)
 
+def generate_output_html(pruned_json, output_file_html):
+    """ Very basic html page - we can improve it later 
+    """
+    html=json2html.convert(json = pruned_json)
+
+    with open(output_file_html, "w") as ht:
+        ht.write(html)
 
 if __name__ == "__main__":
     main()
