@@ -540,6 +540,7 @@ def directory_tree(input_path, visual=0):
 
 
 def inspect_setup(parent_dir):
+    setup_info={}
     sys.path.insert(0, parent_dir)
     current_dir = os.getcwd()
     os.chdir(parent_dir)
@@ -554,7 +555,10 @@ def inspect_setup(parent_dir):
         except:
             package_name=subprocess.getoutput("python setup.py --name")
             os.chdir(current_dir)
-            return "package, pip install " + package_name + ", " + package_name + " --help" 
+            setup_info["type"]="package"
+            setup_info["installation"] = "pip install " + package_name
+            setup_info["run"] = ""+ package_name + " --help"
+            return setup_info
         finally:
             # need to blow away the pyc
             try:
@@ -565,18 +569,28 @@ def inspect_setup(parent_dir):
         package_name = kwargs.get('name', "")
         os.chdir(current_dir)
         if "console_scripts" in sorted(kwargs.get('entry_points', [])):
-            return "package, pip install " + package_name + ", " + package_name + " --help" 
+            setup_info["type"]="package"
+            setup_info["installation"] = "pip install " + package_name
+            setup_info["run"] = ""+ package_name + " --help"
+            return setup_info
+            
         else:
-            return "library, pip install " + package_name + ", import " + package_name
+            setup_info["type"]="library"
+            setup_info["installation"] = "pip install " + package_name
+            setup_info["run"] = "import "+ package_name 
+            return setup_info
+            
 
 
 def directory_type(dir_info, input_path):
 
+   dir_type_info={}
+
    for dir in dir_info["dir_tree"]:
        for elem in dir_info["dir_tree"][dir]:
           if "setup.py" == elem or "setup.cfg" == elem : 
-                  type=inspect_setup(input_path)
-                  return type
+                  dir_type_info=inspect_setup(input_path)
+                  return dir_type_info
 
    for key in dir_info:
        for elem in dir_info[key]:
@@ -587,7 +601,7 @@ def directory_type(dir_info, input_path):
                                 return "service"
                    for from_mod_dep in dep["from_module"]:
                         if ("Flask" in from_mod_dep) or ("flask" in from_mod_dep) or ("flask_restful" in from_mod_dep):
-                                return "service"
+                                dir_type_info["type"]="service"
            except:
               pass
    
@@ -599,13 +613,12 @@ def directory_type(dir_info, input_path):
            if "main_info" in elem:
                    if elem["main_info"]["main_flag"]:
                        main_files.append(elem["file"]["path"])
-   
-   if len(main_files) == 1:
-       return "script, python " + main_files[0] + "--help" 
-   else:
-       return "scripts, several python scripts with main:" + ' '.join(map(str, main_files))     
-   return "script, " + main_files[0]
-     
+  
+   for m in range(0, len(main_files)):
+       dir_type_info[m]={}
+       dir_type_info[m]["type"]="script with main" 
+       dir_type_info[m]["run"]= "python " + main_files[m]  + " --help"
+   return dir_type_info 
    
    python_files=[]
    for dir in dir_info["dir_tree"]:
@@ -613,11 +626,12 @@ def directory_type(dir_info, input_path):
            print("elem is %s" % elem)
            if ".py" in elem:
                python_files.append(elem)
+   for f in range(0, len(python_files)):
+       dir_type_info[f]={}
+       dir_type_info[f]["type"]="script without main" 
+       dir_type_info[f]["run"]="python " + python_files[f]  + " --help"
+   return dir_type_info
 
-   if len(python_files) == 1:
-       return "script, python " + python_files[0] 
-   else:
-       return "scripts, several python scripts without main: " + ' '.join(map(str, python_files))     
 
 
 def find_requirements(input_path):
