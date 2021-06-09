@@ -590,7 +590,11 @@ def directory_type(dir_info, input_path):
                                 return "service"
            except:
               pass
-
+   
+   #Note: There is a risk here, if we have more than one main in the repo.
+   #For now I am just taking the first file detected with a main. 
+   #We might want to change this, and just collect all the files with mains,
+   #and listed there instead.   
    for key in dir_info:
        for elem in dir_info[key]:
            if "main_info" in elem:
@@ -647,7 +651,7 @@ def generate_output_html(pruned_json, output_file_html):
     """ Very basic html page - we can improve it later 
     """
     html=json2html.convert(json = pruned_json)
-
+    
     with open(output_file_html, "w") as ht:
         ht.write(html)
 
