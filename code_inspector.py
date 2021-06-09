@@ -603,7 +603,7 @@ def directory_type(dir_info, input_path):
    if len(main_files) == 1:
        return "script, python " + main_files[0] + "--help" 
    else:
-       return "scripts, several python scripts with main files:" + ' '.join(map(str, main_files))     
+       return "scripts, several python scripts with main:" + ' '.join(map(str, main_files))     
    return "script, " + main_files[0]
      
    
