@@ -7,12 +7,19 @@ And the tools allows users to specify if control flow figures will be generated 
 
 
 ```
-python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
+python code_inspector.py --input_path <FILE.py | DIRECTORY> 
+  [--fig , 
+   --output_dir "OutputDir", 
+   --ignore_dir_pattern "__", 
+   --ignore_file_pattern "__" 
+   --requirements 
+   --html_output]
 ```
 
 For clarity, we have added the help option to explain each input parameters
 
-```python code_inspector.py --help
+```
+python code_inspector.py --help
 Usage: code_inspector.py [OPTIONS]
 
 Options:

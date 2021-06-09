@@ -1,4 +1,4 @@
-site_name: code_inspector documentation
+site_name: code_inspector 
 nav:
   - Home: index.md
   - Install: install.md
