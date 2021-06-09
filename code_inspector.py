@@ -591,15 +591,21 @@ def directory_type(dir_info, input_path):
            except:
               pass
    
-   #Note: There is a risk here, if we have more than one main in the repo.
-   #For now I am just taking the first file detected with a main. 
-   #We might want to change this, and just collect all the files with mains,
-   #and listed there instead.   
+   # storing all the mains detected
+   # and returning them all 
+   main_files=[]  
    for key in dir_info:
        for elem in dir_info[key]:
            if "main_info" in elem:
                    if elem["main_info"]["main_flag"]:
-                       return "script, python "+ elem["file"]["path"] + " --help"
+                       main_files.append(elem["file"]["path"])
+   
+   if len(main_files) == 1:
+       return "script, python " + main_files[0] + "--help" 
+   else:
+       return "scripts, several python scripts with main files:" + ' '.join(map(str, main_files))     
+   return "script, " + main_files[0]
+     
    
    python_files=[]
    for dir in dir_info["dir_tree"]:
@@ -611,7 +617,7 @@ def directory_type(dir_info, input_path):
    if len(python_files) == 1:
        return "script, python " + python_files[0] 
    else:
-       return "unknown, problably calling python with one of these files: " + ' '.join(map(str, python_files))     
+       return "scripts, several python scripts without main: " + ' '.join(map(str, python_files))     
 
 
 def find_requirements(input_path):
