@@ -108,15 +108,12 @@ def dict_clean(dict):
             key_extension= key.split(".")[-1]
             if 'py' in key_extension and 'ipynb' not in key_extension and 'setup' not in key:
                 value = 'python script'
-            elif 'txt' in key_extension  or 'md' in key_extension or 'LICENSE' in key:
+            elif 'txt' in key_extension  or 'md' in key_extension and 'requirements' not in key:
                 value = "text file"
 
-            elif 'pdf' in key_extension:
-                value = 'pdf file'
-
-            elif 'csv' in key_extension:
-                value = 'csv file'
-
+            elif 'requirements' in key:
+                value = 'requirements file'
+            
             elif 'png' in key_extension or 'PNG' in key_extension or 'svg' in key_extension or 'SVG' in key_extension or 'dot' in key_extension:
                  value = 'plot file'
 
@@ -132,16 +129,16 @@ def dict_clean(dict):
             elif 'yml' in key_extension or 'yaml' in key_extension:
                  value = 'yml file'
             
-            elif 'owl' in key_extension:
-                 value = 'owl file'
-
             elif 'xml' in key_extension or 'XML' in key_extension:
                  value = 'xml file'
 
             elif 'cfg' in key_extension or 'setup.py' in key:
                  value = 'setup file'
+ 
+            elif 'git' in key_extension:
+                 value = 'git file'
             else:
-                 value = 'other type of file'
+                 value = key_extension.lower() +' file'
 
         result[key] = value
     return result
