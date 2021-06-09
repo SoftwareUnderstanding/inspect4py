@@ -67,6 +67,7 @@ And then run `code_inspector` following the commands outlined in the sections be
 
 
 Other useful commands when using Docker:
+
 ```
 docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
 docker run -it --entrypoint "/bin/bash" inspector:1.0
