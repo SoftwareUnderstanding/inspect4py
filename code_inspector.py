@@ -541,11 +541,12 @@ def directory_tree(input_path, visual=0):
 
 def inspect_setup(parent_dir):
     setup_info={}
-    sys.path.insert(0, parent_dir)
+    abs_parent_dir = os.path.abspath(parent_dir)
+    sys.path.insert(0, abs_parent_dir)
     current_dir = os.getcwd()
     os.chdir(parent_dir)
-    with tempfile.NamedTemporaryFile(prefix="setup_temp_", mode='w', dir=parent_dir, suffix='.py') as temp_fh:
-        with open(os.path.join(parent_dir, "setup.py"), 'r') as setup_fh:
+    with tempfile.NamedTemporaryFile(prefix="setup_temp_", mode='w', dir=abs_parent_dir, suffix='.py') as temp_fh:
+        with open(os.path.join(abs_parent_dir, "setup.py"), 'r') as setup_fh:
             temp_fh.write(setup_fh.read())
             temp_fh.flush()
         try:
