@@ -10,3 +10,12 @@ Given a software component:
 
 The file execution_commands_python describes 20 examples of scripts, packages, libraries and services in python.
 
+## Selection criteria:
+
+These repositories were selected one or various of the following reasons:
+- They were available from oour previous corpus in SOMEF.
+- They are a reperesentative sample of the current practices by the community
+- They are adopted, to a certain extent.
+- They are Research Software, as well as Software in Research.
+- They have been recommended in one of the awesome lists.
+
