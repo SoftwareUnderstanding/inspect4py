@@ -434,9 +434,9 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
 
             for ignore_d in ignore_dir_pattern:
                 dirs[:] = [d for d in dirs if not d.startswith(ignore_d)]
-
-            for ignore_f in ignore_dir_pattern:
-                files = [f for f in files if not f.startswith(ignore_f)]
+            for ignore_f in ignore_file_pattern:
+                files[:] = [f for f in files if not f.startswith(ignore_f)]
+            print(files)
             for f in files:
                 if ".py" in f and not f.endswith(".pyc"):
                     try:
@@ -451,7 +451,6 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                     except:
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
-
         # Note:1 for visualising the tree, nothing or 0 for not.
         dir_tree = directory_tree(input_path, 1)
         if requirements:
@@ -601,7 +600,7 @@ def directory_type(dir_info, input_path):
             except:
                 pass
 
-    # storing all the mains detected
+    # storing all the detected mains
     # and returning them all
     main_files = []
     for key in dir_info:
