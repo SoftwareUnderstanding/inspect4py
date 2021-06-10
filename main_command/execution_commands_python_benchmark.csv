@@ -1,0 +1,20 @@
+repository,type,command
+rosafilgueira/code_inspector,script,python code_inspector.py
+KnowledgeCaptureAndDiscovery/somef,package,"somef [describe, configure]"
+usc-isi-i2/kgtk,package,kgtk [command] [options]
+LinkedEarth/Pyleoclim_util,library,import pyleoclim
+ PyLops/pylops ,library,import pylops
+Toblerity/Shapely,library,"from shapely.geaometry import mapping, shape"
+zhiqiangdon/CU-Net,script,python main.py
+pyvista/pyvista,library,import pyvista
+usc-isi-i2/kgtk-browser,service,flask run
+usc-isi-i2/wikidata-property-finder,service,python app.py
+oeg-upm/Chowlk,service,python app.py
+oeg-upm/morph-csv,script,python3 morphcsv.py
+modflowpy/flopy,library,import flopy
+mintproject/cromo,package,cromo
+pySRURGS/pySRURGS,script,python3 pySRURGS.py
+gacou54/pyorthanc/,library,from pyorthanc import Orthanc
+KnowledgeCaptureAndDiscovery/ClimComp,script,python ClimComp.py
+clementranc/moana,library,import moana
+Maarten-vd-Sande/qnorm/,package,qnorm 

@@ -55,7 +55,7 @@ oeg-upm/Chowlk,service,python app.py,,,"Questions: What is the URL, port where i
 oeg-upm/morph-csv,script,python3 morphcsv.py,-c path-to-config-file.json -q path-to-query-file.rq,Everything is through configurations,
 modflowpy/flopy,library,import flopy,,"Example: sim = flopy.mf6.MFSimulation(sim_name=name, sim_ws=ws, exe_name='mf6')",
 mintproject/cromo,package,cromo,search start,,
-pySRURGS/pySRURGS,package,python3 pySRURGS.py,[train | iters],"[-memoize_funcs] [-run_ID RUN_ID] [-single] [-count]
+pySRURGS/pySRURGS,script,python3 pySRURGS.py,[train | iters],"[-memoize_funcs] [-run_ID RUN_ID] [-single] [-count]
                    [-benchmarks] [-plotting]
                    [-funcs_arity_two FUNCS_ARITY_TWO]
                    [-funcs_arity_one FUNCS_ARITY_ONE]
