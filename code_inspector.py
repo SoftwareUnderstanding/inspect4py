@@ -32,7 +32,7 @@ from structure_tree import DisplayablePath, get_directory_structure
 
 class CodeInspection:
     def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
-        """ init method initiliazes the Code_Inspection object
+        """ init method initializes the Code_Inspection object
         :param self self: represent the instance of the class
         :param str path: the file to inspect
         :param str out_control_flow_path: the output directory to store the control flow information
@@ -64,8 +64,8 @@ class CodeInspection:
 
     def inspect_file(self):
         """ inspec_file method extracts the features at file level.
-        Those features are path, fileNameBase, extension, docstring
-	The method support several levels of docstrings extraction,
+        Those features are path, fileNameBase, extension, docstring.
+	    The method support several levels of docstrings extraction,
         such as file's long, short a full descrition.
         :param self self: represent the instance of the class
         :return dictionary a dictionary with the file information extracted
@@ -124,7 +124,7 @@ class CodeInspection:
         return self._f_definitions(functions_definitions)
 
     def inspect_classes(self):
-        """ inspect_classes detecs all the classes and their methods,
+        """ inspect_classes detects all the classes and their methods,
          and extracts their features. It also calls to _f_definitions method
         to extract features at method level.
         The features extracted are name, docstring (this information is further analysed
@@ -191,8 +191,9 @@ class CodeInspection:
         return dep_info
 
     def _ast_if_main(self):
-        """ method for getting if the file has a if __name__ == "__main__"
-            and if it calls a method (e.g. main, version) or not. 
+        """
+        Method for getting if the file has a if __name__ == "__main__"
+        and if it calls a method (e.g. main, version) or not.
         :param self self: represent the instance of the class
         :return main_info : dictionary with a flag stored in "main_flag" (1 if the if __name__ == main is found, 0 otherwise) 
          and then "main_function" with the name of the function that is called.
@@ -532,9 +533,7 @@ def directory_tree(input_path, visual=0):
             path: True if path.name not in ignore_set and not os.path.join("./", path.name).endswith(".pyc") else False)
         for path in paths:
             print(path.displayable())
-
-    dir = get_directory_structure(input_path, ignore_set)
-    return dir
+    return get_directory_structure(input_path, ignore_set)
 
 
 def inspect_setup(parent_dir):
@@ -635,8 +634,8 @@ def find_requirements(input_path):
     try:
         file_name = 'requirements_' + os.path.basename(input_path) + '.txt'
 
-        # Atention: we can modify the output of pigar, if we use echo N.
-        # Answering yes (echo y), we allow for searching PyPI
+        # Attention: we can modify the output of pigar, if we use echo N.
+        # Answering yes (echo y), we allow searching for PyPI
         # for the missing modules and filter some unnecessary modules.
 
         cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
@@ -655,8 +654,8 @@ def find_requirements(input_path):
                     reqDict[splitLine[0]] = splitLine[1].split("\n")[0]
             except:
                 pass
-                # Atention: I am deleting the requirements file created by Pigar.
-        # in the future we might want to keep it (just comenting the line bellow)
+        # Note: Pigar requirement file is being deleted
+        # in the future we might want to keep it (just commenting the line bellow)
         os.system('rm ' + file_name)
         return reqDict
 
@@ -665,7 +664,8 @@ def find_requirements(input_path):
 
 
 def generate_output_html(pruned_json, output_file_html):
-    """ Very basic html page - we can improve it later 
+    """
+    Method to generate a simple HTML view of the obtained JSON.
     """
     html = json2html.convert(json=pruned_json)
 
