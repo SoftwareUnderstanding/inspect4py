@@ -255,41 +255,41 @@ class CodeInspection:
         :return dictionary: a dictionary with the all the information at function/method level
         """
 
-        funcsInfo = {}
+        funcs_info = {}
         for f in functions_definitions:
-            funcsInfo[f.name] = {}
+            funcs_info[f.name] = {}
             ds_f = ast.get_docstring(f)
             docstring = doc_parse(ds_f)
-            funcsInfo[f.name]["doc"] = {}
-            funcsInfo[f.name]["doc"][
+            funcs_info[f.name]["doc"] = {}
+            funcs_info[f.name]["doc"][
                 "long_description"] = docstring.long_description if docstring.long_description else {}
-            funcsInfo[f.name]["doc"][
+            funcs_info[f.name]["doc"][
                 "short_description"] = docstring.short_description if docstring.short_description else {}
-            funcsInfo[f.name]["doc"]["args"] = {}
+            funcs_info[f.name]["doc"]["args"] = {}
             for i in docstring.params:
-                funcsInfo[f.name]["doc"]["args"][i.arg_name] = {}
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["description"] = i.description
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["type_name"] = i.type_name
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["is_optional"] = i.is_optional
-                funcsInfo[f.name]["doc"]["args"][i.arg_name]["default"] = i.default
+                funcs_info[f.name]["doc"]["args"][i.arg_name] = {}
+                funcs_info[f.name]["doc"]["args"][i.arg_name]["description"] = i.description
+                funcs_info[f.name]["doc"]["args"][i.arg_name]["type_name"] = i.type_name
+                funcs_info[f.name]["doc"]["args"][i.arg_name]["is_optional"] = i.is_optional
+                funcs_info[f.name]["doc"]["args"][i.arg_name]["default"] = i.default
             if docstring.returns:
                 r = docstring.returns
-                funcsInfo[f.name]["doc"]["returns"] = {}
-                funcsInfo[f.name]["doc"]["returns"]["description"] = r.description
-                funcsInfo[f.name]["doc"]["returns"]["type_name"] = r.type_name
-                funcsInfo[f.name]["doc"]["returns"]["is_generator"] = r.is_generator
-                funcsInfo[f.name]["doc"]["returns"]["return_name"] = r.return_name
-            funcsInfo[f.name]["doc"]["raises"] = {}
+                funcs_info[f.name]["doc"]["returns"] = {}
+                funcs_info[f.name]["doc"]["returns"]["description"] = r.description
+                funcs_info[f.name]["doc"]["returns"]["type_name"] = r.type_name
+                funcs_info[f.name]["doc"]["returns"]["is_generator"] = r.is_generator
+                funcs_info[f.name]["doc"]["returns"]["return_name"] = r.return_name
+            funcs_info[f.name]["doc"]["raises"] = {}
             for num, i in enumerate(docstring.raises):
-                funcsInfo[f.name]["doc"]["raises"][num] = {}
-                funcsInfo[f.name]["doc"]["raises"][num]["description"] = i.description
-                funcsInfo[f.name]["doc"]["raises"][num]["type_name"] = i.type_name
+                funcs_info[f.name]["doc"]["raises"][num] = {}
+                funcs_info[f.name]["doc"]["raises"][num]["description"] = i.description
+                funcs_info[f.name]["doc"]["raises"][num]["type_name"] = i.type_name
 
-            funcsInfo[f.name]["args"] = [a.arg for a in f.args.args]
+            funcs_info[f.name]["args"] = [a.arg for a in f.args.args]
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
-            funcsInfo[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
-            funcsInfo[f.name]["min_max_lineno"] = self._compute_interval(f)
-        return funcsInfo
+            funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
+            funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
+        return funcs_info
 
     def _get_ids(self, elt):
         """_get_ids extracts identifiers if present. 
@@ -330,9 +330,9 @@ class CodeInspection:
         result = ""
         shifts = []  # positions of opening '<'
         pos = 0  # symbol position in a line
-        nextIsList = False
+        next_is_list = False
 
-        def IsNextList(index, maxIndex, buf):
+        def is_next_list(index, maxIndex, buf):
             if index == maxIndex:
                 return False
             if buf[index + 1] == '<':
@@ -342,23 +342,23 @@ class CodeInspection:
                     return True
             return False
 
-        maxIndex = len(s) - 1
+        max_index = len(s) - 1
         for index in range(len(s)):
             sym = s[index]
             if sym == "\n":
-                lastShift = shifts[-1]
-                result += sym + lastShift * " "
-                pos = lastShift
-                if index < maxIndex:
+                last_shift = shifts[-1]
+                result += sym + last_shift * " "
+                pos = last_shift
+                if index < max_index:
                     if s[index + 1] not in "<>":
                         result += " "
                         pos += 1
                 continue
             if sym == "<":
-                if nextIsList == False:
+                if not next_is_list:
                     shifts.append(pos)
                 else:
-                    nextIsList = False
+                    next_is_list = False
                 pos += 1
                 result += sym
                 continue
@@ -369,11 +369,11 @@ class CodeInspection:
                 pos = shift
                 result += sym
                 pos += 1
-                if IsNextList(index, maxIndex, s):
-                    nextIsList = True
+                if is_next_list(index, max_index, s):
+                    next_is_list = True
                 else:
                     del shifts[-1]
-                    nextIsList = False
+                    next_is_list = False
                 continue
             result += sym
             pos += 1
@@ -397,14 +397,14 @@ def create_output_dirs(output_dir):
         os.makedirs(control_flow_dir)
     else:
         pass
-    jsonDir = output_dir + "/JsonFiles"
+    json_dir = output_dir + "/JsonFiles"
 
-    if not os.path.exists(jsonDir):
-        print("Creating jsDir:%s" % jsonDir)
-        os.makedirs(jsonDir)
+    if not os.path.exists(json_dir):
+        print("Creating jsDir:%s" % json_dir)
+        os.makedirs(json_dir)
     else:
         pass
-    return control_flow_dir, jsonDir
+    return control_flow_dir, json_dir
 
 
 @click.command()
@@ -526,6 +526,11 @@ def prune_json(json_dict):
 
 
 def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
+    """
+    Method to obtain the directory tree of a repository.
+    The ignored directories and files that were inputted are also ignored.
+    :input_path path of the repo to
+    """
     ignore_set = ['.git', '__pycache__', '.idea', '.pytest_cache']
     ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
     if visual:
@@ -580,11 +585,20 @@ def inspect_setup(parent_dir):
 
 
 def directory_type(dir_info, input_path):
+    """
+    Method to detect the directory type of a software project.
+    We distinguish four main types: script, package, library and service.
+    :dir_info json file containing all the extracted information about the software repositry
+    :input_path path of the repository to analyze
+    """
     dir_type_info = {}
+    setup_files = ("setup.py", "setup.cfg")
+    server_dependencies = ("Flask", "flask", "flask_restful")
+    #Note: other server dependencies are missing here. More testing is needed.
 
-    for dir in dir_info["dir_tree"]:
-        for elem in dir_info["dir_tree"][dir]:
-            if "setup.py" == elem or "setup.cfg" == elem:
+    for directory in dir_info["dir_tree"]:
+        for elem in dir_info["dir_tree"][directory]:
+            if elem in setup_files:
                 dir_type_info = inspect_setup(input_path)
                 return dir_type_info
 
@@ -593,10 +607,10 @@ def directory_type(dir_info, input_path):
             try:
                 for dep in elem["dependencies"]:
                     for import_dep in dep["import"]:
-                        if ("Flask" in import_dep) or ("flask" in import_dep) or ("flask_restful" in import_dep):
+                        if import_dep in server_dependencies:
                             return "service"
                     for from_mod_dep in dep["from_module"]:
-                        if ("Flask" in from_mod_dep) or ("flask" in from_mod_dep) or ("flask_restful" in from_mod_dep):
+                        if from_mod_dep in server_dependencies:
                             dir_type_info["type"] = "service"
             except:
                 pass
@@ -614,11 +628,12 @@ def directory_type(dir_info, input_path):
         dir_type_info[m] = {}
         dir_type_info[m]["type"] = "script with main"
         dir_type_info[m]["run"] = "python " + main_files[m] + " --help"
-    return dir_type_info
+    if len(main_files)>0:
+        return dir_type_info
 
     python_files = []
-    for dir in dir_info["dir_tree"]:
-        for elem in dir_info["dir_tree"][dir]:
+    for directory in dir_info["dir_tree"]:
+        for elem in dir_info["dir_tree"][directory]:
             print("elem is %s" % elem)
             if ".py" in elem:
                 python_files.append(elem)
@@ -643,7 +658,7 @@ def find_requirements(input_path):
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
-        reqDict = {}
+        req_dict = {}
         with open(file_name, "r") as file:
             lines = file.readlines()[1:]
         file.close()
@@ -651,13 +666,13 @@ def find_requirements(input_path):
             try:
                 if line != "\n":
                     splitLine = line.split(" == ")
-                    reqDict[splitLine[0]] = splitLine[1].split("\n")[0]
+                    req_dict[splitLine[0]] = splitLine[1].split("\n")[0]
             except:
                 pass
         # Note: Pigar requirement file is being deleted
         # in the future we might want to keep it (just commenting the line bellow)
         os.system('rm ' + file_name)
-        return reqDict
+        return req_dict
 
     except:
         print("Error finding the requirements in" % input_path)
