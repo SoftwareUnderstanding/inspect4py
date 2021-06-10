@@ -436,7 +436,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                 dirs[:] = [d for d in dirs if not d.startswith(ignore_d)]
             for ignore_f in ignore_file_pattern:
                 files[:] = [f for f in files if not f.startswith(ignore_f)]
-            print(files)
+            # print(files)
             for f in files:
                 if ".py" in f and not f.endswith(".pyc"):
                     try:
@@ -452,7 +452,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
         # Note:1 for visualising the tree, nothing or 0 for not.
-        dir_tree = directory_tree(input_path, 1)
+        dir_tree = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
         if requirements:
             dir_requirements = find_requirements(input_path)
             dir_info["requirements"] = dir_requirements
@@ -525,8 +525,9 @@ def prune_json(json_dict):
     return final_dict
 
 
-def directory_tree(input_path, visual=0):
-    ignore_set = ('.git', '__pycache__')
+def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
+    ignore_set = ['.git', '__pycache__', '.idea', '.pytest_cache']
+    ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
     if visual:
         paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda
             path: True if path.name not in ignore_set and not os.path.join("./", path.name).endswith(".pyc") else False)
