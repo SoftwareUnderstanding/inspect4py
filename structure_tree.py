@@ -106,13 +106,16 @@ def dict_clean(dict):
     for key, value in dict.items():
         if value is None and 'pyc' not in key:
             key_extension= key.split(".")[-1]
+            
             if 'py' in key_extension and 'ipynb' not in key_extension and 'setup' not in key:
                 value = 'python script'
-            elif 'txt' in key_extension  or 'md' in key_extension and 'requirements' not in key:
-                value = "text file"
-
+            
             elif 'requirements' in key:
                 value = 'requirements file'
+            
+            elif 'txt' in key_extension  or 'md' in key_extension:
+                value = "text file"
+
             
             elif 'png' in key_extension or 'PNG' in key_extension or 'svg' in key_extension or 'SVG' in key_extension or 'dot' in key_extension:
                  value = 'plot file'
