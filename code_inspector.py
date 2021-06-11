@@ -596,7 +596,7 @@ def inspect_setup_cfg(parent_dir , name):
              if not name:
                  name = subprocess.getoutput("python setup.py --name")
          except:
-                 name = "UKNOWN"
+                 name = "UNKNOWN"
          setup_info["type"] = "package"
          setup_info["installation"] = "pip install " + name
          setup_info["run"] = "" + name + " --help"
