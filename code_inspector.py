@@ -545,13 +545,13 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
 def inspect_setup_cfg(parent_dir , name):
      setup_info={}
      setup_cfg= os.path.join(parent_dir, "setup.cfg")
-     #extracting the name
      
      # checking if we have setup.cfg. If we dont have - library. 
      if Path(setup_cfg).is_file():
          parser = configparser.ConfigParser()
          with open("setup.cfg", "r") as f:
              parser.read_file(f)
+         #extracting the name
          if not name: 
              section="metadata"
              if section in parser:
