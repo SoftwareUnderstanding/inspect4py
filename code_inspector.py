@@ -617,7 +617,6 @@ def inspect_setup(parent_dir):
                 module_name = os.path.basename(temp_fh.name).split(".")[0]
                 __import__(module_name)
         except:
-            print("ENTRO IN THE EXCEPT")
             name=""
             setup_info=inspect_setup_cfg(parent_dir, name)
             os.chdir(current_dir)
