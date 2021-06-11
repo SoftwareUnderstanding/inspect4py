@@ -559,9 +559,16 @@ def inspect_setup_cfg(parent_dir , name):
                  if "name" in metadata:
                     name=metadata["name"]
                  else:
-                    name = subprocess.getoutput("python setup.py --name")
+                    try:
+                        name = subprocess.getoutput("python setup.py --name")
+                    except:
+                        name = "UNKNOWN"
+                                        
              else:
-                 name = subprocess.getoutput("python setup.py --name")
+                 try:
+                     name = subprocess.getoutput("python setup.py --name")
+                 except:
+                     name = "UNKNOWN"
          #extracting entry_points
          section="entry_points"
          for s in parser:
