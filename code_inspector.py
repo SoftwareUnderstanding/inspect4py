@@ -28,6 +28,7 @@ from json2html import *
 
 from staticfg import builder
 from structure_tree import DisplayablePath, get_directory_structure
+import configparser
 
 
 class CodeInspection:
@@ -541,6 +542,66 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     return get_directory_structure(input_path, ignore_set)
 
 
+def inspect_setup_cfg(parent_dir , name):
+     setup_info={}
+     setup_cfg= os.path.join(parent_dir, "setup.cfg")
+     #extracting the name
+     
+     # checking if we have setup.cfg. If we dont have - library. 
+     if Path(setup_cfg).is_file():
+         parser = configparser.ConfigParser()
+         with open("setup.cfg", "r") as f:
+             parser.read_file(f)
+         if not name: 
+             section="metadata"
+             if section in parser:
+                 metadata=dict(parser["metadata"])
+                 if "name" in metadata:
+                    name=metadata["name"]
+                 else:
+                    name = subprocess.getoutput("python setup.py --name")
+             else:
+                 name = subprocess.getoutput("python setup.py --name")
+         #extracting entry_points
+         section="entry_points"
+         for s in parser:
+             if section in s:
+                 data=dict(parser[s])
+                 if "console_scripts" in data:
+                     console_scripts=data["console_scripts"].splitlines()
+                     console_scripts.remove('')
+                     setup_info["run"] = []
+                     cs_list=[] 
+                     for cs in console_scripts:
+                         cs_string=cs.split("=")[0].rstrip() 
+                         setup_info["run"].append(cs_string+ '--help')
+                         cs_list.append(cs_string)
+                     if  name not in cs_string:
+                         setup_info["type"] = "library and package"
+                         setup_info["run"].append("import " + name)
+                     else: 
+                         setup_info["type"] = "package"
+                     return setup_info
+                            
+         setup_info["type"] = "library"
+         setup_info["installation"] = "pip install " + name
+         setup_info["run"] = "import " + name
+         return setup_info
+     else:
+         # HERE I AM JUST GUESSING
+         # This is the last resource. We got here because an exception
+         # or becasue we are not able to open setup.py and there is not setup.cfg
+         # Classify it as package
+         try:
+             if not name:
+                 name = subprocess.getoutput("python setup.py --name")
+         except:
+                 name = "UKNOWN"
+         setup_info["type"] = "package"
+         setup_info["installation"] = "pip install " + name
+         setup_info["run"] = "" + name + " --help"
+         return setup_info
+
 def inspect_setup(parent_dir):
     setup_info = {}
     abs_parent_dir = os.path.abspath(parent_dir)
@@ -556,11 +617,10 @@ def inspect_setup(parent_dir):
                 module_name = os.path.basename(temp_fh.name).split(".")[0]
                 __import__(module_name)
         except:
-            package_name = subprocess.getoutput("python setup.py --name")
+            print("ENTRO IN THE EXCEPT")
+            name=""
+            setup_info=inspect_setup_cfg(parent_dir, name)
             os.chdir(current_dir)
-            setup_info["type"] = "package"
-            setup_info["installation"] = "pip install " + package_name
-            setup_info["run"] = "" + package_name + " --help"
             return setup_info
         finally:
             # need to blow away the pyc
@@ -569,19 +629,34 @@ def inspect_setup(parent_dir):
             except:
                 pass
         args, kwargs = mock_setup.call_args
-        package_name = kwargs.get('name', "")
-        os.chdir(current_dir)
-        if "console_scripts" in sorted(kwargs.get('entry_points', [])):
-            setup_info["type"] = "package"
-            setup_info["installation"] = "pip install " + package_name
-            setup_info["run"] = "" + package_name + " --help"
+        name = kwargs.get('name').lower()
+        entry_point= kwargs.get('entry_points')
+        if not entry_point:
+            setup_info=inspect_setup_cfg(parent_dir, name)
+            os.chdir(current_dir)
             return setup_info
-
         else:
-            setup_info["type"] = "library"
-            setup_info["installation"] = "pip install " + package_name
-            setup_info["run"] = "import " + package_name
-            return setup_info
+            os.chdir(current_dir)
+            if 'console_scripts' in entry_point:
+                setup_info["run"] = []
+                cs_list=[]
+                for cs in entry_point['console_scripts']:
+                    cs_string=cs.split("=")[0].rstrip()
+                    setup_info["run"].append(cs_string+ " --help")
+                    cs_list.append(cs_string)
+                if name not in cs_list:
+                    setup_info["type"] = "library and package"
+                    setup_info["run"].append("import " + name)
+                else: 
+                    setup_info["type"] = "package"
+                setup_info["installation"] = "pip install " + name
+                return setup_info
+
+            else:
+                setup_info["type"] = "library"
+                setup_info["installation"] = "pip install " + name
+                setup_info["run"] = "import " + name
+                return setup_info
 
 
 def directory_type(dir_info, input_path):
