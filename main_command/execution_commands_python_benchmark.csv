@@ -23,9 +23,9 @@ dask/dask,library,import dask,,,
 Yelp/mrjob,package,import mrjob,,,
 httplib2/httplib2,library,import httplib2,,,
 spyoungtech/grequests,library,import grequests,,,
-RDFLib/rdflib-jsonld,library and package,import rdflib,,,
+RDFLib/rdflib-jsonld,library ,import rdflib,,,
 RDFLib/sparqlwrapper,library,from SPARQLWrapper import SPARQLWrapper,,,
-RDFLib/pyLODE,library and package,import pylode,also script ,X,
+RDFLib/pyLODE,library and package,import pylode,also script ,X,SEMI_FIXED
 RDFLib/rdflib,library and package,import rdflib,also library,X,FIXED
 microsoft/fastseq,package,Fastseq-generate-for-fairseq,also library,,
 PeikeLi/Self-Correction-Human-Parsing,script,python simple_extractor.py python train.py,,,
