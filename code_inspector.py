@@ -581,7 +581,7 @@ def inspect_setup_cfg(parent_dir , name):
                      cs_list=[] 
                      for cs in console_scripts:
                          cs_string=cs.split("=")[0].rstrip() 
-                         setup_info["run"].append(cs_string+ '--help')
+                         setup_info["run"].append(cs_string+ ' --help')
                          cs_list.append(cs_string)
                      if  name not in cs_string:
                          setup_info["type"] = "library and package"
@@ -675,6 +675,7 @@ def directory_type(dir_info, input_path):
     dir_type_info = {}
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("Flask", "flask", "flask_restful")
+    ignore_pattern=("test", "demo", "debug")
     #Note: other server dependencies are missing here. More testing is needed.
 
     for directory in dir_info["dir_tree"]:
@@ -683,28 +684,46 @@ def directory_type(dir_info, input_path):
                 dir_type_info = inspect_setup(input_path)
                 return dir_type_info
 
-    for key in dir_info:
-        for elem in dir_info[key]:
-            try:
-                for dep in elem["dependencies"]:
-                    for import_dep in dep["import"]:
-                        if import_dep in server_dependencies:
-                            return "service"
-                    for from_mod_dep in dep["from_module"]:
-                        if from_mod_dep in server_dependencies:
-                            dir_type_info["type"] = "service"
-            except:
-                pass
 
-    # storing all the detected mains
-    # and returning them all
+    # Looping acroos all mains
+    # to decide if it is a service (main + flask) or just a script (main without flask)
+    # Note: We are going to ingore all the directories and files that matches the ingore_pattern
+    # to exclude tests, debugs and demos  
     main_files = []
-    for key in dir_info:
-        for elem in dir_info[key]:
-            if "main_info" in elem:
-                if elem["main_info"]["main_flag"]:
-                    main_files.append(elem["file"]["path"])
+    for key in filter(lambda key: key not in "dir_tree", dir_info):
+        result_ignore= [key for ip in ignore_pattern if ip in key]
+        if not result_ignore:
+            for elem in dir_info[key]:
+                result_ignore= [elem["file"]["fileNameBase"] for ip in ignore_pattern if ip in elem["file"]["fileNameBase"]]
+                if not result_ignore:
+                    if "main_info" in elem:
+                        if elem["main_info"]["main_flag"]:
+                            #print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
+                            flag_service = 0
+                            # Note:
+                            # When we find a service in a main, it is very likely to be a service
+                            try: 
+                                for dep in elem["dependencies"]:
+                                    for import_dep in dep["import"]:
+                                        if import_dep in server_dependencies:
+                                            dir_type_info["type"] = "service"
+                                            dir_type_info["app"] = elem["file"]["path"]
+                                            flag_service = 1
+                                            return dir_type_info
+                                    for from_mod_dep in dep["from_module"]:
+                                        if from_mod_dep in server_dependencies:
+                                            dir_type_info["type"] = "service"
+                                            dir_type_info["app"] = elem["file"]["path"]
+                                            flag_service = 1
+                                            return dir_type_info
+                            except:
+                                main_files.append(elem["file"]["path"])
 
+                            if not flag_service:
+                                main_files.append(elem["file"]["path"])
+
+    # If we havent find a service, but we have main(s)
+    # it is very likely to be a service
     for m in range(0, len(main_files)):
         dir_type_info[m] = {}
         dir_type_info[m]["type"] = "script with main"
@@ -712,12 +731,51 @@ def directory_type(dir_info, input_path):
     if len(main_files)>0:
         return dir_type_info
 
+  
+    # If we havent find a main, then we can try to find again if we have
+    # a service
+    # Note: We are going to ingore all the directories and files that matches the ingore_pattern
+    # to exclude tests, debugs and demos  
+    for key in filter(lambda key: key not in "dir_tree", dir_info):
+        result_ignore= [key for ip in ignore_pattern if ip in key]
+        if not result_ignore:
+            for elem in dir_info[key]:
+                result_ignore= [elem["file"]["fileNameBase"] for ip in ignore_pattern if ip in elem["file"]["fileNameBase"]]
+                if not result_ignore:
+                    try:
+                        for dep in elem["dependencies"]:
+                            for import_dep in dep["import"]:
+                                if import_dep in server_dependencies:
+                                    dir_type_info["type"] = "service"
+                                    dir_type_info["app"] = elem["file"]["path"]
+                                    return dir_type_info
+                            for from_mod_dep in dep["from_module"]:
+                                if from_mod_dep in server_dependencies:
+                                    dir_type_info["type"] = "service"
+                                    return dir_type_info
+                    except:
+                        pass
+
+    #NOTE: OPTION 1
+    # Note: Without ingore files and directories
     python_files = []
     for directory in dir_info["dir_tree"]:
         for elem in dir_info["dir_tree"][directory]:
-            print("elem is %s" % elem)
             if ".py" in elem:
                 python_files.append(elem)
+  
+    #NOTE: OPTION 2
+    # Note: Ingoring all the directories and files that matches the ingore_pattern
+    # to exclude tests, debugs and demos  
+    #for directory in dir_info["dir_tree"]:
+    #    result_ignore= [directory for ip in ignore_pattern if ip in directory]
+    #    if not result_ignore:
+    #        for elem in dir_info["dir_tree"][directory]:
+    #            result_ignore= [elem for ip in ignore_pattern if ip in elem]
+    #            if not result_ignore:
+    #                if ".py" in elem:
+    #                    python_files.append(elem)
+
     for f in range(0, len(python_files)):
         dir_type_info[f] = {}
         dir_type_info[f]["type"] = "script without main"
