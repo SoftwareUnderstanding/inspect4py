@@ -242,7 +242,7 @@ class CodeInspection:
         json_file = self.out_json_path + "/" + self.fileInfo["fileNameBase"] + ".json"
         with open(json_file, 'w') as outfile:
             json.dump(prune_json(file_dict), outfile)
-        return file_dict
+        return [file_dict, json_file]
 
     def _f_definitions(self, functions_definitions):
         """_f_definitions extracts the name, args, doscstring 
@@ -290,7 +290,52 @@ class CodeInspection:
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
             funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
+            funcs_calls = [node.func for node in ast.walk(f) if isinstance(node, ast.Call)]
+            func_name_id=[self._get_func_name(func) for func in funcs_calls]
+            func_name_id = list(dict.fromkeys(func_name_id))
+            funcs_info[f.name]["calls_to_functions"] = func_name_id
         return funcs_info
+
+ 
+    def _get_func_name(self, func):
+        func_name=""
+        if isinstance(func, ast.Name):
+            return func.id
+
+        elif isinstance(func, ast.Attribute):
+            attr=""
+            attr += func.attr
+            module= func.value
+            while isinstance(module, ast.Attribute):  
+                attr =  module.attr +"." +attr
+                module=module.value
+
+            # the module is not longer an ast.Attribute
+            # entering here in case the module is a Name
+            if isinstance(module, ast.Name):
+                func_name= module.id + "." + attr
+                return func_name
+            
+            #entering here in case the module is a Call
+            #recursivity!    
+            elif isinstance(module, ast.Call):
+                 func_name =self._get_func_name(module.func)+"()."+attr
+                 return func_name
+
+            #the module is a subscript
+            #recursivity!
+            elif isinstance(module, ast.Subscript): 
+                #ast.Subscripts
+                func_name =self._get_func_name(module.value)
+                if not func_name:
+                    func_name="[]." + attr 
+                else:
+                    func_name = func_name + "[]." + attr 
+                return func_name
+            else:
+                #print("---ignore %s" %module.s)
+                return func_name
+                
 
     def _get_ids(self, elt):
         """_get_ids extracts identifiers if present. 
@@ -428,6 +473,11 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
     if os.path.isfile(input_path):
         cf_dir, json_dir = create_output_dirs(output_dir)
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
+        if html_output:
+            output_file_html = json_dir + "/FileInfo.html"
+            f=open(code_info.fileJson[1])
+            data = json.load(f)
+            generate_output_html(data, output_file_html)
 
     else:
         dir_info = {}
@@ -446,9 +496,9 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         cf_dir, json_dir = create_output_dirs(out_dir)
                         code_info = CodeInspection(path, cf_dir, json_dir, fig)
                         if out_dir not in dir_info:
-                            dir_info[out_dir] = [code_info.fileJson]
+                            dir_info[out_dir] = [code_info.fileJson[0]]
                         else:
-                            dir_info[out_dir].append(code_info.fileJson)
+                            dir_info[out_dir].append(code_info.fileJson[0])
                     except:
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
