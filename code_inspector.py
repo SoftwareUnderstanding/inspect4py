@@ -530,7 +530,7 @@ def create_output_dirs(output_dir):
 @click.command()
 @click.option('-i', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
 @click.option('-f', '--fig', type=bool, is_flag=True, help="activate the control_flow figure generator.")
-@click.option('-o', '--output_dir', type=str, default="OutputDir",
+@click.option('-o', '--output_dir', type=str, default="output_dir",
               help="output directory path to store results. If the directory does not exist, the tool will create it.")
 @click.option('-ignore_dir', '--ignore_dir_pattern', multiple=True, default=[".", "__pycache__"],
               help="ignore directories starting with a certain pattern. This parameter can be provided multiple times to ignore multiple directory patterns.")
