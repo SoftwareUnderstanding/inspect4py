@@ -170,7 +170,7 @@ class CodeInspection:
 
         # improving the list of calls
         for c in classesInfo:
-            classesInfo[c]["methods"]= self._fill_call_name(classesInfo[c]["methods"], classesInfo) 
+            classesInfo[c]["methods"]= self._fill_call_name(classesInfo[c]["methods"], classesInfo, c) 
         return classesInfo
 
     def inspect_dependencies(self):
@@ -353,7 +353,7 @@ class CodeInspection:
             else:
                 return func_name
                 
-    def _fill_call_name(self, funct_def_info, classesInfo):
+    def _fill_call_name(self, funct_def_info, classesInfo, className=""):
         for funct in funct_def_info:
             renamed_calls=[] 
             for call_name in funct_def_info[funct]["calls"]:
@@ -369,9 +369,7 @@ class CodeInspection:
 
                  #check if we are calling an imported module or an alias
                  elif "self" in module_call_name:
-                     for c in classesInfo:
-                         if rest_call_name in classesInfo[c]["methods"]: 
-                             renamed_calls.append(self.fileInfo["fileNameBase"]+"."+c+"."+ rest_call_name)
+                     renamed_calls.append(self.fileInfo["fileNameBase"]+"."+className+"."+ rest_call_name)
                  else:
                      renamed = 0 
                      if rest_call_name:
