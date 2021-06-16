@@ -170,7 +170,7 @@ class CodeInspection:
 
         # improving the list of calls
         for c in classesInfo:
-            classesInfo[c]["methods"]= self._fill_call_name(classesInfo[c]["methods"], classesInfo, c) 
+            classesInfo[c]["methods"]= self._fill_call_name(classesInfo[c]["methods"], classesInfo, c, classesInfo[c]["extend"]) 
         return classesInfo
 
     def inspect_dependencies(self):
@@ -353,7 +353,7 @@ class CodeInspection:
             else:
                 return func_name
                 
-    def _fill_call_name(self, funct_def_info, classesInfo, className=""):
+    def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
         for funct in funct_def_info:
             renamed_calls=[] 
             for call_name in funct_def_info[funct]["calls"]:
@@ -370,6 +370,9 @@ class CodeInspection:
                  #check if we are calling an imported module or an alias
                  elif "self" in module_call_name:
                      renamed_calls.append(self.fileInfo["fileNameBase"]+"."+className+"."+ rest_call_name)
+
+                 elif "super()" in module_call_name and extend:
+                     renamed_calls.append(self.fileInfo["fileNameBase"]+"."+extend[0]+"."+ rest_call_name)
                  else:
                      renamed = 0 
                      if rest_call_name:
@@ -404,7 +407,9 @@ class CodeInspection:
                          if call_name in funct_def_info.keys():
                              renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name)
                          else:
-                             renamed_calls.append(call_name)
+                             #not include an extra super call. 
+                             if "super" not in call_name:
+                                 renamed_calls.append(call_name)
             funct_def_info[funct]["calls"]=renamed_calls
         return funct_def_info
 
