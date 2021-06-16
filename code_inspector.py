@@ -577,12 +577,11 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
         # Note:1 for visualising the tree, nothing or 0 for not.
-        dir_tree = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
         if requirements:
             dir_requirements = find_requirements(input_path)
             dir_info["requirements"] = dir_requirements
-        dir_info["dir_tree"] = dir_tree
-        dir_info["dir_type"] = directory_type(dir_info, input_path)
+        dir_info["directory_tree"] = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
+        dir_info["software_invocation"] = software_invocation(dir_info, input_path)
         json_file = output_dir + "/DirectoryInfo.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
@@ -789,24 +788,24 @@ def inspect_setup(parent_dir):
                 return setup_info
 
 
-def directory_type(dir_info, input_path):
+def software_invocation(dir_info, input_path):
     """
     Method to detect the directory type of a software project.
     We distinguish four main types: script, package, library and service.
     :dir_info json file containing all the extracted information about the software repositry
     :input_path path of the repository to analyze
     """
-    dir_type_info = {}
+    software_invocation_info = {}
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("Flask", "flask", "flask_restful")
     ignore_pattern=("test", "demo", "debug")
     #Note: other server dependencies are missing here. More testing is needed.
 
-    for directory in dir_info["dir_tree"]:
-        for elem in dir_info["dir_tree"][directory]:
+    for directory in dir_info["directory_tree"]:
+        for elem in dir_info["directory_tree"][directory]:
             if elem in setup_files:
-                dir_type_info = inspect_setup(input_path)
-                return dir_type_info
+                software_invocation_info = inspect_setup(input_path)
+                return software_invocation_info
 
 
     # Looping acroos all mains
@@ -814,7 +813,7 @@ def directory_type(dir_info, input_path):
     # Note: We are going to ingore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
     main_files = []
-    for key in filter(lambda key: key not in "dir_tree", dir_info):
+    for key in filter(lambda key: key not in "directory_tree", dir_info):
         result_ignore= [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
             for elem in dir_info[key]:
@@ -830,16 +829,16 @@ def directory_type(dir_info, input_path):
                                 for dep in elem["dependencies"]:
                                     for import_dep in dep["import"]:
                                         if import_dep in server_dependencies:
-                                            dir_type_info["type"] = "service"
-                                            dir_type_info["app"] = elem["file"]["path"]
+                                            software_invocation_info["type"] = "service"
+                                            software_invocation_info["app"] = elem["file"]["path"]
                                             flag_service = 1
-                                            return dir_type_info
+                                            return software_invocation_info
                                     for from_mod_dep in dep["from_module"]:
                                         if from_mod_dep in server_dependencies:
-                                            dir_type_info["type"] = "service"
-                                            dir_type_info["app"] = elem["file"]["path"]
+                                            software_invocation_info["type"] = "service"
+                                            software_invocation_info["app"] = elem["file"]["path"]
                                             flag_service = 1
-                                            return dir_type_info
+                                            return software_invocation_info
                             except:
                                 main_files.append(elem["file"]["path"])
 
@@ -849,18 +848,18 @@ def directory_type(dir_info, input_path):
     # If we havent find a service, but we have main(s)
     # it is very likely to be a service
     for m in range(0, len(main_files)):
-        dir_type_info[m] = {}
-        dir_type_info[m]["type"] = "script with main"
-        dir_type_info[m]["run"] = "python " + main_files[m] + " --help"
+        software_invocation_info[m] = {}
+        software_invocation_info[m]["type"] = "script with main"
+        software_invocation_info[m]["run"] = "python " + main_files[m] + " --help"
     if len(main_files)>0:
-        return dir_type_info
+        return software_invocation_info
 
   
     # If we havent find a main, then we can try to find again if we have
     # a service
     # Note: We are going to ingore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
-    for key in filter(lambda key: key not in "dir_tree", dir_info):
+    for key in filter(lambda key: key not in "directory_tree", dir_info):
         result_ignore= [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
             for elem in dir_info[key]:
@@ -870,41 +869,41 @@ def directory_type(dir_info, input_path):
                         for dep in elem["dependencies"]:
                             for import_dep in dep["import"]:
                                 if import_dep in server_dependencies:
-                                    dir_type_info["type"] = "service"
-                                    dir_type_info["app"] = elem["file"]["path"]
-                                    return dir_type_info
+                                    software_invocation_info["type"] = "service"
+                                    software_invocation_info["app"] = elem["file"]["path"]
+                                    return software_invocation_info
                             for from_mod_dep in dep["from_module"]:
                                 if from_mod_dep in server_dependencies:
-                                    dir_type_info["type"] = "service"
-                                    return dir_type_info
+                                    software_invocation_info["type"] = "service"
+                                    return software_invocation_info
                     except:
                         pass
 
     #NOTE: OPTION 1
     # Note: Without ingore files and directories
     python_files = []
-    for directory in dir_info["dir_tree"]:
-        for elem in dir_info["dir_tree"][directory]:
+    for directory in dir_info["directory_tree"]:
+        for elem in dir_info["directory_tree"][directory]:
             if ".py" in elem:
                 python_files.append(elem)
   
     #NOTE: OPTION 2
     # Note: Ingoring all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
-    #for directory in dir_info["dir_tree"]:
+    #for directory in dir_info["directory_tree"]:
     #    result_ignore= [directory for ip in ignore_pattern if ip in directory]
     #    if not result_ignore:
-    #        for elem in dir_info["dir_tree"][directory]:
+    #        for elem in dir_info["directory_tree"][directory]:
     #            result_ignore= [elem for ip in ignore_pattern if ip in elem]
     #            if not result_ignore:
     #                if ".py" in elem:
     #                    python_files.append(elem)
 
     for f in range(0, len(python_files)):
-        dir_type_info[f] = {}
-        dir_type_info[f]["type"] = "script without main"
-        dir_type_info[f]["run"] = "python " + python_files[f] + " --help"
-    return dir_type_info
+        software_invocation_info[f] = {}
+        software_invocation_info[f]["type"] = "script without main"
+        software_invocation_info[f]["run"] = "python " + python_files[f] + " --help"
+    return software_invocation_info
 
 
 def find_requirements(input_path):
