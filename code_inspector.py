@@ -72,7 +72,7 @@ class CodeInspection:
         :return dictionary a dictionary with the file information extracted
         """
         fileInfo = {}
-        fileInfo["path"] = self.path
+        fileInfo["path"] = os.path.abspath(self.path)
         fileName = os.path.basename(self.path).split(".")
         fileInfo["fileNameBase"] = fileName[0]
         fileInfo["extension"] = fileName[1]
@@ -510,7 +510,7 @@ def create_output_dirs(output_dir):
                           will be created.
        """
 
-    control_flow_dir = output_dir + "/ControlFlow"
+    control_flow_dir = os.path.abspath(output_dir) + "/ControlFlow"
 
     if not os.path.exists(control_flow_dir):
         print("Creating cf %s" % control_flow_dir)
