@@ -49,9 +49,9 @@ class CodeInspection:
         self.fileInfo = self.inspect_file()
         format = "png"
         self.controlFlowInfo = self.inspect_controlflow(format)
-        self.funcsInfo = self.inspect_functions()
-        self.classesInfo = self.inspect_classes()
         self.depInfo = self.inspect_dependencies()
+        self.classesInfo = self.inspect_classes()
+        self.funcsInfo = self.inspect_functions()
         self.fileJson = self.file_json()
 
     def parser_file(self):
@@ -122,7 +122,11 @@ class CodeInspection:
         """
 
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
-        return self._f_definitions(functions_definitions)
+        funct_def_info = self._f_definitions(functions_definitions)
+
+        # improving the list of calls
+        funct_def_info= self._fill_call_name(funct_def_info, self.classesInfo) 
+        return funct_def_info
 
     def inspect_classes(self):
         """ inspect_classes detects all the classes and their methods,
@@ -163,6 +167,10 @@ class CodeInspection:
             classesInfo[c.name]["min_max_lineno"] = self._compute_interval(c)
             methods_definitions = [node for node in c.body if isinstance(node, ast.FunctionDef)]
             classesInfo[c.name]["methods"] = self._f_definitions(methods_definitions)
+
+        # improving the list of calls
+        for c in classesInfo:
+            classesInfo[c]["methods"]= self._fill_call_name(classesInfo[c]["methods"], classesInfo) 
         return classesInfo
 
     def inspect_dependencies(self):
@@ -293,7 +301,8 @@ class CodeInspection:
             funcs_calls = [node.func for node in ast.walk(f) if isinstance(node, ast.Call)]
             func_name_id=[self._get_func_name(func) for func in funcs_calls]
             func_name_id = list(dict.fromkeys(func_name_id))
-            funcs_info[f.name]["calls_to_functions"] = func_name_id
+            func_name_id= [f_x for f_x in func_name_id if f_x is not None]
+            funcs_info[f.name]["calls"] = func_name_id
         return funcs_info
 
  
@@ -313,29 +322,94 @@ class CodeInspection:
             # the module is not longer an ast.Attribute
             # entering here in case the module is a Name
             if isinstance(module, ast.Name):
-                func_name= module.id + "." + attr
+                try:
+                    func_name= module.id + "." + attr
+                except:
+                    pass
                 return func_name
             
             #entering here in case the module is a Call
             #recursivity!    
             elif isinstance(module, ast.Call):
-                 func_name =self._get_func_name(module.func)+"()."+attr
+                 try:
+                     func_name =self._get_func_name(module.func)+"()."+attr
+                 except:
+                     pass
                  return func_name
 
             #the module is a subscript
             #recursivity!
             elif isinstance(module, ast.Subscript): 
                 #ast.Subscripts
-                func_name =self._get_func_name(module.value)
-                if not func_name:
-                    func_name="[]." + attr 
-                else:
-                    func_name = func_name + "[]." + attr 
+                try:
+                    func_name =self._get_func_name(module.value)
+                    if not func_name:
+                        func_name="[]." + attr 
+                    else:
+                        func_name = func_name + "[]." + attr 
+                except:
+                    pass
                 return func_name
             else:
-                #print("---ignore %s" %module.s)
                 return func_name
                 
+    def _fill_call_name(self, funct_def_info, classesInfo):
+        for funct in funct_def_info:
+            renamed_calls=[] 
+            for call_name in funct_def_info[funct]["calls"]:
+                 module_call_name=call_name.split(".")[0]
+                 rest_call_name=call_name.split(".")[1:]
+                 rest_call_name='.'.join(rest_call_name)
+                 renamed = 0
+
+                 #check if we are calling to the constructor of a class
+                 #in that case, add fileNameBase and __init__
+                 if call_name in classesInfo:
+                     renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name+".__init__")
+
+                 #check if we are calling an imported module or an alias
+                 elif "self" in module_call_name:
+                     for c in classesInfo:
+                         if rest_call_name in classesInfo[c]["methods"]: 
+                             renamed_calls.append(self.fileInfo["fileNameBase"]+"."+c+"."+ rest_call_name)
+                 else:
+                     renamed = 0 
+                     if rest_call_name:
+                           rest_call_name="."+ rest_call_name
+                     else:
+                           rest_call_name=""
+
+                     for dep in self.depInfo:
+                         #if module_call_name in dep["import"]:
+                         if dep["import"][0] == module_call_name:
+                             if dep["from_module"]:
+                                 name_from_module=""
+                                 for mod in dep["from_module"]:
+                                     name_from_module += mod + "."
+                                 renamed=1
+                                 renamed_calls.append(name_from_module+call_name)
+
+                         elif dep["alias"]:
+                             if dep["alias"] == module_call_name:
+                                 if dep["from_module"]:
+                                     name_from_module=""
+                                     for mod in dep["from_module"]:
+                                         name_from_module += mod + "."
+                                     renamed=1
+                                     renamed_calls.append(name_from_module+dep["import"][0]+rest_call_name)
+                                 else:
+                                     renamed=1
+                                     renamed_calls.append(dep["import"][0]+rest_call_name)
+
+                     if not renamed:
+                         #check if the call is a function of the current module 
+                         if call_name in funct_def_info.keys():
+                             renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name)
+                         else:
+                             renamed_calls.append(call_name)
+            funct_def_info[funct]["calls"]=renamed_calls
+        return funct_def_info
+
 
     def _get_ids(self, elt):
         """_get_ids extracts identifiers if present. 
