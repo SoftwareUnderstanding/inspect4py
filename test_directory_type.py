@@ -37,22 +37,22 @@ for dir_name in os.listdir(repo_path):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     req_dict = {}
-    with open("OutputDir/DirectoryInfo.json", "r") as file:
+    with open("output_dir/DirectoryInfo.json", "r") as file:
         data = json.load(file)
     file.close()
     current_type = "unknown"
-    # This will have to be changed if dir_type JSON definition is changed
-    if 'dir_type' in data.keys() and data['dir_type']:
-        # print(dirname+" "+str(data['dir_type']))
-        print(str(data['dir_type']))
+    # This will have to be changed if software_invocation JSON definition is changed
+    if 'software_invocation' in data.keys() and data['software_invocation']:
+        #print(dirname+" "+str(data['software_invocation']))
+        print(str(data['software_invocation']))
         try:
-            aux = data['dir_type']['0']
+            aux = data['software_invocation']['0']
             current_type = aux["type"]
         except:
             try:
-                current_type = data['dir_type']["type"]
+                current_type = data['software_invocation']["type"]
             except:
-                current_type = data['dir_type']
+                current_type = data['software_invocation']
 
     for index,row in benchmark_df.iterrows():
         if dir_name in row["repository"]:
