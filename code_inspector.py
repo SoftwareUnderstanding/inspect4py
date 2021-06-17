@@ -671,7 +671,8 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
 def inspect_setup_cfg(parent_dir , name):
      setup_info={}
      setup_cfg= os.path.join(parent_dir, "setup.cfg")
-     
+     print("setup_cfg %s" %setup_cfg)
+     print("Estoy aqui: %s " % os.getcwd())
      # checking if we have setup.cfg. If we dont have - library. 
      if Path(setup_cfg).is_file():
          parser = configparser.ConfigParser()
@@ -709,7 +710,7 @@ def inspect_setup_cfg(parent_dir , name):
                          cs_string=cs.split("=")[0].rstrip() 
                          setup_info["run"].append(cs_string+ ' --help')
                          cs_list.append(cs_string)
-                     if  name not in cs_string:
+                     if  name not in cs_list:
                          setup_info["type"] = "library and package"
                          setup_info["run"].append("import " + name)
                      else: 
@@ -740,7 +741,7 @@ def inspect_setup(parent_dir):
     abs_parent_dir = os.path.abspath(parent_dir)
     sys.path.insert(0, abs_parent_dir)
     current_dir = os.getcwd()
-    os.chdir(parent_dir)
+    os.chdir(abs_parent_dir)
     with tempfile.NamedTemporaryFile(prefix="setup_temp_", mode='w', dir=abs_parent_dir, suffix='.py') as temp_fh:
         with open(os.path.join(abs_parent_dir, "setup.py"), 'r') as setup_fh:
             temp_fh.write(setup_fh.read())
@@ -751,7 +752,7 @@ def inspect_setup(parent_dir):
                 __import__(module_name)
         except:
             name=""
-            setup_info=inspect_setup_cfg(parent_dir, name)
+            setup_info=inspect_setup_cfg(abs_parent_dir, name)
             os.chdir(current_dir)
             return setup_info
         finally:
@@ -764,7 +765,7 @@ def inspect_setup(parent_dir):
         name = kwargs.get('name').lower()
         entry_point= kwargs.get('entry_points')
         if not entry_point:
-            setup_info=inspect_setup_cfg(parent_dir, name)
+            setup_info=inspect_setup_cfg(abs_parent_dir, name)
             os.chdir(current_dir)
             return setup_info
         else:
