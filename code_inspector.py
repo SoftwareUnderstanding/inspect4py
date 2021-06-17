@@ -798,56 +798,65 @@ def inspect_setup(parent_dir):
                     setup_info["run"] = "import " + name
                     return setup_info
 
-        # I have to parse manually setup.py
-        # because the mock did not work
         else:
-            os.chdir(current_dir)
-            setup_content = open(os.path.join(abs_parent_dir, "setup.py")).read().split("\n")
-            console_index=0
-            flag_console=0
-            name_index=0
-            flag_name=0
-            name="unknown"
-            for elem in setup_content:
-                if 'name=' in elem:
-                    flag_name=1
-                    break
-                else:
-                    name_index+=1
-            if flag_name:
-                name=setup_content[name_index].split('=')[1].split(',')[0].replace('\'', '')
- 
-            for elem in setup_content:
-                 if 'console_scripts' in elem:
-                     flag_console=1
-                     break
-                 else:
-                     console_index+=1
-
-            if flag_console:
-                flag_found = 0
-                cs_list=[]
-                setup_info["run"] = []
-                for elem in setup_content[console_index+1:]:
-                    if ']' not in elem:
-                        cs_string=elem.split("=")[0].strip().replace('\'', '')
-                        cs_list.append(cs_string)
-                        setup_info["run"].append(cs_string+ " --help")
-                    else:
-                        break
-                if name in cs_list:     
-                    setup_info["type"] = "package"
-                    setup_info["installation"] = "pip install " + name
-                else:
-                    setup_info["type"] = "library and package"
-                    setup_info["installation"] = "pip install " + name
-                    setup_info["run"].append("import " + name)
+            # got an error with mock - lets check setup.cfg
+            setup_cfg= os.path.join(abs_parent_dir, "setup.cfg")
+            if Path(setup_cfg).is_file():
+                name=""
+                error=1
+                setup_info=inspect_setup_cfg(abs_parent_dir, name, error)
+                os.chdir(current_dir)
                 return setup_info
+            # I have to parse manually setup.py
+            # because the mock did not work
             else:
-                setup_info["type"] = "library"
-                setup_info["installation"] = "pip install " + name
-                setup_info["run"] = "import " + name
-                return setup_info
+                os.chdir(current_dir)
+                setup_content = open(os.path.join(abs_parent_dir, "setup.py")).read().split("\n")
+                console_index=0
+                flag_console=0
+                name_index=0
+                flag_name=0
+                name = "UNKNOWN"
+                for elem in setup_content:
+                    if 'name=' in elem:
+                        flag_name=1
+                        break
+                    else:
+                        name_index+=1
+                if flag_name:
+                    name=setup_content[name_index].split('=')[1].split(',')[0].replace('\'', '')
+ 
+                for elem in setup_content:
+                    if 'console_scripts' in elem:
+                        flag_console=1
+                        break
+                    else:
+                        console_index+=1
+
+                if flag_console:
+                    flag_found = 0
+                    cs_list=[]
+                    setup_info["run"] = []
+                    for elem in setup_content[console_index+1:]:
+                        if ']' not in elem:
+                            cs_string=elem.split("=")[0].strip().replace('\'', '')
+                            cs_list.append(cs_string)
+                            setup_info["run"].append(cs_string+ " --help")
+                        else:
+                            break
+                    if name in cs_list:     
+                       setup_info["type"] = "package"
+                       setup_info["installation"] = "pip install " + name
+                    else:
+                        setup_info["type"] = "library and package"
+                        setup_info["installation"] = "pip install " + name
+                        setup_info["run"].append("import " + name)
+                    return setup_info
+                else:
+                    setup_info["type"] = "library"
+                    setup_info["installation"] = "pip install " + name
+                    setup_info["run"] = "import " + name
+                    return setup_info
     
 
 
