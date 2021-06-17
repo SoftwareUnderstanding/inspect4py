@@ -358,7 +358,6 @@ class CodeInspection:
                  module_call_name=call_name.split(".")[0]
                  rest_call_name=call_name.split(".")[1:]
                  rest_call_name='.'.join(rest_call_name)
-                 renamed = 0
 
                  #check if we are calling to the constructor of a class
                  #in that case, add fileNameBase and __init__
@@ -370,7 +369,18 @@ class CodeInspection:
                      renamed_calls.append(self.fileInfo["fileNameBase"]+"."+className+"."+ rest_call_name)
 
                  elif "super()" in module_call_name and extend:
-                     renamed_calls.append(self.fileInfo["fileNameBase"]+"."+extend[0]+"."+ rest_call_name)
+                     rename=0
+                     # dealing with Multiple Inheritance
+                     while extend and not rename:
+                         for ext in extend:
+                             if rest_call_name in classesInfo[ext]["methods"]:
+                                 renamed_calls.append(self.fileInfo["fileNameBase"]+"."+ext+"."+ rest_call_name)
+                                 rename=1
+                                 break
+                             else:
+                                 extend=classesInfo[ext]["extend"]
+                     if not rename:
+                         renamed_calls.append(call_name)
                  else:
                      renamed = 0 
                      if rest_call_name:
