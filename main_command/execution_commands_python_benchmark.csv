@@ -11,7 +11,7 @@ usc-isi-i2/kgtk-browser,service,flask run,,,
 usc-isi-i2/wikidata-property-finder,service,python app.py,,,
 oeg-upm/Chowlk,service,python app.py,,,
 oeg-upm/morph-csv,script,python3 morphcsv.py,launches a service but not clear where,X,"NOTE: There are two mains, one with a service ( morph-csv-interface/backend/app.py ) an another without (morphcsv.py) . It gives priority to the one with a service - so it classifies as a service"
-modflowpy/flopy,library and package,import flopy,,,
+modflowpy/flopy,library,import flopy,,,
 mintproject/cromo,package,cromo,,X,FIXED
 pySRURGS/pySRURGS,script,python3 pySRURGS.py,,,
 gacou54/pyorthanc/,library,from pyorthanc import Orthanc,,,
@@ -23,7 +23,7 @@ dask/dask,library,import dask,,,
 Yelp/mrjob,package,import mrjob,,,
 httplib2/httplib2,library,import httplib2,,,
 spyoungtech/grequests,library,import grequests,,,
-RDFLib/rdflib-jsonld,library ,import rdflib,,,
+RDFLib/rdflib-jsonld,library,import rdflib,,,
 RDFLib/sparqlwrapper,library,from SPARQLWrapper import SPARQLWrapper,,,
 RDFLib/pyLODE,library and package,import pylode,also script ,X ,"SEMI_FIXED: The setup.py has an entry_point, with a console_script, with the same name of the package. Normally, this means that this is package. "
 RDFLib/rdflib,library and package,import rdflib,also library,X,FIXED
