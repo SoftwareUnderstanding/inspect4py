@@ -350,6 +350,21 @@ class CodeInspection:
                 return func_name
             else:
                 return func_name
+
+
+    def _dfs(self, extend, rest_call_name, rename, classesInfo, renamed_calls):
+        for ext in extend:
+            if rest_call_name in classesInfo[ext]["methods"]:
+                renamed_calls.append(self.fileInfo["fileNameBase"]+"."+ext+"."+ rest_call_name)
+                rename = 1
+                return rename
+            else:
+                extend=classesInfo[ext]["extend"]
+                rename=self._dfs(extend,rest_call_name, rename,classesInfo, renamed_calls)
+                if rename:
+                    break
+        return rename
+
                 
     def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
         for funct in funct_def_info:
@@ -369,16 +384,10 @@ class CodeInspection:
                      renamed_calls.append(self.fileInfo["fileNameBase"]+"."+className+"."+ rest_call_name)
 
                  elif "super()" in module_call_name and extend:
-                     rename=0
                      # dealing with Multiple Inheritance
-                     while extend and not rename:
-                         for ext in extend:
-                             if rest_call_name in classesInfo[ext]["methods"]:
-                                 renamed_calls.append(self.fileInfo["fileNameBase"]+"."+ext+"."+ rest_call_name)
-                                 rename=1
-                                 break
-                             else:
-                                 extend=classesInfo[ext]["extend"]
+                     rename=0
+                     #implemented depth first search algorithm
+                     rename=self._dfs(extend, rest_call_name, rename, classesInfo, renamed_calls)
                      if not rename:
                          renamed_calls.append(call_name)
                  else:
