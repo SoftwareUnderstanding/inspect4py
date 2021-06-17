@@ -18,7 +18,6 @@ import subprocess
 import tempfile
 import tokenize
 from pathlib import Path
-from unittest import mock
 
 import click
 import setuptools
@@ -28,8 +27,7 @@ from json2html import *
 
 from staticfg import builder
 from structure_tree import DisplayablePath, get_directory_structure
-import configparser
-
+from parse_setup_files import inspect_setup
 
 class CodeInspection:
     def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
@@ -667,197 +665,6 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
             print(path.displayable())
     return get_directory_structure(input_path, ignore_set)
 
-
-def inspect_setup_cfg(parent_dir , name, error=0):
-     setup_info={}
-     setup_cfg= os.path.join(parent_dir, "setup.cfg")
-     # checking if we have setup.cfg. If we dont have - library. 
-     if Path(setup_cfg).is_file():
-         parser = configparser.ConfigParser()
-         with open("setup.cfg", "r") as f:
-             parser.read_file(f)
-         #extracting the name
-         if not name: 
-             section="metadata"
-             if section in parser:
-                 metadata=dict(parser["metadata"])
-                 if "name" in metadata:
-                    name=metadata["name"]
-                 else:
-                    try:
-                        name = subprocess.getoutput("python setup.py --name")
-                    except:
-                        name = "UNKNOWN"
-                                        
-             else:
-                 try:
-                     name = subprocess.getoutput("python setup.py --name")
-                 except:
-                     name = "UNKNOWN"
-         #extracting entry_points
-         section="entry_points"
-         for s in parser:
-             if section in s:
-                 data=dict(parser[s])
-                 if "console_scripts" in data:
-                     console_scripts=data["console_scripts"].splitlines()
-                     console_scripts.remove('')
-                     setup_info["run"] = []
-                     cs_list=[] 
-                     for cs in console_scripts:
-                         cs_string=cs.split("=")[0].rstrip() 
-                         setup_info["run"].append(cs_string+ ' --help')
-                         cs_list.append(cs_string)
-                     if  name not in cs_list:
-                         setup_info["type"] = "library and package"
-                         setup_info["run"].append("import " + name)
-                     else: 
-                         setup_info["type"] = "package"
-                     return setup_info
-                            
-         setup_info["type"] = "library"
-         setup_info["installation"] = "pip install " + name
-         setup_info["run"] = "import " + name
-         return setup_info
-     else:
-         # HERE I AM JUST GUESSING
-         # This is the last resource. We got here because an exception
-         # or becasue we are not able to open setup.py and there is not setup.cfg
-         # Classify it as package
-         try:
-             if not name:
-                 name = subprocess.getoutput("python setup.py --name")
-         except:
-                 name = "UNKNOWN"
-
-         if error:
-             setup_info["type"] = "package"
-             setup_info["installation"] = "pip install " + name
-             setup_info["run"] =  name + " --help"
-
-         else:
-             setup_info["type"] = "library"
-             setup_info["installation"] = "pip install " + name
-             setup_info["run"] = "import " + name
-         return setup_info
-
-def inspect_setup(parent_dir):
-    setup_info = {}
-    abs_parent_dir = os.path.abspath(parent_dir)
-    sys.path.insert(0, abs_parent_dir)
-    current_dir = os.getcwd()
-    os.chdir(abs_parent_dir)
-    with tempfile.NamedTemporaryFile(prefix="setup_temp_", mode='w', dir=abs_parent_dir, suffix='.py') as temp_fh:
-        with open(os.path.join(abs_parent_dir, "setup.py"), 'r') as setup_fh:
-            temp_fh.write(setup_fh.read())
-            temp_fh.flush()
-        try:
-            with mock.patch.object(setuptools, 'setup') as mock_setup:
-                module_name = os.path.basename(temp_fh.name).split(".")[0]
-                __import__(module_name)
-        except:
-            name=""
-            error=1
-            setup_info=inspect_setup_cfg(abs_parent_dir, name, error)
-            os.chdir(current_dir)
-            return setup_info
-        finally:
-            # need to blow away the pyc
-            try:
-                os.remove("%sc" % temp_fh.name)
-            except:
-                pass
-        if mock_setup.call_args_list:
-            args, kwargs = mock_setup.call_args
-            name = kwargs.get('name').lower()
-            entry_point= kwargs.get('entry_points')
-            if not entry_point:
-                setup_info=inspect_setup_cfg(abs_parent_dir, name)
-                os.chdir(current_dir)
-                return setup_info
-            else:
-                os.chdir(current_dir)
-                if 'console_scripts' in entry_point:
-                    setup_info["run"] = []
-                    cs_list=[]
-                    for cs in entry_point['console_scripts']:
-                        cs_string=cs.split("=")[0].rstrip()
-                        setup_info["run"].append(cs_string+ " --help")
-                        cs_list.append(cs_string)
-                    if name not in cs_list:
-                        setup_info["type"] = "library and package"
-                        setup_info["run"].append("import " + name)
-                    else: 
-                        setup_info["type"] = "package"
-                    setup_info["installation"] = "pip install " + name
-                    return setup_info
-
-                else:
-                    setup_info["type"] = "library"
-                    setup_info["installation"] = "pip install " + name
-                    setup_info["run"] = "import " + name
-                    return setup_info
-
-        else:
-            # got an error with mock - lets check setup.cfg
-            setup_cfg= os.path.join(abs_parent_dir, "setup.cfg")
-            if Path(setup_cfg).is_file():
-                name=""
-                error=1
-                setup_info=inspect_setup_cfg(abs_parent_dir, name, error)
-                os.chdir(current_dir)
-                return setup_info
-            # I have to parse manually setup.py
-            # because the mock did not work
-            else:
-                os.chdir(current_dir)
-                setup_content = open(os.path.join(abs_parent_dir, "setup.py")).read().split("\n")
-                console_index=0
-                flag_console=0
-                name_index=0
-                flag_name=0
-                name = "UNKNOWN"
-                for elem in setup_content:
-                    if 'name=' in elem:
-                        flag_name=1
-                        break
-                    else:
-                        name_index+=1
-                if flag_name:
-                    name=setup_content[name_index].split('=')[1].split(',')[0].replace('\'', '')
- 
-                for elem in setup_content:
-                    if 'console_scripts' in elem:
-                        flag_console=1
-                        break
-                    else:
-                        console_index+=1
-
-                if flag_console:
-                    flag_found = 0
-                    cs_list=[]
-                    setup_info["run"] = []
-                    for elem in setup_content[console_index+1:]:
-                        if ']' not in elem:
-                            cs_string=elem.split("=")[0].strip().replace('\'', '')
-                            cs_list.append(cs_string)
-                            setup_info["run"].append(cs_string+ " --help")
-                        else:
-                            break
-                    if name in cs_list:     
-                       setup_info["type"] = "package"
-                       setup_info["installation"] = "pip install " + name
-                    else:
-                        setup_info["type"] = "library and package"
-                        setup_info["installation"] = "pip install " + name
-                        setup_info["run"].append("import " + name)
-                    return setup_info
-                else:
-                    setup_info["type"] = "library"
-                    setup_info["installation"] = "pip install " + name
-                    setup_info["run"] = "import " + name
-                    return setup_info
-    
 
 
 def software_invocation(dir_info, input_path):
