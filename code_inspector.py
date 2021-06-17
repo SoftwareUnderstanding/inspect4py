@@ -668,7 +668,7 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     return get_directory_structure(input_path, ignore_set)
 
 
-def inspect_setup_cfg(parent_dir , name):
+def inspect_setup_cfg(parent_dir , name, error=0):
      setup_info={}
      setup_cfg= os.path.join(parent_dir, "setup.cfg")
      # checking if we have setup.cfg. If we dont have - library. 
@@ -720,7 +720,6 @@ def inspect_setup_cfg(parent_dir , name):
          setup_info["run"] = "import " + name
          return setup_info
      else:
-         print("LAST RESOURCE!!!")
          # HERE I AM JUST GUESSING
          # This is the last resource. We got here because an exception
          # or becasue we are not able to open setup.py and there is not setup.cfg
@@ -730,9 +729,16 @@ def inspect_setup_cfg(parent_dir , name):
                  name = subprocess.getoutput("python setup.py --name")
          except:
                  name = "UNKNOWN"
-         setup_info["type"] = "library"
-         setup_info["installation"] = "pip install " + name
-         setup_info["run"] = "import" + name
+
+         if error:
+             setup_info["type"] = "package"
+             setup_info["installation"] = "pip install " + name
+             setup_info["run"] =  name + " --help"
+
+         else:
+             setup_info["type"] = "library"
+             setup_info["installation"] = "pip install " + name
+             setup_info["run"] = "import " + name
          return setup_info
 
 def inspect_setup(parent_dir):
@@ -751,7 +757,8 @@ def inspect_setup(parent_dir):
                 __import__(module_name)
         except:
             name=""
-            setup_info=inspect_setup_cfg(abs_parent_dir, name)
+            error=1
+            setup_info=inspect_setup_cfg(abs_parent_dir, name, error)
             os.chdir(current_dir)
             return setup_info
         finally:
