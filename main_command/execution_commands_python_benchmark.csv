@@ -14,10 +14,10 @@ oeg-upm/morph-csv,script,python3 morphcsv.py,launches a service but not clear wh
 modflowpy/flopy,library,import flopy,,,
 mintproject/cromo,package,cromo,,X,FIXED
 pySRURGS/pySRURGS,script,python3 pySRURGS.py,,,
-gacou54/pyorthanc/,library,from pyorthanc import Orthanc,,,
+gacou54/pyorthanc,library,from pyorthanc import Orthanc,,,
 KnowledgeCaptureAndDiscovery/ClimComp,script,python ClimComp.py,,,
 clementranc/moana,library,import moana,,,
-Maarten-vd-Sande/qnorm/,package,qnorm ,,,
+Maarten-vd-Sande/qnorm,package,qnorm ,,,
 spotify/luigi,package,luigi,,,
 dask/dask,library,import dask,,,
 Yelp/mrjob,package,import mrjob,,,

@@ -28,7 +28,9 @@ for index, row in benchmark_df.iterrows():
 
 # Process
 num_correct = 0
+num_error = 0
 num_total = benchmark_df.shape[0] # rows
+num_analyses = 0
 details = {}
 for dir_name in os.listdir(repo_path):
     print("######## Processing: " + dir_name)
@@ -56,9 +58,9 @@ for dir_name in os.listdir(repo_path):
             except:
                 current_type = data['software_invocation']
                 software_inf = data['software_invocation']
-
+    flag = 0
     for index,row in benchmark_df.iterrows():
-        if dir_name == row["repository"].split("/")[-1]:
+        if dir_name == row["repository"].split("/")[-1].strip():
             row_type = row["type"].strip()
             if row_type in current_type:
                 num_correct += 1
@@ -66,5 +68,10 @@ for dir_name in os.listdir(repo_path):
             else:
                 print("## ERROR type for %s: infer type [%s] - real type [%s]" %(dir_name, current_type, row_type))
                 print("## ERROR TOTAL INFO INFERRED for %s - %s" %(dir_name, software_inf))
+                num_error += 1
+            num_analyses+=1
+            flag = 1
+    if not flag:
+        print("--> ATENTION! NOT FOUND %s " %dir_name)
 
-print("Accuracy: " + str(num_correct) + " out of " + str(num_total) + ". "+ str(num_correct/num_total))
+print("Accuracy: " + str(num_correct) + " out of " + str(num_analyses) + ". Num errors=" + str(num_error) +". "+ str(num_correct/num_analyses))
