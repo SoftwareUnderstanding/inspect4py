@@ -45,6 +45,6 @@ Kirili4ik/code2vec,script,python3 code2vec.py,,,
 defoe-code/defoe,package,defoe,,,
 obspy/obspy,library and package,import obspy,,,
 uafgeotools/pysep,script,python run_getwaveform.py | python event_input.py   ,,,
-apache/airflow,package,airflow,,,
+apache/airflow,package,airflow,,,NOTE: the command line name is the different from the package name.
 allenai/allennlp,package,allennlp,,,
 ageitgey/face_recognition,package,face_recognition | face_detection,,,
