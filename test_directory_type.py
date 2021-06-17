@@ -58,8 +58,7 @@ for dir_name in os.listdir(repo_path):
                 software_inf = data['software_invocation']
 
     for index,row in benchmark_df.iterrows():
-        if dir_name in row["repository"]:
-
+        if dir_name == row["repository"].split("/")[-1]:
             row_type = row["type"].strip()
             if row_type in current_type:
                 num_correct += 1
