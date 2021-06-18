@@ -1,0 +1,2 @@
+date,#repositories,accuracy,error_repos
+18/06/2021 21:33:01,75,0.8133333333333334,"['Ppool', 'gtfs-bench', 'fuzzy-c-means', 'Jarsomatic', 'mowgli-in-the-jungle', 'rltk', 'pyLODE', 'tada-gam', 'AstreaRun', 'pyrallel', 't2wml-annotation', 'fastseq', 'datamart-upload', 'morph-csv']"

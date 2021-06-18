@@ -15,19 +15,18 @@ import ast
 import json
 import os
 import subprocess
-import tempfile
 import tokenize
 from pathlib import Path
 
 import click
-import setuptools
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as doc_parse
 from json2html import *
 
+from parse_setup_files import inspect_setup
 from staticfg import builder
 from structure_tree import DisplayablePath, get_directory_structure
-from parse_setup_files import inspect_setup
+
 
 class CodeInspection:
     def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
@@ -123,7 +122,7 @@ class CodeInspection:
         funct_def_info = self._f_definitions(functions_definitions)
 
         # improving the list of calls
-        funct_def_info= self._fill_call_name(funct_def_info, self.classesInfo) 
+        funct_def_info = self._fill_call_name(funct_def_info, self.classesInfo)
         return funct_def_info
 
     def inspect_classes(self):
@@ -168,7 +167,8 @@ class CodeInspection:
 
         # improving the list of calls
         for c in classesInfo:
-            classesInfo[c]["methods"]= self._fill_call_name(classesInfo[c]["methods"], classesInfo, c, classesInfo[c]["extend"]) 
+            classesInfo[c]["methods"] = self._fill_call_name(classesInfo[c]["methods"], classesInfo, c,
+                                                             classesInfo[c]["extend"])
         return classesInfo
 
     def inspect_dependencies(self):
@@ -217,11 +217,11 @@ class CodeInspection:
                     if_main_flag = 1
 
                 funcs_calls = [i.value.func for i in node.body if isinstance(i.value, ast.Call)]
-                func_name_id=[self._get_func_name(func) for func in funcs_calls]
+                func_name_id = [self._get_func_name(func) for func in funcs_calls]
 
-                #Note: Assigning just the first name in the list as the main function. 
+                # Note: Assigning just the first name in the list as the main function.
                 if func_name_id:
-                    if_main_func = self.fileInfo["fileNameBase"]+ "."+func_name_id[0]
+                    if_main_func = self.fileInfo["fileNameBase"] + "." + func_name_id[0]
                     break
             except:
                 pass
@@ -300,139 +300,135 @@ class CodeInspection:
             funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
             funcs_calls = [node.func for node in ast.walk(f) if isinstance(node, ast.Call)]
-            func_name_id=[self._get_func_name(func) for func in funcs_calls]
+            func_name_id = [self._get_func_name(func) for func in funcs_calls]
             func_name_id = list(dict.fromkeys(func_name_id))
-            func_name_id= [f_x for f_x in func_name_id if f_x is not None]
+            func_name_id = [f_x for f_x in func_name_id if f_x is not None]
             funcs_info[f.name]["calls"] = func_name_id
         return funcs_info
 
- 
     def _get_func_name(self, func):
-        func_name=""
+        func_name = ""
         if isinstance(func, ast.Name):
             return func.id
 
         elif isinstance(func, ast.Attribute):
-            attr=""
+            attr = ""
             attr += func.attr
-            module= func.value
-            while isinstance(module, ast.Attribute):  
-                attr =  module.attr +"." +attr
-                module=module.value
+            module = func.value
+            while isinstance(module, ast.Attribute):
+                attr = module.attr + "." + attr
+                module = module.value
 
             # the module is not longer an ast.Attribute
             # entering here in case the module is a Name
             if isinstance(module, ast.Name):
                 try:
-                    func_name= module.id + "." + attr
+                    func_name = module.id + "." + attr
                 except:
                     pass
                 return func_name
-            
-            #entering here in case the module is a Call
-            #recursivity!    
-            elif isinstance(module, ast.Call):
-                 try:
-                     func_name =self._get_func_name(module.func)+"()."+attr
-                 except:
-                     pass
-                 return func_name
 
-            #the module is a subscript
-            #recursivity!
-            elif isinstance(module, ast.Subscript): 
-                #ast.Subscripts
+            # entering here in case the module is a Call
+            # recursivity!
+            elif isinstance(module, ast.Call):
                 try:
-                    func_name =self._get_func_name(module.value)
+                    func_name = self._get_func_name(module.func) + "()." + attr
+                except:
+                    pass
+                return func_name
+
+            # the module is a subscript
+            # recursivity!
+            elif isinstance(module, ast.Subscript):
+                # ast.Subscripts
+                try:
+                    func_name = self._get_func_name(module.value)
                     if not func_name:
-                        func_name="[]." + attr 
+                        func_name = "[]." + attr
                     else:
-                        func_name = func_name + "[]." + attr 
+                        func_name = func_name + "[]." + attr
                 except:
                     pass
                 return func_name
             else:
                 return func_name
-
 
     def _dfs(self, extend, rest_call_name, rename, classesInfo, renamed_calls):
         for ext in extend:
             if rest_call_name in classesInfo[ext]["methods"]:
-                renamed_calls.append(self.fileInfo["fileNameBase"]+"."+ext+"."+ rest_call_name)
+                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + ext + "." + rest_call_name)
                 rename = 1
                 return rename
             else:
-                extend=classesInfo[ext]["extend"]
-                rename=self._dfs(extend,rest_call_name, rename,classesInfo, renamed_calls)
+                extend = classesInfo[ext]["extend"]
+                rename = self._dfs(extend, rest_call_name, rename, classesInfo, renamed_calls)
                 if rename:
                     break
         return rename
 
-                
     def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
         for funct in funct_def_info:
-            renamed_calls=[] 
+            renamed_calls = []
             for call_name in funct_def_info[funct]["calls"]:
-                 module_call_name=call_name.split(".")[0]
-                 rest_call_name=call_name.split(".")[1:]
-                 rest_call_name='.'.join(rest_call_name)
+                module_call_name = call_name.split(".")[0]
+                rest_call_name = call_name.split(".")[1:]
+                rest_call_name = '.'.join(rest_call_name)
 
-                 #check if we are calling to the constructor of a class
-                 #in that case, add fileNameBase and __init__
-                 if call_name in classesInfo:
-                     renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name+".__init__")
+                # check if we are calling to the constructor of a class
+                # in that case, add fileNameBase and __init__
+                if call_name in classesInfo:
+                    renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name + ".__init__")
 
-                 #check if we are calling an imported module or an alias
-                 elif "self" in module_call_name:
-                     renamed_calls.append(self.fileInfo["fileNameBase"]+"."+className+"."+ rest_call_name)
+                # check if we are calling an imported module or an alias
+                elif "self" in module_call_name:
+                    renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className + "." + rest_call_name)
 
-                 elif "super()" in module_call_name and extend:
-                     # dealing with Multiple Inheritance
-                     rename=0
-                     #implemented depth first search algorithm
-                     rename=self._dfs(extend, rest_call_name, rename, classesInfo, renamed_calls)
-                     if not rename:
-                         renamed_calls.append(call_name)
-                 else:
-                     renamed = 0 
-                     if rest_call_name:
-                           rest_call_name="."+ rest_call_name
-                     else:
-                           rest_call_name=""
+                elif "super()" in module_call_name and extend:
+                    # dealing with Multiple Inheritance
+                    rename = 0
+                    # implemented depth first search algorithm
+                    rename = self._dfs(extend, rest_call_name, rename, classesInfo, renamed_calls)
+                    if not rename:
+                        renamed_calls.append(call_name)
+                else:
+                    renamed = 0
+                    if rest_call_name:
+                        rest_call_name = "." + rest_call_name
+                    else:
+                        rest_call_name = ""
 
-                     for dep in self.depInfo:
-                         #if module_call_name in dep["import"]:
-                         if dep["import"][0] == module_call_name:
-                             if dep["from_module"]:
-                                 name_from_module=""
-                                 for mod in dep["from_module"]:
-                                     name_from_module += mod + "."
-                                 renamed=1
-                                 renamed_calls.append(name_from_module+call_name)
+                    for dep in self.depInfo:
+                        # if module_call_name in dep["import"]:
+                        if dep["import"][0] == module_call_name:
+                            if dep["from_module"]:
+                                name_from_module = ""
+                                for mod in dep["from_module"]:
+                                    name_from_module += mod + "."
+                                renamed = 1
+                                renamed_calls.append(name_from_module + call_name)
 
-                         elif dep["alias"]:
-                             if dep["alias"] == module_call_name:
-                                 if dep["from_module"]:
-                                     name_from_module=""
-                                     for mod in dep["from_module"]:
-                                         name_from_module += mod + "."
-                                     renamed=1
-                                     renamed_calls.append(name_from_module+dep["import"][0]+rest_call_name)
-                                 else:
-                                     renamed=1
-                                     renamed_calls.append(dep["import"][0]+rest_call_name)
+                        elif dep["alias"]:
+                            if dep["alias"] == module_call_name:
+                                if dep["from_module"]:
+                                    name_from_module = ""
+                                    for mod in dep["from_module"]:
+                                        name_from_module += mod + "."
+                                    renamed = 1
+                                    renamed_calls.append(name_from_module + dep["import"][0] + rest_call_name)
+                                else:
+                                    renamed = 1
+                                    renamed_calls.append(dep["import"][0] + rest_call_name)
 
-                     if not renamed:
-                         #check if the call is a function of the current module 
-                         if call_name in funct_def_info.keys():
-                             renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name)
-                         else:
-                             #not include an extra super call. 
-                             if "super" not in call_name:
-                                 renamed_calls.append(call_name)
-            funct_def_info[funct]["calls"]=renamed_calls
+                    if not renamed:
+                        # check if the call is a function of the current module
+                        if call_name in funct_def_info.keys():
+                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                        else:
+                            # not include an extra super call.
+                            if "super" not in call_name:
+                                renamed_calls.append(call_name)
+            funct_def_info[funct]["calls"] = renamed_calls
         return funct_def_info
-
 
     def _get_ids(self, elt):
         """_get_ids extracts identifiers if present. 
@@ -572,7 +568,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
         if html_output:
             output_file_html = json_dir + "/FileInfo.html"
-            f=open(code_info.fileJson[1])
+            f = open(code_info.fileJson[1])
             data = json.load(f)
             generate_output_html(data, output_file_html)
 
@@ -688,7 +684,6 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     return get_directory_structure(input_path, ignore_set)
 
 
-
 def software_invocation(dir_info, input_path):
     """
     Method to detect the directory type of a software project.
@@ -699,9 +694,9 @@ def software_invocation(dir_info, input_path):
     software_invocation_info = {}
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("Flask", "flask", "flask_restful")
-    ignore_pattern=("test", "demo", "debug")
-    #ignore_pattern=()
-    #Note: other server dependencies are missing here. More testing is needed.
+    ignore_pattern = ("test", "demo", "debug")
+    # ignore_pattern=()
+    # Note: other server dependencies are missing here. More testing is needed.
 
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
@@ -709,25 +704,25 @@ def software_invocation(dir_info, input_path):
                 software_invocation_info = inspect_setup(input_path)
                 return software_invocation_info
 
-
     # Looping acroos all mains
     # to decide if it is a service (main + flask) or just a script (main without flask)
     # Note: We are going to ingore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
     main_files = []
     for key in filter(lambda key: key not in "directory_tree", dir_info):
-        result_ignore= [key for ip in ignore_pattern if ip in key]
+        result_ignore = [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
             for elem in dir_info[key]:
-                result_ignore= [elem["file"]["fileNameBase"] for ip in ignore_pattern if ip in elem["file"]["fileNameBase"]]
+                result_ignore = [elem["file"]["fileNameBase"] for ip in ignore_pattern if
+                                 ip in elem["file"]["fileNameBase"]]
                 if not result_ignore:
                     if "main_info" in elem:
                         if elem["main_info"]["main_flag"]:
-                            #print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
+                            # print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
                             flag_service = 0
                             # Note:
                             # When we find a service in a main, it is very likely to be a service
-                            try: 
+                            try:
                                 for dep in elem["dependencies"]:
                                     for import_dep in dep["import"]:
                                         if import_dep in server_dependencies:
@@ -753,19 +748,19 @@ def software_invocation(dir_info, input_path):
         software_invocation_info[m] = {}
         software_invocation_info[m]["type"] = "script with main"
         software_invocation_info[m]["run"] = "python " + main_files[m] + " --help"
-    if len(main_files)>0:
+    if len(main_files) > 0:
         return software_invocation_info
 
-  
     # If we havent find a main, then we can try to find again if we have
     # a service
     # Note: We are going to ingore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
     for key in filter(lambda key: key not in "directory_tree", dir_info):
-        result_ignore= [key for ip in ignore_pattern if ip in key]
+        result_ignore = [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
             for elem in dir_info[key]:
-                result_ignore= [elem["file"]["fileNameBase"] for ip in ignore_pattern if ip in elem["file"]["fileNameBase"]]
+                result_ignore = [elem["file"]["fileNameBase"] for ip in ignore_pattern if
+                                 ip in elem["file"]["fileNameBase"]]
                 if not result_ignore:
                     try:
                         for dep in elem["dependencies"]:
@@ -781,18 +776,18 @@ def software_invocation(dir_info, input_path):
                     except:
                         pass
 
-    #NOTE: OPTION 1
+    # NOTE: OPTION 1
     # Note: Without ingore files and directories
     python_files = []
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
             if ".py" in elem:
                 python_files.append(elem)
-  
-    #NOTE: OPTION 2
+
+    # NOTE: OPTION 2
     # Note: Ingoring all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
-    #for directory in dir_info["directory_tree"]:
+    # for directory in dir_info["directory_tree"]:
     #    result_ignore= [directory for ip in ignore_pattern if ip in directory]
     #    if not result_ignore:
     #        for elem in dir_info["directory_tree"][directory]:
