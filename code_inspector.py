@@ -211,15 +211,18 @@ class CodeInspection:
         if_main_func = ""
         main_info = {}
 
-        for x in if_main_definitions:
+        for node in if_main_definitions:
             try:
-                if x.test.comparators[0].s == "__main__":
+                if node.test.comparators[0].s == "__main__":
                     if_main_flag = 1
 
-                for i in x.body:
-                    if i.value.func.id:
-                        if_main_func = i.value.func.id
-                break
+                funcs_calls = [i.value.func for i in node.body if isinstance(i.value, ast.Call)]
+                func_name_id=[self._get_func_name(func) for func in funcs_calls]
+
+                #Note: Assigning just the first name in the list as the main function. 
+                if func_name_id:
+                    if_main_func = self.fileInfo["fileNameBase"]+ "."+func_name_id[0]
+                    break
             except:
                 pass
 
@@ -697,6 +700,7 @@ def software_invocation(dir_info, input_path):
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("Flask", "flask", "flask_restful")
     ignore_pattern=("test", "demo", "debug")
+    #ignore_pattern=()
     #Note: other server dependencies are missing here. More testing is needed.
 
     for directory in dir_info["directory_tree"]:
