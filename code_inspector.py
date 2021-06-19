@@ -187,9 +187,22 @@ class CodeInspection:
             else:
                 continue
             for n in node.names:
-                current_dep = {"from_module": module,
-                               "import": n.name.split('.'),
-                               "alias": n.asname}
+                if "*" in n.name:
+                    for m in module:
+                        functions=list_functions_from_module(m)
+                        for f in functions:
+                            m_l=[]
+                            f_l=[]
+                            m_l.append(m)
+                            f_l.append(f)
+                            current_dep = {"from_module": m_l,
+                                           "import": f_l,
+                                           "alias": n.asname}
+                            dep_info.append(current_dep)
+                else:
+                    current_dep = {"from_module": module,
+                                   "import": n.name.split('.'),
+                                   "alias": n.asname}
                 dep_info.append(current_dep)
 
         return dep_info
@@ -417,13 +430,23 @@ class CodeInspection:
                                     renamed_calls.append(dep["import"][0] + rest_call_name)
 
                     if not renamed:
-                        # check if the call is a function of the current module
-                        if call_name in funct_def_info.keys():
-                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
-                        else:
-                            # not include an extra super call.
-                            if "super" not in call_name:
-                                renamed_calls.append(call_name)
+                         # checking if the function has been imported "from module import *" 
+                         for dep in self.depInfo:
+                             if dep["import"][0] == call_name:
+                                 if dep["from_module"]:
+                                     name_from_module=""
+                                     for mod in dep["from_module"]:
+                                         name_from_module += mod + "."
+                                     renamed=1
+                                     renamed_calls.append(name_from_module+call_name)
+                         if not renamed:
+                             #check if the call is a function of the current module
+                             if call_name in funct_def_info.keys():
+                                 renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name)
+                             else:
+                                 #not include an extra super call.
+                                 if "super" not in call_name:
+                                     renamed_calls.append(call_name)
             funct_def_info[funct]["calls"] = renamed_calls
         return funct_def_info
 

@@ -242,3 +242,21 @@ def generate_output_html(pruned_json, output_file_html):
         ht.write(html)
 
 
+def top_level_functions(body):
+    return (f for f in body if isinstance(f, ast.FunctionDef))
+
+def parse_ast(filename):
+    with open(filename, "rt") as file:
+        return ast.parse(file.read(), filename=filename)
+
+def list_functions_from_module(m):
+    functions=[]
+    try:
+        file_module=m+".py"
+        tree = parse_ast(file_module)
+        for func in top_level_functions(tree.body):
+            functions.append(func.name)
+    except:
+        module=__import__(m)
+        functions=dir(m)
+    return functions
