@@ -103,7 +103,7 @@ def software_invocation(dir_info, input_path):
                 software_invocation_info = inspect_setup(input_path)
                 return software_invocation_info
 
-    # Looping acroos all mains
+    # Looping across all mains
     # to decide if it is a service (main + flask) or just a script (main without flask)
     # Note: We are going to ingore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
@@ -125,13 +125,13 @@ def software_invocation(dir_info, input_path):
                                 for dep in elem["dependencies"]:
                                     for import_dep in dep["import"]:
                                         if import_dep in server_dependencies:
-                                            software_invocation_info["type"] = "service"
+                                            software_invocation_info["type"] = ["service"]
                                             software_invocation_info["app"] = elem["file"]["path"]
                                             flag_service = 1
                                             return software_invocation_info
                                     for from_mod_dep in dep["from_module"]:
                                         if from_mod_dep in server_dependencies:
-                                            software_invocation_info["type"] = "service"
+                                            software_invocation_info["type"] = ["service"]
                                             software_invocation_info["app"] = elem["file"]["path"]
                                             flag_service = 1
                                             return software_invocation_info
@@ -141,16 +141,16 @@ def software_invocation(dir_info, input_path):
                             if not flag_service:
                                 main_files.append(elem["file"]["path"])
 
-    # If we havent find a service, but we have main(s)
+    # If we haven't found a service, but we have main(s)
     # it is very likely to be a service
     for m in range(0, len(main_files)):
         software_invocation_info[m] = {}
-        software_invocation_info[m]["type"] = "script with main"
+        software_invocation_info[m]["type"] = ["script with main"]
         software_invocation_info[m]["run"] = "python " + main_files[m] + " --help"
     if len(main_files) > 0:
         return software_invocation_info
 
-    # If we havent find a main, then we can try to find again if we have
+    # If we have not found a main, then we can try to find again if we have
     # a service
     # Note: We are going to ingore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
@@ -165,12 +165,12 @@ def software_invocation(dir_info, input_path):
                         for dep in elem["dependencies"]:
                             for import_dep in dep["import"]:
                                 if import_dep in server_dependencies:
-                                    software_invocation_info["type"] = "service"
+                                    software_invocation_info["type"] = ["service"]
                                     software_invocation_info["app"] = elem["file"]["path"]
                                     return software_invocation_info
                             for from_mod_dep in dep["from_module"]:
                                 if from_mod_dep in server_dependencies:
-                                    software_invocation_info["type"] = "service"
+                                    software_invocation_info["type"] = ["service"]
                                     return software_invocation_info
                     except:
                         pass
@@ -197,7 +197,7 @@ def software_invocation(dir_info, input_path):
 
     for f in range(0, len(python_files)):
         software_invocation_info[f] = {}
-        software_invocation_info[f]["type"] = "script without main"
+        software_invocation_info[f]["type"] = ["script without main"]
         software_invocation_info[f]["run"] = "python " + python_files[f] + " --help"
     return software_invocation_info
 
