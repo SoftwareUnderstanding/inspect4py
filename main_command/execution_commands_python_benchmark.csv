@@ -9,7 +9,7 @@ zhiqiangdon/CU-Net,script,python main.py,,,
 pyvista/pyvista,library,import pyvista,,,
 usc-isi-i2/kgtk-browser,service,flask run,,,
 usc-isi-i2/wikidata-property-finder,service,python app.py,,,
-oeg-upm/Chowlk,service,python app.py,,,
+oeg-upm/Chowlk,service and script,python app.py and python converter.py,,,
 oeg-upm/morph-csv,script and service,python3 morphcsv.py,launches a service but not clear where,X,"NOTE: There are two mains, one with a service ( morph-csv-interface/backend/app.py ) an another without (morphcsv.py) . It gives priority to the one with a service - so it classifies as a service"
 modflowpy/flopy,library,import flopy,,,
 mintproject/cromo,package,cromo,,X,FIXED
