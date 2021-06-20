@@ -6,6 +6,9 @@ import tokenize
 from pathlib import Path
 from json2html import *
 
+from structure_tree import DisplayablePath, get_directory_structure
+
+
 def print_summary(json_dict):
     """
     This method prints a small summary of the classes and properties recognized during the analysis.
