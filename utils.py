@@ -249,13 +249,14 @@ def parse_module(filename):
     with open(filename, "rt") as file:
         return ast.parse(file.read(), filename=filename)
 
-def list_functions_from_module(m):
+def list_functions_from_module(m, path):
     functions=[]
     try:
         #to open a module inside a directory
         m=m.replace(".", "/")
-        
-        file_module=m+".py"
+        repo_path = Path(path).parent.absolute()
+        abs_repo_path = os.path.abspath(repo_path)
+        file_module=abs_repo_path+"/"+m+".py"
         tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
             functions.append(func.name)
