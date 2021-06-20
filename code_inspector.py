@@ -24,6 +24,7 @@ from docstring_parser import parse as doc_parse
 
 from staticfg import builder
 from utils import *
+
 class CodeInspection:
     def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
         """ init method initializes the Code_Inspection object
@@ -190,8 +191,6 @@ class CodeInspection:
                 if "*" in n.name:
                     functions=list_functions_from_module(module)
                     for f in functions:
-                         #m_l=[]
-                         #m_l.append(m)
                          current_dep = {"from_module": module,
                                        "import": f,
                                        "alias": n.asname}

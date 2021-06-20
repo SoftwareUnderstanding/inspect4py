@@ -245,15 +245,18 @@ def generate_output_html(pruned_json, output_file_html):
 def top_level_functions(body):
     return (f for f in body if isinstance(f, ast.FunctionDef))
 
-def parse_ast(filename):
+def parse_module(filename):
     with open(filename, "rt") as file:
         return ast.parse(file.read(), filename=filename)
 
 def list_functions_from_module(m):
     functions=[]
     try:
+        #to open a module inside a directory
+        m=m.replace(".", "/")
+        
         file_module=m+".py"
-        tree = parse_ast(file_module)
+        tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
             functions.append(func.name)
     except:
