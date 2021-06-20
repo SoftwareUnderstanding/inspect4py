@@ -261,5 +261,5 @@ def list_functions_from_module(m):
             functions.append(func.name)
     except:
         module=__import__(m)
-        functions=dir(m)
+        functions=dir(module)
     return functions
