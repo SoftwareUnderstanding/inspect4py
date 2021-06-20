@@ -49,7 +49,6 @@ for index, row in benchmark_df.iterrows():
     proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
-    # print(stderr)
 
 # Process all repos
 num_correct_repo = 0
@@ -63,14 +62,23 @@ repos_with_error_entity = []
 
 for dir_name in os.listdir(repo_path):
     print("######## Processing: " + dir_name)
-    cmd = 'python code_inspector.py -i ' + repo_path + dir_name
+    cmd = 'python code_inspector.py -i ' + repo_path + dir_name 
     proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     req_dict = {}
+    if not os.path.exists("output_dir/DirectoryInfo.json"):
+        print("Error when applying code_inspector to " + dir_name + str(stderr))
+        num_error_repo += 1
+        num_error_entity += 1
+        repos_with_error.append(dir_name)
+        repos_with_error_entity.append(dir_name)
+        continue
     with open("output_dir/DirectoryInfo.json", "r") as file:
         data = json.load(file)
     file.close()
+    # delete last DirInfo to avoid reading incorrect information in case of errors.
+    os.remove("output_dir/DirectoryInfo.json")
     current_type = []
     # This will have to be changed if software_invocation JSON definition is changed
     if 'software_invocation' in data.keys() and data['software_invocation']:
