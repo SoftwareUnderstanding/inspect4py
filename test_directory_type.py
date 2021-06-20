@@ -26,14 +26,21 @@ def extract_types_from_response(response_data):
     types = []
     try:
         aux = response_data['software_invocation']['0']
-        types.append(aux["type"])
+        if "script" in aux["type"]:
+            types.append("script")
+        else:
+            types.append(aux["type"])
         software_inf = aux
     except:
         try:
-            types.append(response_data['software_invocation']["type"])
+            aux = response_data['software_invocation']["type"]
+            if "script" in aux:
+                types.append("script")
+            else:
+                types.append(aux)
             software_inf = response_data['software_invocation']
         except:
-            types.append(response_data['software_invocation'])
+            types.append(response_data['software_invocation']) #these are for services
             software_inf = response_data['software_invocation']
     return types, software_inf
 
@@ -115,7 +122,7 @@ write_header = False
 if not os.path.exists(benchmark_summary):
     write_header = True
 
-with open(benchmark_summary, 'w') as summary:
+with open(benchmark_summary, 'a') as summary:
     writer = csv.writer(summary, delimiter=',')
     if write_header:
         writer.writerow(
