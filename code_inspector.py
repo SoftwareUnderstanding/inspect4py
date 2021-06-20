@@ -24,7 +24,6 @@ from docstring_parser import parse as doc_parse
 
 from staticfg import builder
 from utils import *
-
 class CodeInspection:
     def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
         """ init method initializes the Code_Inspection object
@@ -192,16 +191,14 @@ class CodeInspection:
                         functions=list_functions_from_module(m)
                         for f in functions:
                             m_l=[]
-                            f_l=[]
                             m_l.append(m)
-                            f_l.append(f)
                             current_dep = {"from_module": m_l,
-                                           "import": f_l,
+                                           "import": f,
                                            "alias": n.asname}
                             dep_info.append(current_dep)
                 else:
                     current_dep = {"from_module": module,
-                                   "import": n.name.split('.'),
+                                   "import": n.name.split('.')[0],
                                    "alias": n.asname}
                 dep_info.append(current_dep)
 
@@ -408,8 +405,7 @@ class CodeInspection:
                         rest_call_name = ""
 
                     for dep in self.depInfo:
-                        # if module_call_name in dep["import"]:
-                        if dep["import"][0] == module_call_name:
+                        if dep["import"] == module_call_name:
                             if dep["from_module"]:
                                 name_from_module = ""
                                 for mod in dep["from_module"]:
@@ -424,15 +420,15 @@ class CodeInspection:
                                     for mod in dep["from_module"]:
                                         name_from_module += mod + "."
                                     renamed = 1
-                                    renamed_calls.append(name_from_module + dep["import"][0] + rest_call_name)
+                                    renamed_calls.append(name_from_module + dep["import"] + rest_call_name)
                                 else:
                                     renamed = 1
-                                    renamed_calls.append(dep["import"][0] + rest_call_name)
+                                    renamed_calls.append(dep["import"] + rest_call_name)
 
                     if not renamed:
                          # checking if the function has been imported "from module import *" 
                          for dep in self.depInfo:
-                             if dep["import"][0] == call_name:
+                             if dep["import"] == call_name:
                                  if dep["from_module"]:
                                      name_from_module=""
                                      for mod in dep["from_module"]:
