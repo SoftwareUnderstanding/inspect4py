@@ -20,29 +20,19 @@ def extract_types_from_response(response_data):
     """
     This function extracts the list of types found by code_inspector from the response.
     :response_data json response from code_inspector
-
-    Note: to change if the response changes in code_inpsector
     """
     types = []
-    try:
-        aux = response_data['software_invocation']['0']
-        if "script" in aux["type"]:
-            types.append("script")
-        else:
-            types.append(aux["type"])
-        software_inf = aux
-    except:
-        try:
-            aux = response_data['software_invocation']["type"]
-            if "script" in aux:
-                types.append("script")
-            else:
-                types.append(aux)
-            software_inf = response_data['software_invocation']
-        except:
-            types.append(response_data['software_invocation']) #these are for services
-            software_inf = response_data['software_invocation']
-    return types, software_inf
+    software_info = {}
+    if "software_invocation" in response_data:
+        software_info = response_data['software_invocation']
+        for soft_entry in software_info:
+            for type_s in soft_entry["type"]:
+                if type_s not in types:
+                    if "script" in type_s:  # we have annotated script with main and without main as script
+                        types.append("script")
+                    else:
+                        types.append(type_s)
+    return types, software_info
 
 
 # Main script
@@ -132,11 +122,11 @@ with open(benchmark_summary, 'a') as summary:
                      str(num_correct_entity / num_analyses_entity), str(repos_with_error), str(repos_with_error_entity)])
 
 print("Accuracy (repo): " + str(num_correct_repo) + " out of " + str(num_analyses_repo) +
-      ". Num errors=" + str(num_error_repo) + ". " + str(num_correct_repo / num_analyses_repo))
+      ". Num errors = " + str(num_error_repo) + ". " + str(num_correct_repo / num_analyses_repo))
 
 
 print("Accuracy (entities): " + str(num_correct_entity) + " out of " + str(num_analyses_entity) +
-      ". Num errors=" + str(num_error_entity) + ". " + str(num_correct_entity / num_analyses_entity))
+      ". Num errors = " + str(num_error_entity) + ". " + str(num_correct_entity / num_analyses_entity))
 
 # TO DO
 # print("Accuracy (entity): " + str(num_correct) + " out of " + str(num_analyses) + ". Num errors=" + str(num_error) + ". " + str(

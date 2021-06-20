@@ -44,7 +44,7 @@ def parse_setup_py(parent_dir):
                 setup_info["type"] = ["package"]
                 setup_info["installation"] = "pip install " + name
             else:
-                setup_info["type"] = ["library","package"]
+                setup_info["type"] = ["library", "package"]
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"].append("import " + name)
             return setup_info

@@ -25,6 +25,7 @@ from docstring_parser import parse as doc_parse
 from staticfg import builder
 from utils import *
 
+
 class CodeInspection:
     def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
         """ init method initializes the Code_Inspection object
@@ -182,19 +183,19 @@ class CodeInspection:
             elif isinstance(node, ast.ImportFrom):
                 try:
                     module = node.module
-                    #module = node.module.split('.')
+                    # module = node.module.split('.')
                 except:
                     module = ''
             else:
                 continue
             for n in node.names:
                 if "*" in n.name:
-                    functions=list_functions_from_module(module, self.path)
+                    functions = list_functions_from_module(module, self.path)
                     for f in functions:
-                         current_dep = {"from_module": module,
+                        current_dep = {"from_module": module,
                                        "import": f,
                                        "alias": n.asname}
-                         dep_info.append(current_dep)
+                        dep_info.append(current_dep)
                 else:
                     current_dep = {"from_module": module,
                                    "import": n.name.split('.')[0],
@@ -407,31 +408,31 @@ class CodeInspection:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
                                 renamed = 1
-                                renamed_calls.append(dep["from_module"]+"." + call_name)
+                                renamed_calls.append(dep["from_module"] + "." + call_name)
 
                         elif dep["alias"]:
                             if dep["alias"] == module_call_name:
                                 if dep["from_module"]:
                                     renamed = 1
-                                    renamed_calls.append(dep["from_module"] +"."+ dep["import"] + rest_call_name)
+                                    renamed_calls.append(dep["from_module"] + "." + dep["import"] + rest_call_name)
                                 else:
                                     renamed = 1
                                     renamed_calls.append(dep["import"] + rest_call_name)
 
                     if not renamed:
-                         # checking if the function has been imported "from module import *" 
-                         for dep in self.depInfo:
-                             if dep["import"] == call_name:
-                                 if dep["from_module"]:
-                                     renamed_calls.append(dep["from_module"]+"."+call_name)
-                         if not renamed:
-                             #check if the call is a function of the current module
-                             if call_name in funct_def_info.keys():
-                                 renamed_calls.append(self.fileInfo["fileNameBase"]+"."+call_name)
-                             else:
-                                 #not include an extra super call.
-                                 if "super" not in call_name:
-                                     renamed_calls.append(call_name)
+                        # checking if the function has been imported "from module import *"
+                        for dep in self.depInfo:
+                            if dep["import"] == call_name:
+                                if dep["from_module"]:
+                                    renamed_calls.append(dep["from_module"] + "." + call_name)
+                        if not renamed:
+                            # check if the call is a function of the current module
+                            if call_name in funct_def_info.keys():
+                                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                            else:
+                                # not include an extra super call.
+                                if "super" not in call_name:
+                                    renamed_calls.append(call_name)
             funct_def_info[funct]["calls"] = renamed_calls
         return funct_def_info
 
@@ -576,15 +577,15 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
 
         ### this will be moved to a function
         if call_graph:
-            call_graph={}
+            call_graph = {}
             for funct in code_info.funcsInfo:
                 if code_info.funcsInfo[funct]["calls"]:
-                    call_graph[funct]=code_info.funcsInfo[funct]["calls"]
+                    call_graph[funct] = code_info.funcsInfo[funct]["calls"]
             for class_n in code_info.classesInfo:
-                call_graph[class_n]={}
+                call_graph[class_n] = {}
                 for method in code_info.classesInfo[class_n]["methods"]:
                     if code_info.classesInfo[class_n]["methods"][method]["calls"]:
-                        call_graph[class_n][method]= code_info.classesInfo[class_n]["methods"][method]["calls"]
+                        call_graph[class_n][method] = code_info.classesInfo[class_n]["methods"][method]["calls"]
             call_file_html = json_dir + "/CallGraph.html"
             if html_output:
                 generate_output_html(call_graph, call_file_html)
@@ -618,12 +619,11 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                     except:
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
-       
+
         # Note:1 for visualising the tree, nothing or 0 for not.
         if requirements:
             dir_requirements = find_requirements(input_path)
             dir_info["requirements"] = dir_requirements
-      
 
         dir_info["directory_tree"] = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
         dir_info["software_invocation"] = software_invocation(dir_info, input_path)

@@ -26,11 +26,11 @@ def print_summary(json_dict):
         if isinstance(value, list):
             for element in value:
                 files += 1
-                if element["dependencies"]:
+                if "dependencies" in element:
                     dependencies += len(element["dependencies"])
-                if element["functions"]:
+                if "functions" in element:
                     functions += len(element["functions"])
-                if element["classes"]:
+                if "classes" in element:
                     classes += len(element["classes"])
     print("Analysis completed")
     print("Total number of folders processed (root folder is considered a folder):", folders)
@@ -90,7 +90,7 @@ def software_invocation(dir_info, input_path):
     :dir_info json file containing all the extracted information about the software repositry
     :input_path path of the repository to analyze
     """
-    software_invocation_info = {}
+    software_invocation_info = []
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("Flask", "flask", "flask_restful")
     ignore_pattern = ("test", "demo", "debug")
@@ -100,12 +100,12 @@ def software_invocation(dir_info, input_path):
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
             if elem in setup_files:
-                software_invocation_info = inspect_setup(input_path)
+                software_invocation_info.append(inspect_setup(input_path))
                 return software_invocation_info
 
     # Looping across all mains
     # to decide if it is a service (main + flask) or just a script (main without flask)
-    # Note: We are going to ingore all the directories and files that matches the ingore_pattern
+    # Note: We are going to ignore all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
     main_files = []
     for key in filter(lambda key: key not in "directory_tree", dir_info):
@@ -125,15 +125,15 @@ def software_invocation(dir_info, input_path):
                                 for dep in elem["dependencies"]:
                                     for import_dep in dep["import"]:
                                         if import_dep in server_dependencies:
-                                            software_invocation_info["type"] = ["service"]
-                                            software_invocation_info["app"] = elem["file"]["path"]
+                                            soft_info = {"type": ["service"], "app": elem["file"]["path"]}
                                             flag_service = 1
+                                            software_invocation_info.append(soft_info)
                                             return software_invocation_info
                                     for from_mod_dep in dep["from_module"]:
                                         if from_mod_dep in server_dependencies:
-                                            software_invocation_info["type"] = ["service"]
-                                            software_invocation_info["app"] = elem["file"]["path"]
+                                            soft_info = {"type": ["service"], "app": elem["file"]["path"]}
                                             flag_service = 1
+                                            software_invocation_info.append(soft_info)
                                             return software_invocation_info
                             except:
                                 main_files.append(elem["file"]["path"])
@@ -144,9 +144,8 @@ def software_invocation(dir_info, input_path):
     # If we haven't found a service, but we have main(s)
     # it is very likely to be a service
     for m in range(0, len(main_files)):
-        software_invocation_info[m] = {}
-        software_invocation_info[m]["type"] = ["script with main"]
-        software_invocation_info[m]["run"] = "python " + main_files[m] + " --help"
+        soft_info = {"type": ["script with main"], "run": "python " + main_files[m] + " --help"}
+        software_invocation_info.append(soft_info)
     if len(main_files) > 0:
         return software_invocation_info
 
@@ -165,12 +164,13 @@ def software_invocation(dir_info, input_path):
                         for dep in elem["dependencies"]:
                             for import_dep in dep["import"]:
                                 if import_dep in server_dependencies:
-                                    software_invocation_info["type"] = ["service"]
-                                    software_invocation_info["app"] = elem["file"]["path"]
+                                    soft_info = {"type": ["service"], "app": elem["file"]["path"]}
+                                    software_invocation_info.append(soft_info)
                                     return software_invocation_info
                             for from_mod_dep in dep["from_module"]:
                                 if from_mod_dep in server_dependencies:
-                                    software_invocation_info["type"] = ["service"]
+                                    soft_info = {"type":"service"}
+                                    software_invocation_info.append(soft_info)
                                     return software_invocation_info
                     except:
                         pass
@@ -196,9 +196,8 @@ def software_invocation(dir_info, input_path):
     #                    python_files.append(elem)
 
     for f in range(0, len(python_files)):
-        software_invocation_info[f] = {}
-        software_invocation_info[f]["type"] = ["script without main"]
-        software_invocation_info[f]["run"] = "python " + python_files[f] + " --help"
+        soft_info = {"type": ["script without main"], "run": "python " + python_files[f] + " --help"}
+        software_invocation_info.append(soft_info)
     return software_invocation_info
 
 
@@ -249,22 +248,24 @@ def generate_output_html(pruned_json, output_file_html):
 def top_level_functions(body):
     return (f for f in body if isinstance(f, ast.FunctionDef))
 
+
 def parse_module(filename):
     with open(filename, "rt") as file:
         return ast.parse(file.read(), filename=filename)
 
+
 def list_functions_from_module(m, path):
-    functions=[]
+    functions = []
     try:
-        #to open a module inside a directory
-        m=m.replace(".", "/")
+        # to open a module inside a directory
+        m = m.replace(".", "/")
         repo_path = Path(path).parent.absolute()
         abs_repo_path = os.path.abspath(repo_path)
-        file_module=abs_repo_path+"/"+m+".py"
+        file_module = abs_repo_path + "/" + m + ".py"
         tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
             functions.append(func.name)
     except:
-        module=__import__(m)
-        functions=dir(module)
+        module = __import__(m)
+        functions = dir(module)
     return functions
