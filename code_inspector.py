@@ -189,7 +189,7 @@ class CodeInspection:
                 continue
             for n in node.names:
                 if "*" in n.name:
-                    functions=list_functions_from_module(module)
+                    functions=list_functions_from_module(module, self.path)
                     for f in functions:
                          current_dep = {"from_module": module,
                                        "import": f,
