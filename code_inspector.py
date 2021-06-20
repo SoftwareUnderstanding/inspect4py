@@ -564,7 +564,7 @@ def create_output_dirs(output_dir):
 @click.option('-html', '--html_output', type=bool, is_flag=True,
               help="generates an html file of the DirJson in the output directory.")
 @click.option('-cg', '--call_graph', type=bool, is_flag=True,
-              help="generates only a call_graph.")
+              help="generates also the call_graph.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_graph):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
@@ -573,6 +573,8 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
     if os.path.isfile(input_path):
         cf_dir, json_dir = create_output_dirs(output_dir)
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
+
+        ### this will be moved to a function
         if call_graph:
             call_graph={}
             for funct in code_info.funcsInfo:
@@ -586,6 +588,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
             call_file_html = json_dir + "/CallGraph.html"
             if html_output:
                 generate_output_html(call_graph, call_file_html)
+        ########
         if html_output:
             output_file_html = json_dir + "/FileInfo.html"
             f = open(code_info.fileJson[1])
