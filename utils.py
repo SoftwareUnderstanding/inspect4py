@@ -6,6 +6,7 @@ import tokenize
 from pathlib import Path
 from json2html import *
 
+from parse_setup_files import inspect_setup
 from structure_tree import DisplayablePath, get_directory_structure
 
 
