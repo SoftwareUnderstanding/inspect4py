@@ -180,22 +180,22 @@ class CodeInspection:
                 module = []
             elif isinstance(node, ast.ImportFrom):
                 try:
-                    module = node.module.split('.')
+                    module = node.module
+                    #module = node.module.split('.')
                 except:
-                    module = []
+                    module = ''
             else:
                 continue
             for n in node.names:
                 if "*" in n.name:
-                    for m in module:
-                        functions=list_functions_from_module(m)
-                        for f in functions:
-                            m_l=[]
-                            m_l.append(m)
-                            current_dep = {"from_module": m_l,
-                                           "import": f,
-                                           "alias": n.asname}
-                            dep_info.append(current_dep)
+                    functions=list_functions_from_module(module)
+                    for f in functions:
+                         #m_l=[]
+                         #m_l.append(m)
+                         current_dep = {"from_module": module,
+                                       "import": f,
+                                       "alias": n.asname}
+                         dep_info.append(current_dep)
                 else:
                     current_dep = {"from_module": module,
                                    "import": n.name.split('.')[0],
@@ -407,20 +407,14 @@ class CodeInspection:
                     for dep in self.depInfo:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
-                                name_from_module = ""
-                                for mod in dep["from_module"]:
-                                    name_from_module += mod + "."
                                 renamed = 1
-                                renamed_calls.append(name_from_module + call_name)
+                                renamed_calls.append(dep["from_module"]+"." + call_name)
 
                         elif dep["alias"]:
                             if dep["alias"] == module_call_name:
                                 if dep["from_module"]:
-                                    name_from_module = ""
-                                    for mod in dep["from_module"]:
-                                        name_from_module += mod + "."
                                     renamed = 1
-                                    renamed_calls.append(name_from_module + dep["import"] + rest_call_name)
+                                    renamed_calls.append(dep["from_module"] +"."+ dep["import"] + rest_call_name)
                                 else:
                                     renamed = 1
                                     renamed_calls.append(dep["import"] + rest_call_name)
@@ -430,11 +424,7 @@ class CodeInspection:
                          for dep in self.depInfo:
                              if dep["import"] == call_name:
                                  if dep["from_module"]:
-                                     name_from_module=""
-                                     for mod in dep["from_module"]:
-                                         name_from_module += mod + "."
-                                     renamed=1
-                                     renamed_calls.append(name_from_module+call_name)
+                                     renamed_calls.append(dep["from_module"]+"."+call_name)
                          if not renamed:
                              #check if the call is a function of the current module
                              if call_name in funct_def_info.keys():
