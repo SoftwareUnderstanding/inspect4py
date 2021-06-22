@@ -269,3 +269,34 @@ def list_functions_from_module(m, path):
         module = __import__(m)
         functions = dir(module)
     return functions
+
+def call_list_file(code_info):
+
+    call_list = {}
+    for funct in code_info.funcsInfo:
+        if code_info.funcsInfo[funct]["calls"]:
+            call_list[funct] = code_info.funcsInfo[funct]["calls"]
+    for class_n in code_info.classesInfo:
+         call_list[class_n] = {}
+         for method in code_info.classesInfo[class_n]["methods"]:
+             if code_info.classesInfo[class_n]["methods"][method]["calls"]:
+                 call_list[class_n][method] = code_info.classesInfo[class_n]["methods"][method]["calls"]
+
+    return call_list  
+
+def call_list_dir(dir_info):
+    call_list = {}
+    for dir in dir_info:
+        call_list[dir]={}
+        for file_info in dir_info[dir]:
+            file_path=file_info["file"]["path"]
+            call_list[dir][file_path]={}
+            for funct in file_info["functions"]:
+                if file_info["functions"][funct]["calls"]:
+                    call_list[dir][file_path][funct] = file_info["functions"][funct]["calls"]
+            for class_n in  file_info["classes"]:
+                call_list[dir][file_path][class_n] = {}
+                for method in file_info["classes"][class_n]["methods"]:
+                    if file_info["classes"][class_n]["methods"][method]["calls"]:
+                        call_list[dir][file_path][class_n][method] = file_info["classes"][class_n]["methods"][method]["calls"]
+    return call_list

@@ -564,9 +564,9 @@ def create_output_dirs(output_dir):
 @click.option('-r', '--requirements', type=bool, is_flag=True, help="find the requirements of the repository.")
 @click.option('-html', '--html_output', type=bool, is_flag=True,
               help="generates an html file of the DirJson in the output directory.")
-@click.option('-cg', '--call_graph', type=bool, is_flag=True,
-              help="generates also the call_graph.")
-def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_graph):
+@click.option('-cl', '--call_list', type=bool, is_flag=True,
+              help="generates the call list in a separate json file.")
+def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -575,21 +575,12 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
         cf_dir, json_dir = create_output_dirs(output_dir)
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
 
-        ### this will be moved to a function
-        if call_graph:
-            call_graph = {}
-            for funct in code_info.funcsInfo:
-                if code_info.funcsInfo[funct]["calls"]:
-                    call_graph[funct] = code_info.funcsInfo[funct]["calls"]
-            for class_n in code_info.classesInfo:
-                call_graph[class_n] = {}
-                for method in code_info.classesInfo[class_n]["methods"]:
-                    if code_info.classesInfo[class_n]["methods"][method]["calls"]:
-                        call_graph[class_n][method] = code_info.classesInfo[class_n]["methods"][method]["calls"]
+        ### Generate the call list of a file
+        if call_list:
+            call_list = call_list_file(code_info)
             call_file_html = json_dir + "/CallGraph.html"
             if html_output:
-                generate_output_html(call_graph, call_file_html)
-        ########
+                generate_output_html(call_list, call_file_html)
         if html_output:
             output_file_html = json_dir + "/FileInfo.html"
             f = open(code_info.fileJson[1])
@@ -620,6 +611,12 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
 
+        ### Generate the call list of the Dir
+        if call_list:
+            call_list = call_list_dir(dir_info)
+            call_file_html = output_dir + "/CallGraph.html"
+            if html_output:
+                generate_output_html(call_list, call_file_html)
         # Note:1 for visualising the tree, nothing or 0 for not.
         if requirements:
             dir_requirements = find_requirements(input_path)
