@@ -383,15 +383,15 @@ class CodeInspection:
                     renamed_calls.append(self.fileInfo["fileNameBase"] + "." + ext + "." + rest_call_name)
                     rename = 1
                     return rename
+                else:
+                    extend = classesInfo[ext]["extend"]
+                    rename = self._dfs(extend, rest_call_name, rename, classesInfo, renamed_calls)
+                    if rename:
+                        break
             elif hasattr(ext, rest_call_name):
                 renamed_calls.append(ext + "." + rest_call_name)
                 rename = 1
                 return rename
-            else:
-                extend = classesInfo[ext]["extend"]
-                rename = self._dfs(extend, rest_call_name, rename, classesInfo, renamed_calls)
-                if rename:
-                    break
         return rename
 
     def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
