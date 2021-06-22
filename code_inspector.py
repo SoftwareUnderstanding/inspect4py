@@ -147,15 +147,27 @@ class CodeInspection:
                 "short_description"] = docstring.short_description if docstring.short_description else {}
             classesInfo[c.name]["doc"]["full"] = ds_c if ds_c else {}
             # classesInfo[c.name]["doc"]["meta"]=docstring.meta if docstring.meta else {}
-
             try:
                 classesInfo[c.name]["extend"] = [b.id for b in c.bases]
             except:
                 try:
-                    classesInfo[c.name]["extend"] = [
-                        b.value.func.id if isinstance(b, ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b,
-                                                                                                                      'value') else ""
-                        for b in c.bases]
+                    extend=[]
+                    for b in c.bases:
+                        if isinstance(b, ast.Call) and hasattr(b, 'value'):
+                            extend.append(b.value.func.id)
+
+                        # capturing extension type: module.import 
+                        elif b.value.id and b.attr:
+                            extend.append(b.value.id+"."+b.attr)
+                        elif b.value.id:
+                            extend.append(b.value.id)
+                        else:
+                            extend.append("")
+                    classesInfo[c.name]["extend"] = extend 
+                    #classesInfo[c.name]["extend"] = [
+                    #    b.value.func.id if isinstance(b, ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b,
+                    #                                                                                                  'value') else ""
+                    #    for b in c.bases]                                                                                                  #'value') else ""
                 except:
                     classesInfo[c.name]["extend"] = []
 
@@ -190,16 +202,20 @@ class CodeInspection:
                 continue
             for n in node.names:
                 if "*" in n.name:
-                    functions = list_functions_from_module(module, self.path)
+                    functions, type = list_functions_from_module(module, self.path)
                     for f in functions:
                         current_dep = {"from_module": module,
                                        "import": f,
-                                       "alias": n.asname}
+                                       "alias": n.asname, 
+                                       "type": type}
                         dep_info.append(current_dep)
                 else:
+                    import_name= n.name.split('.')[0]
+                    type = type_module(module, import_name, self.path)
                     current_dep = {"from_module": module,
-                                   "import": n.name.split('.')[0],
-                                   "alias": n.asname}
+                                   "import": import_name,
+                                   "alias": n.asname,  
+                                   "type": type}
                 dep_info.append(current_dep)
 
         return dep_info
@@ -362,8 +378,13 @@ class CodeInspection:
 
     def _dfs(self, extend, rest_call_name, rename, classesInfo, renamed_calls):
         for ext in extend:
-            if rest_call_name in classesInfo[ext]["methods"]:
-                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + ext + "." + rest_call_name)
+            if ext in classesInfo:
+                if rest_call_name in classesInfo[ext]["methods"]:
+                    renamed_calls.append(self.fileInfo["fileNameBase"] + "." + ext + "." + rest_call_name)
+                    rename = 1
+                    return rename
+            elif hasattr(ext, rest_call_name):
+                renamed_calls.append(ext + "." + rest_call_name)
                 rename = 1
                 return rename
             else:
