@@ -287,18 +287,33 @@ def type_module(m,i, path):
     else:
         return "external"
 
+
+def extract_call_functions(funcsInfo):
+    call_list={}
+    for funct in funcsInfo:
+        if funcsInfo[funct]["calls"]:
+            call_list[funct] = {}
+            call_list[funct]["local"] = funcsInfo[funct]["calls"]
+            if funcsInfo[funct]["functions"]:
+                 call_list[funct]["nested"]= extract_call_functions(funcsInfo[funct]["functions"])
+    return call_list
+
+def extract_call_methods(classesInfo):
+    call_list={}
+    for method in classesInfo:
+        if classesInfo[method]["calls"]:
+            call_list[method]={}
+            call_list[method]["local"] = classesInfo[method]["calls"]
+            if classesInfo[method]["functions"]:
+                 call_list[method]["nested"]=extract_call_methods(classesInfo[method]["functions"])
+    return call_list
+
+
 def call_list_file(code_info):
-
     call_list = {}
-    for funct in code_info.funcsInfo:
-        if code_info.funcsInfo[funct]["calls"]:
-            call_list[funct] = code_info.funcsInfo[funct]["calls"]
+    call_list=extract_call_functions(code_info.funcsInfo)
     for class_n in code_info.classesInfo:
-         call_list[class_n] = {}
-         for method in code_info.classesInfo[class_n]["methods"]:
-             if code_info.classesInfo[class_n]["methods"][method]["calls"]:
-                 call_list[class_n][method] = code_info.classesInfo[class_n]["methods"][method]["calls"]
-
+         call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
     return call_list  
 
 def call_list_dir(dir_info):
