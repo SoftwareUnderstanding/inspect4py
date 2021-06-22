@@ -328,12 +328,16 @@ class CodeInspection:
             func_name_id = [f_x for f_x in func_name_id if f_x is not None]
             funcs_info[f.name]["calls"] = func_name_id
             funcs_assigns= [node for node in ast.walk(f) if isinstance(node, ast.Assign)]
-            funcs_self_assign=[]
+            funcs_store_vars={}
             for f_as in funcs_assigns:
                 if isinstance(f_as.value, ast.Name) and f_as.value.id == "self":
                     for target in f_as.targets:
-                        funcs_self_assign.append(target.id)
-            funcs_info[f.name]["self_variables"]=funcs_self_assign
+                        funcs_store_vars[target.id]=f_as.value.id 
+                elif isinstance(f_as.value, ast.Call):
+                    func_name=self._get_func_name(f_as.value.func)
+                    for target in f_as.targets:
+                        funcs_store_vars[target.id]=func_name
+            funcs_info[f.name]["store_vars_calls"]=funcs_store_vars
            
         return funcs_info
 
@@ -405,11 +409,17 @@ class CodeInspection:
     def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
         for funct in funct_def_info:
             renamed_calls = []
-            f_self_vars=funct_def_info[funct]["self_variables"]
+            f_store_vars=funct_def_info[funct]["store_vars_calls"]
             for call_name in funct_def_info[funct]["calls"]:
                 module_call_name = call_name.split(".")[0]
                 rest_call_name = call_name.split(".")[1:]
                 rest_call_name = '.'.join(rest_call_name)
+                ## We have to change the name of the calls and modules if we have 
+                ## the module stored as a variable in store_vars_calls
+                for key, val in f_store_vars.items():
+                    if module_call_name == key:
+                        module_call_name = val
+                        call_name = module_call_name+"."+rest_call_name
 
                 # check if we are calling to the constructor of a class
                 # in that case, add fileNameBase and __init__
@@ -417,7 +427,7 @@ class CodeInspection:
                     renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name + ".__init__")
                 
                 #check if we are calling "self" or  the module is a variable containing "self"
-                elif "self" in module_call_name or module_call_name in f_self_vars:
+                elif "self" in module_call_name:
                     renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className + "." + rest_call_name)
 
                 elif "super()" in module_call_name and extend:
