@@ -327,6 +327,14 @@ class CodeInspection:
             func_name_id = list(dict.fromkeys(func_name_id))
             func_name_id = [f_x for f_x in func_name_id if f_x is not None]
             funcs_info[f.name]["calls"] = func_name_id
+            funcs_assigns= [node for node in ast.walk(f) if isinstance(node, ast.Assign)]
+            funcs_self_assign=[]
+            for f_as in funcs_assigns:
+                if isinstance(f_as.value, ast.Name) and f_as.value.id == "self":
+                    for target in f_as.targets:
+                        funcs_self_assign.append(target.id)
+            funcs_info[f.name]["self_variables"]=funcs_self_assign
+           
         return funcs_info
 
     def _get_func_name(self, func):
@@ -397,6 +405,7 @@ class CodeInspection:
     def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
         for funct in funct_def_info:
             renamed_calls = []
+            f_self_vars=funct_def_info[funct]["self_variables"]
             for call_name in funct_def_info[funct]["calls"]:
                 module_call_name = call_name.split(".")[0]
                 rest_call_name = call_name.split(".")[1:]
@@ -406,9 +415,9 @@ class CodeInspection:
                 # in that case, add fileNameBase and __init__
                 if call_name in classesInfo:
                     renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name + ".__init__")
-
-                # check if we are calling an imported module or an alias
-                elif "self" in module_call_name:
+                
+                #check if we are calling "self" or  the module is a variable containing "self"
+                elif "self" in module_call_name or module_call_name in f_self_vars:
                     renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className + "." + rest_call_name)
 
                 elif "super()" in module_call_name and extend:
