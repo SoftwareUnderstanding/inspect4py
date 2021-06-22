@@ -256,6 +256,7 @@ def parse_module(filename):
 
 def list_functions_from_module(m, path):
     functions = []
+    
     try:
         # to open a module inside a directory
         m = m.replace(".", "/")
@@ -265,10 +266,26 @@ def list_functions_from_module(m, path):
         tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
             functions.append(func.name)
+        type="internal"
     except:
         module = __import__(m)
         functions = dir(module)
-    return functions
+        type="external"
+    return functions, type
+
+def type_module(m,i, path):
+    repo_path = Path(path).parent.absolute()
+    abs_repo_path = os.path.abspath(repo_path)
+    if m:
+       m = m.replace(".", "/")
+       file_module = abs_repo_path + "/" + m + "/"+ i +".py"
+    else:
+       file_module = abs_repo_path + "/"+ i +".py"
+    file_module_path=Path(file_module)
+    if file_module_path.is_file():
+        return "internal"
+    else:
+        return "external"
 
 def call_list_file(code_info):
 
