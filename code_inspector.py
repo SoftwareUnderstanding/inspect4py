@@ -47,6 +47,7 @@ class CodeInspection:
         self.depInfo = self.inspect_dependencies()
         self.classesInfo = self.inspect_classes()
         self.funcsInfo = self.inspect_functions()
+        self.bodyInfo = self.inspect_body()
         self.fileJson = self.file_json()
 
     def parser_file(self):
@@ -181,6 +182,37 @@ class CodeInspection:
                                                              classesInfo[c]["extend"])
         return classesInfo
 
+   
+    def inspect_body(self):  
+        body_nodes = []
+        body_info = {}
+        body_info["body"]={}
+        for node in self.tree.body:
+            if not isinstance(node, ast.ClassDef) and not isinstance(node, ast.FunctionDef) and not isinstance(node, ast.Import) and not isinstance(node, ast.ImportFrom):
+                body_nodes.append(node)
+        
+        body_assigns= [node for node in body_nodes if isinstance(node, ast.Assign)]
+        body_expr= [node for node in body_nodes if isinstance(node, ast.Expr)]
+        body_store_vars={}
+        body_calls=[]
+        for b_as in body_assigns:
+            if isinstance(b_as.value, ast.Call):
+                body_name=self._get_func_name(b_as.value.func)
+                body_calls.append(body_name)
+                for target in b_as.targets:
+                    target_name=self._get_func_name(target)
+                    body_store_vars[target_name]=body_name
+
+        for b_ex in body_expr:
+            if isinstance(b_ex.value, ast.Call):
+                body_name=self._get_func_name(b_ex.value.func)
+                body_calls.append(body_name)
+
+        body_info["body"]["calls"]=body_calls
+        body_info["body"]["store_vars_calls"]=body_store_vars
+        body_info = self._fill_call_name(body_info, self.classesInfo, body=1)
+        return body_info
+
     def inspect_dependencies(self):
         """ inspect_dependencies method extracts the features at dependencies level.
         Those features are module , name, and alias.
@@ -274,6 +306,7 @@ class CodeInspection:
         file_dict["dependencies"] = self.depInfo
         file_dict["classes"] = self.classesInfo
         file_dict["functions"] = self.funcsInfo
+        file_dict["body"] = self.bodyInfo["body"]
         file_dict["controlflow"] = self.controlFlowInfo
         file_dict["main_info"] = self._ast_if_main()
 
@@ -330,6 +363,8 @@ class CodeInspection:
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
             funcs_calls = [node.func for node in ast.walk(f) if isinstance(node, ast.Call)]
             func_name_id = [self._get_func_name(func) for func in funcs_calls]
+            # If we want to store all the calls, included the repeat ones, comment the next
+            # line
             func_name_id = list(dict.fromkeys(func_name_id))
             func_name_id = [f_x for f_x in func_name_id if f_x is not None]
             funcs_info[f.name]["calls"] = func_name_id
@@ -423,7 +458,7 @@ class CodeInspection:
                     break
         return renamed
 
-    def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[]):
+    def _fill_call_name(self, funct_def_info, classesInfo, className="", extend=[], body=0):
         for funct in funct_def_info:
             renamed_calls = []
             f_store_vars=funct_def_info[funct]["store_vars_calls"]
@@ -506,18 +541,19 @@ class CodeInspection:
                             else:
                                 pass
 
-                            if not renamed:    
-                                for inter_f in funct_def_info:
-                                    if call_name in funct_def_info[inter_f]["functions"].keys():
-                                        renamed = 1
-                                        if className:
-                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className+ "." + inter_f + "." + call_name)
-                                            break
+                            if not renamed:
+                                if not body:    
+                                    for inter_f in funct_def_info:
+                                        if call_name in funct_def_info[inter_f]["functions"].keys():
+                                            renamed = 1
+                                            if className:
+                                                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className+ "." + inter_f + "." + call_name)
+                                                break
+                                            else:
+                                                renamed_calls.append(self.fileInfo["fileNameBase"] + "."  + inter_f + "." + call_name)
+                                                break
                                         else:
-                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "."  + inter_f + "." + call_name)
-                                            break
-                                    else:
-                                        pass 
+                                            pass 
                                 if not renamed: 
                                     if module_call_name and rest_call_name and self.fileInfo["fileNameBase"] not in call_name:
                                         rest_call_name=rest_call_name.split(".")[1]
