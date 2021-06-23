@@ -288,14 +288,18 @@ def type_module(m,i, path):
         return "external"
 
 
-def extract_call_functions(funcsInfo):
+def extract_call_functions(funcsInfo, body=0):
     call_list={}
-    for funct in funcsInfo:
-        if funcsInfo[funct]["calls"]:
-            call_list[funct] = {}
-            call_list[funct]["local"] = funcsInfo[funct]["calls"]
-            if funcsInfo[funct]["functions"]:
-                 call_list[funct]["nested"]= extract_call_functions(funcsInfo[funct]["functions"])
+    if body:
+        if funcsInfo["body"]["calls"]:
+            call_list["local"] = funcsInfo["body"]["calls"]
+    else:
+        for funct in funcsInfo:
+            if funcsInfo[funct]["calls"]:
+                call_list[funct] = {}
+                call_list[funct]["local"] = funcsInfo[funct]["calls"]
+                if funcsInfo[funct]["functions"]:
+                    call_list[funct]["nested"]= extract_call_functions(funcsInfo[funct]["functions"])
     return call_list
 
 def extract_call_methods(classesInfo):
@@ -311,7 +315,8 @@ def extract_call_methods(classesInfo):
 
 def call_list_file(code_info):
     call_list = {}
-    call_list=extract_call_functions(code_info.funcsInfo)
+    call_list["functions"]=extract_call_functions(code_info.funcsInfo)
+    call_list["body"]=extract_call_functions(code_info.bodyInfo, body=1)
     for class_n in code_info.classesInfo:
          call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
     return call_list  
