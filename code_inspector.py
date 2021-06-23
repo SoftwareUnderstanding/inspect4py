@@ -251,6 +251,12 @@ class CodeInspection:
 
         main_info["main_flag"] = if_main_flag
         main_info["main_function"] = if_main_func
+        if if_main_flag:
+            ## classifying the type of a main: "test" or "script" 
+            if "unittest" in if_main_func or "test" in self.fileInfo["fileNameBase"]:
+                main_info["type"] = "test"
+            else:
+                main_info["type"] = "script"
         return main_info
 
     def file_json(self):
