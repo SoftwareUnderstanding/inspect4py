@@ -336,7 +336,8 @@ class CodeInspection:
                 elif isinstance(f_as.value, ast.Call):
                     func_name=self._get_func_name(f_as.value.func)
                     for target in f_as.targets:
-                        funcs_store_vars[target.id]=func_name
+                        target_name=self._get_func_name(target)
+                        funcs_store_vars[target_name]=func_name
             funcs_info[f.name]["store_vars_calls"]=funcs_store_vars
             nested_definitions = [node for node in ast.walk(f) if isinstance(node, ast.FunctionDef)]
             for nested in nested_definitions:
@@ -408,7 +409,7 @@ class CodeInspection:
             elif hasattr(ext, rest_call_name):
                 renamed_calls.append(ext + "." + rest_call_name)
                 renamed = 1
-                return rename
+                return renamed
             else:
                 extend = classesInfo[ext]["extend"]
                 renamed = self._dfs(extend, rest_call_name, renamed, classesInfo, renamed_calls)
@@ -449,30 +450,34 @@ class CodeInspection:
                     renamed = self._dfs(extend, rest_call_name, renamed, classesInfo, renamed_calls)
                     if not renamed:
                         renamed_calls.append(call_name)
-                    print("renamed_calls is %s" %renamed_calls)
                 else:
                     if rest_call_name:
                         rest_call_name = "." + rest_call_name
                     else:
                         rest_call_name = ""
-
+                    
                     for dep in self.depInfo:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
                                 renamed = 1
                                 renamed_calls.append(dep["from_module"] + "." + call_name)
                                 break
+                            else:
+                                renamed = 1
+                                renamed_calls.append(call_name)
 
                         elif dep["alias"]:
                             if dep["alias"] == module_call_name:
                                 if dep["from_module"]:
                                     renamed = 1
                                     renamed_calls.append(dep["from_module"] + "." + dep["import"] + rest_call_name)
-                                    #break
+                                    break
                                 else:
                                     renamed = 1
                                     renamed_calls.append(dep["import"] + rest_call_name)
-                                    #break
+                                    break
+                            else:
+                                pass
 
                     if not renamed:
                         # checking if the function has been imported "from module import *"
@@ -482,37 +487,55 @@ class CodeInspection:
                                     renamed = 1
                                     renamed_calls.append(dep["from_module"] + "." + call_name)
                                     break
+                                else:
+                                    pass
+                            else:
+                                pass
            
                         if not renamed:
                             # check if the call is a function of the current module
                             if call_name in funct_def_info.keys():
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
-                                #break
+                            else:
+                                pass
 
                             if not renamed:    
-                                for funct in funct_def_info:
-                                    if call_name in funct_def_info[funct]["functions"].keys():
+                                for inter_f in funct_def_info:
+                                    if call_name in funct_def_info[inter_f]["functions"].keys():
                                         renamed = 1
                                         if className:
-                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className+ "." + funct + "." + call_name)
-                                            #break
+                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + className+ "." + inter_f + "." + call_name)
+                                            break
                                         else:
-                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "."  + funct + "." + call_name)
-                                            #break
-                                if not renamed:    
+                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "."  + inter_f + "." + call_name)
+                                            break
+                                    else:
+                                        pass 
+                                if not renamed: 
                                     if module_call_name and rest_call_name and self.fileInfo["fileNameBase"] not in call_name:
                                         rest_call_name=rest_call_name.split(".")[1]
-                                        if rest_call_name in classesInfo[module_call_name]["methods"].keys():
+                                        if module_call_name in classesInfo and rest_call_name in classesInfo[module_call_name]["methods"].keys():
                                             renamed = 1
                                             renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
-                                            #break
+                                        elif module_call_name in classesInfo:
+                                            renamed = self._dfs(classesInfo[module_call_name]["extend"], rest_call_name, renamed, classesInfo, renamed_calls)
+                                            if renamed:
+                                                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                                            else:
+                                                pass
+                                        else:
+                                              renamed = 1
+                                              renamed_calls.append(call_name)
+                                    else:
+                                        pass
 
                                     if not renamed:
-                                        if "super" not in call_name:
+                                        if "super" != call_name:
                                             renamed_calls.append(call_name)
-
-                funct_def_info[funct]["calls"] = renamed_calls
+                                        else:
+                                            pass
+            funct_def_info[funct]["calls"] = renamed_calls
         return funct_def_info
 
     def _get_ids(self, elt):

@@ -322,13 +322,7 @@ def call_list_dir(dir_info):
         call_list[dir]={}
         for file_info in dir_info[dir]:
             file_path=file_info["file"]["path"]
-            call_list[dir][file_path]={}
-            for funct in file_info["functions"]:
-                if file_info["functions"][funct]["calls"]:
-                    call_list[dir][file_path][funct] = file_info["functions"][funct]["calls"]
+            call_list[dir][file_path] =extract_call_functions(file_info["functions"])
             for class_n in  file_info["classes"]:
-                call_list[dir][file_path][class_n] = {}
-                for method in file_info["classes"][class_n]["methods"]:
-                    if file_info["classes"][class_n]["methods"][method]["calls"]:
-                        call_list[dir][file_path][class_n][method] = file_info["classes"][class_n]["methods"][method]["calls"]
+                call_list[dir][file_path][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
     return call_list
