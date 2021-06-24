@@ -108,14 +108,16 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                     return setup_info
         if error != 3:
             setup_info["type"] = ["library"]
-            setup_info["installation"] = "pip install " + name
-            setup_info["run"] = "import " + name
+            # In some cases, this fails silently
+            if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+                setup_info["installation"] = "pip install " + name
+                setup_info["run"] = "import " + name
             return setup_info
 
         return setup_info
     else:
         # This is the last resource. We got here because an exception
-        # or becasue we are not able to open setup.py and there is not setup.cfg
+        # or because we are not able to open setup.py and there is not setup.cfg
         # Classify it as package
         try:
             if not name:
@@ -124,13 +126,15 @@ def inspect_setup_cfg(parent_dir, name, error=2):
             name = "UNKNOWN"
         if error == 1:
             setup_info["type"] = ["package"]
-            setup_info["installation"] = "pip install " + name
-            setup_info["run"] = name + " --help"
+            if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+                setup_info["installation"] = "pip install " + name
+                setup_info["run"] = name + " --help"
 
         elif error == 2:
             setup_info["type"] = ["library"]
-            setup_info["installation"] = "pip install " + name
-            setup_info["run"] = "import " + name
+            if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+                setup_info["installation"] = "pip install " + name
+                setup_info["run"] = "import " + name
         return setup_info
 
 
