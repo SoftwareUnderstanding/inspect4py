@@ -162,7 +162,7 @@ def inspect_setup(parent_dir):
             except:
                 pass
 
-        # succesfully imported mock_setup 
+        # successfully imported mock_setup
         if mock_setup.call_args_list:
             # we have call_args to inspect.
             print("moc_setup.call_args_list works %s" % mock_setup.call_args_list)
