@@ -1,9 +1,8 @@
 import ast
-import json
 import os
 import subprocess
-import tokenize
 from pathlib import Path
+
 from json2html import *
 
 from parse_setup_files import inspect_setup
@@ -86,8 +85,8 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
 def software_invocation(dir_info, input_path):
     """
     Method to detect the directory type of a software project.
-    We distinguish four main types: script, package, library and service.
-    :dir_info json file containing all the extracted information about the software repositry
+    We distinguish four main types: script, package, library and service. Some can be more than one.
+    :dir_info json file containing all the extracted information about the software repository
     :input_path path of the repository to analyze
     """
     software_invocation_info = []
@@ -114,11 +113,11 @@ def software_invocation(dir_info, input_path):
             for elem in dir_info[key]:
                 result_ignore = [elem["file"]["fileNameBase"] for ip in ignore_pattern if
                                  ip in elem["file"]["fileNameBase"]]
-               
+
                 if not result_ignore:
                     if "main_info" in elem:
                         if elem["main_info"]["main_flag"]:
-                            #print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
+                            # print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
                             flag_service = 0
                             # Note:
                             # When we find a service in a main, it is very likely to be a service
@@ -169,7 +168,7 @@ def software_invocation(dir_info, input_path):
                                     return software_invocation_info
                             for from_mod_dep in dep["from_module"]:
                                 if from_mod_dep in server_dependencies:
-                                    soft_info = {"type":"service"}
+                                    soft_info = {"type": "service"}
                                     software_invocation_info.append(soft_info)
                                     return software_invocation_info
                     except:
@@ -202,7 +201,7 @@ def software_invocation(dir_info, input_path):
 
 
 def find_requirements(input_path):
-    print("Finding the requirements with PIGAR for %s" % input_path)
+    print("Finding the requirements with the pigar package for %s" % input_path)
     try:
         file_name = 'requirements_' + os.path.basename(input_path) + '.txt'
 
@@ -238,6 +237,8 @@ def find_requirements(input_path):
 def generate_output_html(pruned_json, output_file_html):
     """
     Method to generate a simple HTML view of the obtained JSON.
+    :pruned_json JSON to print out
+    :output_file_html path where to write the HTML
     """
     html = json2html.convert(json=pruned_json)
 
@@ -256,7 +257,7 @@ def parse_module(filename):
 
 def list_functions_from_module(m, path):
     functions = []
-    
+
     try:
         # to open a module inside a directory
         m = m.replace(".", "/")
@@ -266,22 +267,23 @@ def list_functions_from_module(m, path):
         tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
             functions.append(func.name)
-        type="internal"
+        type = "internal"
     except:
         module = __import__(m)
         functions = dir(module)
-        type="external"
+        type = "external"
     return functions, type
 
-def type_module(m,i, path):
+
+def type_module(m, i, path):
     repo_path = Path(path).parent.absolute()
     abs_repo_path = os.path.abspath(repo_path)
     if m:
-       m = m.replace(".", "/")
-       file_module = abs_repo_path + "/" + m + "/"+ i +".py"
+        m = m.replace(".", "/")
+        file_module = abs_repo_path + "/" + m + "/" + i + ".py"
     else:
-       file_module = abs_repo_path + "/"+ i +".py"
-    file_module_path=Path(file_module)
+        file_module = abs_repo_path + "/" + i + ".py"
+    file_module_path = Path(file_module)
     if file_module_path.is_file():
         return "internal"
     else:
@@ -289,7 +291,7 @@ def type_module(m,i, path):
 
 
 def extract_call_functions(funcsInfo, body=0):
-    call_list={}
+    call_list = {}
     if body:
         if funcsInfo["body"]["calls"]:
             call_list["local"] = funcsInfo["body"]["calls"]
@@ -299,35 +301,37 @@ def extract_call_functions(funcsInfo, body=0):
                 call_list[funct] = {}
                 call_list[funct]["local"] = funcsInfo[funct]["calls"]
                 if funcsInfo[funct]["functions"]:
-                    call_list[funct]["nested"]= extract_call_functions(funcsInfo[funct]["functions"])
+                    call_list[funct]["nested"] = extract_call_functions(funcsInfo[funct]["functions"])
     return call_list
 
+
 def extract_call_methods(classesInfo):
-    call_list={}
+    call_list = {}
     for method in classesInfo:
         if classesInfo[method]["calls"]:
-            call_list[method]={}
+            call_list[method] = {}
             call_list[method]["local"] = classesInfo[method]["calls"]
             if classesInfo[method]["functions"]:
-                 call_list[method]["nested"]=extract_call_methods(classesInfo[method]["functions"])
+                call_list[method]["nested"] = extract_call_methods(classesInfo[method]["functions"])
     return call_list
 
 
 def call_list_file(code_info):
     call_list = {}
-    call_list["functions"]=extract_call_functions(code_info.funcsInfo)
-    call_list["body"]=extract_call_functions(code_info.bodyInfo, body=1)
+    call_list["functions"] = extract_call_functions(code_info.funcsInfo)
+    call_list["body"] = extract_call_functions(code_info.bodyInfo, body=1)
     for class_n in code_info.classesInfo:
-         call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
-    return call_list  
+        call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
+    return call_list
+
 
 def call_list_dir(dir_info):
     call_list = {}
     for dir in dir_info:
-        call_list[dir]={}
+        call_list[dir] = {}
         for file_info in dir_info[dir]:
-            file_path=file_info["file"]["path"]
-            call_list[dir][file_path] =extract_call_functions(file_info["functions"])
-            for class_n in  file_info["classes"]:
+            file_path = file_info["file"]["path"]
+            call_list[dir][file_path] = extract_call_functions(file_info["functions"])
+            for class_n in file_info["classes"]:
                 call_list[dir][file_path][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
     return call_list
