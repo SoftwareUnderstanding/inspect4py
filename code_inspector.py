@@ -758,7 +758,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
 
-        ### Generate the call list of the Dir
+        # Generate the call list of the Dir
         if call_list:
             call_list = call_list_dir(dir_info)
             call_file_html = output_dir + "/call_graph.html"
