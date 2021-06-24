@@ -67,18 +67,18 @@ for dir_name in os.listdir(repo_path):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     req_dict = {}
-    if not os.path.exists("output_dir/DirectoryInfo.json"):
+    if not os.path.exists("output_dir/directory_info.json"):
         print("Error when applying code_inspector to " + dir_name + str(stderr))
         num_error_repo += 1
         num_error_entity += 1
         repos_with_error.append(dir_name)
         repos_with_error_entity.append(dir_name)
         continue
-    with open("output_dir/DirectoryInfo.json", "r") as file:
+    with open("output_dir/directory_info.json", "r") as file:
         data = json.load(file)
     file.close()
     # delete last DirInfo to avoid reading incorrect information in case of errors.
-    os.remove("output_dir/DirectoryInfo.json")
+    os.remove("output_dir/directory_info.json")
     current_type = []
     # This will have to be changed if software_invocation JSON definition is changed
     if 'software_invocation' in data.keys() and data['software_invocation']:
