@@ -93,7 +93,7 @@ def software_invocation(dir_info, input_path):
     software_invocation_info = []
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("Flask", "flask", "flask_restful")
-    ignore_pattern = ("test", "demo", "debug")
+    ignore_pattern = ("test", "debug")
     # ignore_pattern=()
     # Note: other server dependencies are missing here. More testing is needed.
 
@@ -114,10 +114,11 @@ def software_invocation(dir_info, input_path):
             for elem in dir_info[key]:
                 result_ignore = [elem["file"]["fileNameBase"] for ip in ignore_pattern if
                                  ip in elem["file"]["fileNameBase"]]
+               
                 if not result_ignore:
                     if "main_info" in elem:
                         if elem["main_info"]["main_flag"]:
-                            # print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
+                            #print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
                             flag_service = 0
                             # Note:
                             # When we find a service in a main, it is very likely to be a service
@@ -140,7 +141,6 @@ def software_invocation(dir_info, input_path):
 
                             if not flag_service:
                                 main_files.append(elem["file"]["path"])
-
     # If we haven't found a service, but we have main(s)
     # it is very likely to be a service
     for m in range(0, len(main_files)):
