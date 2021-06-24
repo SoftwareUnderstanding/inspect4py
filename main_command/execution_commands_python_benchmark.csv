@@ -81,3 +81,7 @@ aboul3la/Sublist3r,script and library,python sublist3r.py -h and import sublist3
 asciinema/asciinema,script and package,asciicinema rec and python3 -m asciinema –version,,,
 fabric/fabric,library,import fabric,,,
 wting/autojump,package and script,j dir,,,
+darkshredder/nominatim-feedback-reporter,script and service,python run.py,,,
+BakeNecko/DDOS_Python,script and service, python app.py,Example of many web services,,
+EticaAI/HXL-Data-Science-file-formats,script and package and service,hxl2example file,,,
+hjacobs/connexion-example,script and service,python app.py,,,
