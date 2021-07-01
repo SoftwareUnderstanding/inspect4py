@@ -180,7 +180,6 @@ def software_invocation(dir_info, input_path, call_list):
     m_secondary=[0] * len(main_files)
     for m in range(0, len(main_files)):
         m_calls= find_calls(main_files[m], call_list)
-
         ## HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
         m_imports = extract_relations(main_files[m], m_calls, main_files)
         for m_i in m_imports:
@@ -396,24 +395,51 @@ def find_calls(file_name, call_list):
             if elem in file_name:
                 return call_list[dir][elem] 
 
+
+def file_in_call(base, call, file, m_imports):
+    if base in call and m_imports.count(file) == 0:
+        m_imports.append(file)
+        return 1
+    else:
+        return 0
+
+def extract_local_function(base, m_calls_local, file,  m_imports, flag_found):
+    for call in m_calls_local:
+        flag_found= file_in_call(base, call, file, m_imports)
+        if flag_found:
+           return flag_found
+    return flag_found
+
+def extract_nested_function(base, m_calls_nested, file, m_imports, flag_found):
+    for call in m_calls_nested:
+        flag_found = extract_data(base, m_calls_nested, file, m_imports, flag_found)
+        if flag_found:
+           return flag_found
+    return flag_found
+
+def extract_data(base, m_calls, file, m_imports, flag_found):
+  for elem in m_calls:
+      if elem == "local":
+          flag_found = extract_local_function(base, m_calls[elem], file, m_imports, flag_found)
+      elif elem == "nested":
+          flag_found = extract_nested_function(base, m_calls[elem], file, m_imports, flag_found)
+      else:
+          flag_found = extract_data(base, m_calls[elem], file, m_imports, flag_found)
+      if flag_found:
+          return flag_found
+  return flag_found 
+
+
 def extract_relations(file_name, m_calls, main_files):
     m_imports=[]
     for file in main_files:
         if file not in file_name:
+            flag_found = 0
             base=os.path.basename(file)
             base=os.path.splitext(base)[0]
             base=base+"."
             for m_c in m_calls:
-                for elem in m_calls[m_c]:
-                    ## TODO - CHECK LATER IN CASE OF NESTED!
-                    for call in m_calls[m_c][elem]:
-                        if "local" == call or "nested" == call:
-                           for method in m_calls[m_c][elem][call]:
-                               if base in method and m_imports.count(file) == 0:
-                                   m_imports.append(file)
-                                   break
-                        else:
-                            if base in call and m_imports.count(file) == 0:
-                                m_imports.append(file)
-                                break
+                flag_found = extract_data(base, m_calls[m_c], file, m_imports, flag_found)
+                if flag_found:
+                    return m_imports 
     return m_imports
