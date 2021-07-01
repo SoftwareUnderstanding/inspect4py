@@ -1,10 +1,12 @@
 class MyClass:
     def func(self):
         def nested():
-            pass
+            print("nested")
 
         nested()
 
 def test():
     a = MyClass()
     a.func()
+
+test()
