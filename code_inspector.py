@@ -281,7 +281,9 @@ class CodeInspection:
         main_info["main_function"] = if_main_func
         if if_main_flag:
             # classifying the type of a main: "test" or "script"
-            if "unittest" in if_main_func or "test" in self.fileInfo["fileNameBase"]:
+            #or "test" in self.fileInfo["fileNameBase"]:
+            #Note - I'm just comenting the previous or ("test" in self.fileInfo ...) and adding doctest - but more advanced cases could be considered here.
+            if "unittest" in if_main_func or "doctest" in if_main_func:
                 main_info["type"] = "test"
             else:
                 main_info["type"] = "script"
@@ -712,7 +714,7 @@ def create_output_dirs(output_dir):
 @click.option('-html', '--html_output', type=bool, is_flag=True,
               help="generates an html file of the DirJson in the output directory.")
 @click.option('-cl', '--call_list', type=bool, is_flag=True,
-              help="generates the call list in a separate json file.")
+              help="generates the call list in a separate html file.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
@@ -723,11 +725,10 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
 
         # Generate the call list of a file
+        call_list_data = call_list_file(code_info)
         if call_list:
-            call_list = call_list_file(code_info)
             call_file_html = json_dir + "/CallGraph.html"
-            if html_output:
-                generate_output_html(call_list, call_file_html)
+            generate_output_html(call_list_data, call_file_html)
         if html_output:
             output_file_html = json_dir + "/FileInfo.html"
             f = open(code_info.fileJson[1])
@@ -759,18 +760,17 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         continue
 
         # Generate the call list of the Dir
+        call_list_data = call_list_dir(dir_info)
         if call_list:
-            call_list = call_list_dir(dir_info)
             call_file_html = output_dir + "/call_graph.html"
-            if html_output:
-                generate_output_html(call_list, call_file_html)
+            generate_output_html(call_list_data, call_file_html)
         # Note:1 for visualising the tree, nothing or 0 for not.
         if requirements:
             dir_requirements = find_requirements(input_path)
             dir_info["requirements"] = dir_requirements
 
         dir_info["directory_tree"] = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
-        dir_info["software_invocation"] = software_invocation(dir_info, input_path)
+        dir_info["software_invocation"] = software_invocation(dir_info, input_path, call_list_data)
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
