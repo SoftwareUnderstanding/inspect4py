@@ -179,9 +179,13 @@ def software_invocation(dir_info, input_path, call_list):
 
     m_secondary=[0] * len(main_files)
     for m in range(0, len(main_files)):
-        m_calls= find_calls(main_files[m], call_list)
+        m_calls= find_file_calls(main_files[m], call_list)
         ## HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
-        m_imports = extract_relations(main_files[m], m_calls, main_files)
+        m_imports = extract_relations(main_files[m], m_calls, main_files, call_list)
+        ## PRINT SANITY CHECK
+        print("--- Sanity Check ---")
+        print("Main File --%s-- has (direct/indirect) relation with these other Main Files --%s--" %(main_files[m], m_imports))
+        
         for m_i in m_imports:
             m_secondary[main_files.index(m_i)]=1
   
@@ -389,49 +393,89 @@ def call_list_dir(dir_info):
     return call_list
 
 
-def find_calls(file_name, call_list):
+def find_file_calls(file_name, call_list):
     for dir in call_list:
         for elem in call_list[dir]:
             if elem in file_name:
                 return call_list[dir][elem] 
 
 
-def file_in_call(base, call, file, m_imports):
-    if base in call and m_imports.count(file) == 0:
+def find_module_calls(module, call_list):
+    for dir in call_list:
+        for elem in call_list[dir]:
+            if module in elem:
+                return call_list[dir][elem] 
+
+# DFS algorithm - Allowing up to 2 levels of depth. 
+def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
+  
+    ### NOTE: LEVEL is a parameter very important here!
+    ### It allows us to track how deep we are inside the recursivity search.
+
+    ### If we want to modify the depth of the recursity, we just need to change the level_depth.
+    level_depth = 2
+
+    ## For each call, we extract all its sub_calls (level 1), 
+    ## and for each sub_call we extract all its sub_sub_calls (level 2)  
+    #### 
+    
+    if base in call and m_imports.count(file) == 0 and orig_base not in call:
+        #print("--> I found %s in %s" %(base, call))
         m_imports.append(file)
         return 1
+    elif orig_base in call:
+       return 0
+
+    elif level < level_depth :
+        m_calls_extern = {}
+        module_base=call.split(".")[0]
+        moudule_base = module_base +"."
+        m_calls_extern = find_module_calls(module_base, call_list)
+        ## Note: Here is when we increase the level of recursivity
+        level += 1
+        if m_calls_extern:
+            for m_c in m_calls_extern:
+                flag_found = extract_data(base, m_calls_extern[m_c], file, m_imports, 0, call_list, orig_base, level)
+                if flag_found:
+                    return 1
+        return 0
     else:
         return 0
 
-def extract_local_function(base, m_calls_local, file,  m_imports, flag_found):
+def extract_local_function(base, m_calls_local, file,  m_imports, flag_found, call_list, orig_base, level):
     for call in m_calls_local:
-        flag_found= file_in_call(base, call, file, m_imports)
+        flag_found= file_in_call(base, call, file, m_imports, call_list, orig_base, level)
         if flag_found:
            return flag_found
     return flag_found
 
-def extract_nested_function(base, m_calls_nested, file, m_imports, flag_found):
+def extract_nested_function(base, m_calls_nested, file, m_imports, flag_found, call_list, orig_base, level):
     for call in m_calls_nested:
-        flag_found = extract_data(base, m_calls_nested, file, m_imports, flag_found)
+        flag_found = extract_data(base, m_calls_nested, file, m_imports, flag_found, call_list, orig_base, level)
         if flag_found:
            return flag_found
     return flag_found
 
-def extract_data(base, m_calls, file, m_imports, flag_found):
+def extract_data(base, m_calls, file, m_imports, flag_found, call_list, orig_base, level):
   for elem in m_calls:
       if elem == "local":
-          flag_found = extract_local_function(base, m_calls[elem], file, m_imports, flag_found)
+          flag_found = extract_local_function(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
       elif elem == "nested":
-          flag_found = extract_nested_function(base, m_calls[elem], file, m_imports, flag_found)
+          flag_found = extract_nested_function(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
       else:
-          flag_found = extract_data(base, m_calls[elem], file, m_imports, flag_found)
+          flag_found = extract_data(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
       if flag_found:
           return flag_found
   return flag_found 
 
 
-def extract_relations(file_name, m_calls, main_files):
+# We will apply the DFS strategy later to find the external relationships.
+
+def extract_relations(file_name, m_calls, main_files, call_list):
     m_imports=[]
+    orig_base=os.path.basename(file_name)
+    orig_base=os.path.splitext(orig_base)[0]
+    orig_base = orig_base +"."
     for file in main_files:
         if file not in file_name:
             flag_found = 0
@@ -439,7 +483,9 @@ def extract_relations(file_name, m_calls, main_files):
             base=os.path.splitext(base)[0]
             base=base+"."
             for m_c in m_calls:
-                flag_found = extract_data(base, m_calls[m_c], file, m_imports, flag_found)
+                level = 0
+                flag_found = extract_data(base, m_calls[m_c], file, m_imports, flag_found, call_list, orig_base, level)
                 if flag_found:
-                    return m_imports 
+                    return m_imports
+                            
     return m_imports
