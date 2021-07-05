@@ -109,6 +109,7 @@ python code_inspector.py --input_path <FILE.py | DIRECTORY> [--fig , --output_di
 For clarity, we have added the help option to explain each input parameters
 
 ```python code_inspector.py --help
+
 Usage: code_inspector.py [OPTIONS]
 
 Options:
@@ -131,6 +132,10 @@ Options:
   -r, --requirements              find the requirements of the repository.
   -html, --html_output            generates an html file of the DirJson in the
                                   output directory.
+  -cf, --control_flow             generates the call graph for each file in a
+                                  different directory.
+  -cl, --call_list                generates the call list in a separate html
+                                  file.
   --help                          Show this message and exit.
 
 ```
