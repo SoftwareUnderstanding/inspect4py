@@ -23,27 +23,31 @@ from utils import *
 
 
 class CodeInspection:
-    def __init__(self, path, out_control_flow_path, out_json_path, flag_png):
+    def __init__(self, path, out_control_flow_path, out_json_path, flag_png, control_flow):
         """ init method initializes the Code_Inspection object
         :param self self: represent the instance of the class
         :param str path: the file to inspect
         :param str out_control_flow_path: the output directory to store the control flow information
         :param str out_json_path: the output directory to store the json file with features extracted from the ast tree.
         :param int flag_png: flag to indicate to generate or not control flow figures
+        :param bool control_flow: boolean to indicate to generate the control flow 
         """
 
         self.path = path
         self.flag_png = flag_png
         self.out_json_path = out_json_path
-        self.out_control_flow_path = out_control_flow_path
         self.tree = self.parser_file()
         self.fileInfo = self.inspect_file()
-        format = "png"
-        self.controlFlowInfo = self.inspect_controlflow(format)
         self.depInfo = self.inspect_dependencies()
         self.classesInfo = self.inspect_classes()
         self.funcsInfo = self.inspect_functions()
         self.bodyInfo = self.inspect_body()
+        if control_flow:
+            format = "png"
+            self.out_control_flow_path = out_control_flow_path
+            self.controlFlowInfo = self.inspect_controlflow(format)
+        else:
+            self.controlFlowInfo = {}
         self.fileJson = self.file_json()
 
     def parser_file(self):
@@ -672,7 +676,7 @@ class CodeInspection:
         return result
 
 
-def create_output_dirs(output_dir):
+def create_output_dirs(output_dir, control_flow):
     """create_output_dirs creates two subdirectories
        to save the results. ControlFlow to save the
        cfg information (txt and PNG) and JsonFiles to
@@ -680,15 +684,20 @@ def create_output_dirs(output_dir):
        extracted per file. 
        :param str output_dir: Output Directory in which the new subdirectories
                           will be created.
+       :param bool control_flow: Boolean to indicate the generation of the control flow 
        """
+  
+    if control_flow:
+        control_flow_dir = os.path.abspath(output_dir) + "/control_flow"
 
-    control_flow_dir = os.path.abspath(output_dir) + "/control_flow"
-
-    if not os.path.exists(control_flow_dir):
-        print("Creating cf %s" % control_flow_dir)
-        os.makedirs(control_flow_dir)
+        if not os.path.exists(control_flow_dir):
+            print("Creating cf %s" % control_flow_dir)
+            os.makedirs(control_flow_dir)
+        else:
+            pass
     else:
-        pass
+        control_flow_dir= ""
+
     json_dir = output_dir + "/json_files"
 
     if not os.path.exists(json_dir):
@@ -713,16 +722,19 @@ def create_output_dirs(output_dir):
 @click.option('-r', '--requirements', type=bool, is_flag=True, help="find the requirements of the repository.")
 @click.option('-html', '--html_output', type=bool, is_flag=True,
               help="generates an html file of the DirJson in the output directory.")
+@click.option('-cf', '--control_flow', type=bool, is_flag=True, 
+              help="generates the call graph for each file in a different directory.")
 @click.option('-cl', '--call_list', type=bool, is_flag=True,
               help="generates the call list in a separate html file.")
-def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list):
+
+def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list, control_flow):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
     if os.path.isfile(input_path):
-        cf_dir, json_dir = create_output_dirs(output_dir)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig)
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
 
         # Generate the call list of a file
         call_list_data = call_list_file(code_info)
@@ -749,8 +761,8 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                     try:
                         path = os.path.join(subdir, f)
                         out_dir = output_dir + "/" + os.path.basename(subdir)
-                        cf_dir, json_dir = create_output_dirs(out_dir)
-                        code_info = CodeInspection(path, cf_dir, json_dir, fig)
+                        cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
+                        code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow)
                         if out_dir not in dir_info:
                             dir_info[out_dir] = [code_info.fileJson[0]]
                         else:
