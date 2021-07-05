@@ -8,11 +8,14 @@ Library to allow users inspect a software project folder (i.e., a directory and 
 
 Given a folder with code, `code_inspector` will:
 
+- Extract all imported modules and how each module is imported as, and classify them between internal or external.
+- Extract all functions in the code
 - Extract all classes in the code
 - For each class, extract all its methods.
-- For each class, extract all its imported modules and how each module is imported as.
-- For each class and method, extract its documentation, including parameters, and accepted values.
-- Record the control flow of each doe file.
+- For each method or function, extract its documentation, including parameters, and accepted values, and call list.
+- Record the control flow of each file.
+- Extract the hierarchy of directories and files, and performs a simple file classification
+- Extract the requirements
 
 All metadata is extracted as a JSON file.
 
