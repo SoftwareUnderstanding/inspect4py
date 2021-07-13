@@ -136,14 +136,14 @@ def software_invocation(dir_info, input_path, call_list):
                                     if isinstance(imports, list):
                                         for import_dep in imports:
                                             if import_dep.lower in server_dependencies:
-                                                soft_info = {"type": ["service", "script with main"], "run": elem["file"]["path"]}
+                                                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                                 flag_service = 1
                                                 if soft_info not in software_invocation_info:
                                                     software_invocation_info.append(soft_info)
                                                 # return software_invocation_info
                                     else:
                                         if imports.lower in server_dependencies:
-                                            soft_info = {"type": ["service", "script with main"], "run": elem["file"]["path"]}
+                                            soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                             flag_service = 1
                                             if soft_info not in software_invocation_info:
                                                 software_invocation_info.append(soft_info)
@@ -152,14 +152,14 @@ def software_invocation(dir_info, input_path, call_list):
                                     if isinstance(modules, list):
                                         for from_mod_dep in modules:
                                             if from_mod_dep.lower() in server_dependencies:
-                                                soft_info = {"type": ["service", "script with main"], "run": elem["file"]["path"]}
+                                                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                                 flag_service = 1
                                                 if soft_info not in software_invocation_info:
                                                     software_invocation_info.append(soft_info)
                                                 # return software_invocation_info
                                     else:
                                         if modules.lower() in server_dependencies:
-                                            soft_info = {"type": ["service", "script with main"], "run": elem["file"]["path"]}
+                                            soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                             flag_service = 1
                                             if soft_info not in software_invocation_info:
                                                 software_invocation_info.append(soft_info)
@@ -215,7 +215,7 @@ def software_invocation(dir_info, input_path, call_list):
                                  ip in elem["file"]["fileNameBase"]]
                 if not result_ignore:
                     try:
-                        print("------ DETECTED FLASK %s" %elem["file"]["fileNameBase"])
+                        print("------ DETECTED SERVER %s" %elem["file"]["fileNameBase"])
                         for dep in elem["dependencies"]:
                             for import_dep in dep["import"]:
                                 if import_dep in server_dependencies:
