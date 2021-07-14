@@ -118,6 +118,7 @@ def software_invocation(dir_info, input_path, call_list):
 
     #new list to store files without mains
     no_main_files = []
+    flag_service_main = 0
     for key in filter(lambda key: key not in "directory_tree", dir_info):
         result_ignore = [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
@@ -127,7 +128,7 @@ def software_invocation(dir_info, input_path, call_list):
                 if not result_ignore:
                     if elem["main_info"]["main_flag"]:
                         if elem["main_info"]["main_flag"]:
-                            flag_service = 0
+                            flag_main_service = 0
                             main_stored = 0
                             try:
                                 flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info, server_dependencies)
@@ -137,6 +138,9 @@ def software_invocation(dir_info, input_path, call_list):
                                 else:
                                     test_files.append(elem["file"]["path"])
                                 main_stored = 1
+
+                            if flag_service:
+                                flag_service_main = 1
 
                             if not flag_service and not main_stored:
                                 if elem["main_info"]["type"]!= "test":
@@ -175,11 +179,14 @@ def software_invocation(dir_info, input_path, call_list):
 
     ##### ATENTION: ALLOWING IT TO EXPLORE IT FUTHER 
     # We are now go to try to find services in files without mains
+    flag_service_no_main = 0
     for elem in no_main_files:
         flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info, server_dependencies)
+        if flag_service:
+            flag_service_no_main = 1
 
     ##### WE NOW ONLY ALLOWING TO EXPLORE MORE IF IT HAS NOT FIND SERVICES OR MAINS
-    if flag_service or len(main_files) > 0:
+    if flag_service_main or flag_service_no_main or len(main_files) > 0:
         return software_invocation_info
 
     # NOTE: OPTION 1
