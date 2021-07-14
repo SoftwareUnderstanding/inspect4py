@@ -474,9 +474,10 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info):
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
     else:
-         if data.lower() in server_dependencies:
-             soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-             flag_service = 1
-             if soft_info not in software_invocation_info:
-                 software_invocation_info.append(soft_info)
+         if data:
+             if data.lower() in server_dependencies:
+                 soft_info = {"type": ["service"], "run": elem["file"]["path"]}
+                 flag_service = 1
+                 if soft_info not in software_invocation_info:
+                     software_invocation_info.append(soft_info)
     return flag_service, software_invocation_info
