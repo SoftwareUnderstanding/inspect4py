@@ -135,14 +135,14 @@ def software_invocation(dir_info, input_path, call_list):
                                     # TO DO: Avoid repeated code in this section
                                     if isinstance(imports, list):
                                         for import_dep in imports:
-                                            if import_dep.lower in server_dependencies:
+                                            if import_dep.lower() in server_dependencies:
                                                 soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                                 flag_service = 1
                                                 if soft_info not in software_invocation_info:
                                                     software_invocation_info.append(soft_info)
                                                 # return software_invocation_info
                                     else:
-                                        if imports.lower in server_dependencies:
+                                        if imports.lower() in server_dependencies:
                                             soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                             flag_service = 1
                                             if soft_info not in software_invocation_info:

@@ -265,6 +265,7 @@ class CodeInspection:
         if_main_flag = 0
         if_main_func = ""
         main_info = {}
+        test_dependencies = ('unittest', 'doctest')
 
         for node in if_main_definitions:
             try:
@@ -287,10 +288,26 @@ class CodeInspection:
             # classifying the type of a main: "test" or "script"
             #or "test" in self.fileInfo["fileNameBase"]:
             #Note - I'm just comenting the previous or ("test" in self.fileInfo ...) and adding doctest - but more advanced cases could be considered here.
-            if "unittest" in if_main_func or "doctest" in if_main_func:
-                main_info["type"] = "test"
-            else:
-                main_info["type"] = "script"
+           
+            # OPTION 1: searching unnitest or doctest string inside the if_main_func
+            #if "unittest" in if_main_func or "doctest" in if_main_func:
+            #    main_info["type"] = "test"
+            #else:
+            #    main_info["type"] = "script"
+       
+            # OPTION 2: searching the list of pontential test in the imports
+            for dep in self.depInfo:
+                imports = dep["import"]
+                if isinstance(imports, list):
+                    for import_dep in imports:
+                        if import_dep.lower() in test_dependencies:
+                            main_info["type"] = "test"
+                            return main_info
+                else:
+                    if imports.lower() in test_dependencies:
+                        main_info["type"] = "test"
+                        return main_info
+            main_info["type"] = "script"
         return main_info
 
     def file_json(self):
