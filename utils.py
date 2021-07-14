@@ -116,54 +116,21 @@ def software_invocation(dir_info, input_path, call_list):
     #new list to store the "mains that have been previously classified as "test". 
     test_files = []
 
+    #new list to store files without mains
+    no_main_files = []
     for key in filter(lambda key: key not in "directory_tree", dir_info):
         result_ignore = [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
             for elem in dir_info[key]:
                 result_ignore = [elem["file"]["fileNameBase"] for ip in ignore_pattern if
                                  ip in elem["file"]["fileNameBase"]]
-
                 if not result_ignore:
-                    if "main_info" in elem:
+                    if elem["main_info"]["main_flag"]:
                         if elem["main_info"]["main_flag"]:
-                            # print("------ DETECTED MAIN %s" %elem["file"]["fileNameBase"])
                             flag_service = 0
                             main_stored = 0
                             try:
-                                for dep in elem["dependencies"]:
-                                    imports = dep["import"]
-                                    # TO DO: Avoid repeated code in this section
-                                    if isinstance(imports, list):
-                                        for import_dep in imports:
-                                            if import_dep.lower() in server_dependencies:
-                                                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                                                flag_service = 1
-                                                if soft_info not in software_invocation_info:
-                                                    software_invocation_info.append(soft_info)
-                                                # return software_invocation_info
-                                    else:
-                                        if imports.lower() in server_dependencies:
-                                            soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                                            flag_service = 1
-                                            if soft_info not in software_invocation_info:
-                                                software_invocation_info.append(soft_info)
-                                            # return software_invocation_info
-                                    modules = dep["from_module"]
-                                    if isinstance(modules, list):
-                                        for from_mod_dep in modules:
-                                            if from_mod_dep.lower() in server_dependencies:
-                                                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                                                flag_service = 1
-                                                if soft_info not in software_invocation_info:
-                                                    software_invocation_info.append(soft_info)
-                                                # return software_invocation_info
-                                    else:
-                                        if modules.lower() in server_dependencies:
-                                            soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                                            flag_service = 1
-                                            if soft_info not in software_invocation_info:
-                                                software_invocation_info.append(soft_info)
-                                            # return software_invocation_info
+                                flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info, server_dependencies)
                             except:
                                 if elem["main_info"]["type"]!= "test":
                                      main_files.append(elem["file"]["path"])
@@ -176,6 +143,8 @@ def software_invocation(dir_info, input_path, call_list):
                                     main_files.append(elem["file"]["path"])
                                 else:
                                     test_files.append(elem["file"]["path"])
+                    else:
+                        no_main_files.append(elem) 
 
     m_secondary=[0] * len(main_files)
     for m in range(0, len(main_files)):
@@ -200,36 +169,18 @@ def software_invocation(dir_info, input_path, call_list):
         soft_info = {"type": ["test"], "run": "python " + test_files[m] + " --help"}
         software_invocation_info.append(soft_info)
 
-    if len(main_files) > 0:
-        return software_invocation_info
+    ###### ATENTION: COMENTING IT TO LET IT CONTINUE - EVEN IF IT HAS FOUND A MAIN #####
+    #if len(main_files) > 0:
+    #    return software_invocation_info
 
-    # If we have not found a main, then we can try to find again if we have
-    # a service
-    # Note: We are going to ingore all the directories and files that matches the ingore_pattern
-    # to exclude tests, debugs and demos  
-    for key in filter(lambda key: key not in "directory_tree", dir_info):
-        result_ignore = [key for ip in ignore_pattern if ip in key]
-        if not result_ignore:
-            for elem in dir_info[key]:
-                result_ignore = [elem["file"]["fileNameBase"] for ip in ignore_pattern if
-                                 ip in elem["file"]["fileNameBase"]]
-                if not result_ignore:
-                    try:
-                        for dep in elem["dependencies"]:
-                            for import_dep in dep["import"]:
-                                if import_dep in server_dependencies:
-                                    print("------ DETECTED SERVICE %s" %elem["file"]["fileNameBase"])
-                                    soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                                    software_invocation_info.append(soft_info)
-                                    return software_invocation_info
-                            for from_mod_dep in dep["from_module"]:
-                                if from_mod_dep in server_dependencies:
-                                    print("------ DETECTED SERVICE %s" %elem["file"]["fileNameBase"])
-                                    soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                                    software_invocation_info.append(soft_info)
-                                    return software_invocation_info
-                    except:
-                        pass
+    ##### ATENTION: ALLOWING IT TO EXPLORE IT FUTHER 
+    # We are now go to try to find services in files without mains
+    for elem in no_main_files:
+        flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info, server_dependencies)
+
+    ##### WE NOW ONLY ALLOWING TO EXPLORE MORE IF IT HAS NOT FIND SERVICES OR MAINS
+    if flag_service or len(main_files) > 0:
+        return software_invocation_info
 
     # NOTE: OPTION 1
     # Note: Without ingore files and directories
@@ -490,3 +441,35 @@ def extract_relations(file_name, m_calls, main_files, call_list):
                     return m_imports
                             
     return m_imports
+
+
+def service_check(elem, result_ignore, software_invocation_info, server_dependencies):
+    flag_service = 0
+    for dep in elem["dependencies"]:
+        imports = dep["import"]
+        flag_service, software_invocation_info= service_in_set(imports, server_dependencies, elem, software_invocation_info)
+        if flag_service:
+            return flag_service, software_invocation_info
+        else: 
+            modules = dep["from_module"]
+            flag_service, software_invocation_info= service_in_set(modules, server_dependencies, elem, software_invocation_info)
+            if flag_service:
+                return flag_service, software_invocation_info
+    return flag_service, software_invocation_info
+
+def service_in_set(data, server_dependencies, elem, software_invocation_info):
+    flag_service = 0
+    if isinstance(data, list):
+        for data_dep in data:
+            if data_dep.lower() in server_dependencies:
+                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
+                flag_service = 1
+                if soft_info not in software_invocation_info:
+                    software_invocation_info.append(soft_info)
+    else:
+         if data.lower() in server_dependencies:
+             soft_info = {"type": ["service"], "run": elem["file"]["path"]}
+             flag_service = 1
+             if soft_info not in software_invocation_info:
+                 software_invocation_info.append(soft_info)
+    return flag_service, software_invocation_info
