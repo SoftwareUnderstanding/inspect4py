@@ -215,16 +215,17 @@ def software_invocation(dir_info, input_path, call_list):
                                  ip in elem["file"]["fileNameBase"]]
                 if not result_ignore:
                     try:
-                        print("------ DETECTED SERVER %s" %elem["file"]["fileNameBase"])
                         for dep in elem["dependencies"]:
                             for import_dep in dep["import"]:
                                 if import_dep in server_dependencies:
-                                    soft_info = {"type": ["service"], "app": elem["file"]["path"]}
+                                    print("------ DETECTED SERVICE %s" %elem["file"]["fileNameBase"])
+                                    soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                     software_invocation_info.append(soft_info)
                                     return software_invocation_info
                             for from_mod_dep in dep["from_module"]:
                                 if from_mod_dep in server_dependencies:
-                                    soft_info = {"type": "service"}
+                                    print("------ DETECTED SERVICE %s" %elem["file"]["fileNameBase"])
+                                    soft_info = {"type": ["service"], "run": elem["file"]["path"]}
                                     software_invocation_info.append(soft_info)
                                     return software_invocation_info
                     except:
@@ -236,7 +237,7 @@ def software_invocation(dir_info, input_path, call_list):
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
             if ".py" in elem:
-                python_files.append(elem)
+                python_files.append(os.path.abspath(input_path+"/"+ directory+"/"+elem))
 
     # NOTE: OPTION 2
     # Note: Ingoring all the directories and files that matches the ingore_pattern
