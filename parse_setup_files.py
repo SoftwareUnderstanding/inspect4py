@@ -120,19 +120,22 @@ def inspect_setup_cfg(parent_dir, name, error=2):
         # or because we are not able to open setup.py and there is not setup.cfg
         # Classify it as package
         try:
+
             if not name:
+                setup_info["type"]= setuptools_method()
                 name = subprocess.getoutput("python setup.py --name")
-                if ".lib" in name:
-                    setup_info["type"] = ["library"]
-                    if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
-                        setup_info["installation"] = "pip install " + name
-                        setup_info["run"] = "import " + name
-                    else:
-                        name=name.split("\n")[1]
-                        setup_info["installation"] = "pip install " + name
-                        setup_info["run"] = "import " + name
-                    
-                    return setup_info
+                if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+                    name=name.split("\n")[-1]
+                    if ".lib" in name:
+                        name=name.split(".lib")[0]
+                    setup_info["installation"] = "pip install " + name
+                    setup_info["run"] = "import " + name
+                else:
+                    name=name.split("\n")[-1]
+                    if ".lib" in name:
+                        name=name.split(".lib")[0]
+                    setup_info["installation"] = "pip install " + name
+                return setup_info
         except:
             name = "UNKNOWN"
         if error == 1:
@@ -237,3 +240,15 @@ def inspect_setup(parent_dir, elem):
         setup_info = inspect_setup_cfg(abs_parent_dir, name, error)
         os.chdir(current_dir)
         return setup_info
+
+def setuptools_method():
+
+    setuptools.setup = setup
+    content = open('setup.py').read()
+    if "entry_points" in content:
+        return ["package"]
+    else:
+        return ["library"]
+
+def setup(**kwargs):
+    print(kwargs)
