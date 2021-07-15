@@ -90,6 +90,7 @@ for dir_name in os.listdir(repo_path):
     for index, row in benchmark_df.iterrows():
         if dir_name == row["repository"].split("/")[-1].strip():
             row_types = [x.strip() for x in row["type"].split("and")]
+            print("ATENTION DANI-ROSA Annotated types in CSV: --%s--- vs CODE INSPECTOR types --%s--" % (row_types, current_type))
             repo_correct = False
             print_err_entities = False
             for row_type in row_types:
