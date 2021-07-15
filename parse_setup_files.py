@@ -122,6 +122,17 @@ def inspect_setup_cfg(parent_dir, name, error=2):
         try:
             if not name:
                 name = subprocess.getoutput("python setup.py --name")
+                if ".lib" in name:
+                    setup_info["type"] = ["library"]
+                    if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+                        setup_info["installation"] = "pip install " + name
+                        setup_info["run"] = "import " + name
+                    else:
+                        name=name.split("\n")[1]
+                        setup_info["installation"] = "pip install " + name
+                        setup_info["run"] = "import " + name
+                    
+                    return setup_info
         except:
             name = "UNKNOWN"
         if error == 1:
@@ -155,7 +166,6 @@ def inspect_setup(parent_dir, elem):
                     module_name = os.path.basename(temp_fh.name).split(".")[0]
                     __import__(module_name)
             except:
-                # print("estoy en el except")
                 name = ""
                 error = 1
                 setup_info = inspect_setup_cfg(abs_parent_dir, name, error)
