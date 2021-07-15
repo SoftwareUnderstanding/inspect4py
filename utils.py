@@ -100,12 +100,14 @@ def software_invocation(dir_info, input_path, call_list):
     #ignore_pattern = ("test", "debug")
     ignore_pattern=()
     # Note: other server dependencies are missing here. More testing is needed.
-
+    flag_package_library = 0
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
             if elem in setup_files:
-                software_invocation_info.append(inspect_setup(input_path))
-                return software_invocation_info
+                software_invocation_info.append(inspect_setup(input_path, elem))
+                flag_package_library = 1
+                #### ATENTION!! - I AM COMMENTING THE RETURN TO ALLOW FURTHER EXPLORATION
+                #return software_invocation_info
 
     # Looping across all mains
     # to decide if it is a service (main + server dep) or just a script (main without server dep)
@@ -168,6 +170,8 @@ def software_invocation(dir_info, input_path, call_list):
             soft_info = {"type": ["script with main"], "run": "python " + main_files[m] + " --help"}
             software_invocation_info.append(soft_info)
 
+    ## ATENTION!!
+    ## WE COULD COMMENT THIS - TO NOT INCLUDE IT IN THE TEST IN THE SOFTWARE INVOCATION
     ### STORING THE FILES THAT HAVE BEEN DETECTED AS "TESTS WITH MAIN"    
     for m in range(0, len(test_files)):
         soft_info = {"type": ["test"], "run": "python " + test_files[m] + " --help"}
@@ -185,8 +189,8 @@ def software_invocation(dir_info, input_path, call_list):
         if flag_service:
             flag_service_no_main = 1
 
-    ##### WE NOW ONLY ALLOWING TO EXPLORE MORE IF IT HAS NOT FIND SERVICES OR MAINS
-    if flag_service_main or flag_service_no_main or len(main_files) > 0:
+    ##### WE NOW ONLY ALLOWING TO EXPLORE MORE IF IT HAS NOT FIND: 1) PACKAGE/LIBRARY OR 2) SERVICES OR 3) MAINS
+    if flag_service_main or flag_package_library or flag_service_no_main or len(main_files) > 0:
         return software_invocation_info
 
     # NOTE: OPTION 1
