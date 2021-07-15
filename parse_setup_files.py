@@ -122,7 +122,6 @@ def inspect_setup_cfg(parent_dir, name, error=2):
         try:
             if not name:
                 name = subprocess.getoutput("python setup.py --name")
-                print("ESTOU AQUI!!")
                 if ".lib" in name:
                     setup_info["type"] = ["library"]
                     if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
