@@ -106,6 +106,7 @@ def software_invocation(dir_info, input_path, call_list):
             if elem in setup_files:
                 software_invocation_info.append(inspect_setup(input_path, elem))
                 flag_package_library = 1
+                break
                 #### ATENTION!! - I AM COMMENTING THE RETURN TO ALLOW FURTHER EXPLORATION
                 #return software_invocation_info
 
