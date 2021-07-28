@@ -288,14 +288,14 @@ class CodeInspection:
             # classifying the type of a main: "test" or "script"
             #or "test" in self.fileInfo["fileNameBase"]:
             #Note - I'm just comenting the previous or ("test" in self.fileInfo ...) and adding doctest - but more advanced cases could be considered here.
-           
-            # OPTION 1: searching unnitest or doctest string inside the if_main_func
-            #if "unittest" in if_main_func or "doctest" in if_main_func:
+
+            # OPTION 1: searching test dependency string inside the if_main_func
+            #if test dependency in if_main_func:
             #    main_info["type"] = "test"
             #else:
             #    main_info["type"] = "script"
-       
-            # OPTION 2: searching the list of pontential test in the imports
+
+            # OPTION 2: searching the list of potential test in the imports
             for dep in self.depInfo:
                 imports = dep["import"]
                 if isinstance(imports, list):
@@ -703,7 +703,7 @@ def create_output_dirs(output_dir, control_flow):
                           will be created.
        :param bool control_flow: Boolean to indicate the generation of the control flow 
        """
-  
+
     if control_flow:
         control_flow_dir = os.path.abspath(output_dir) + "/control_flow"
 
@@ -739,12 +739,12 @@ def create_output_dirs(output_dir, control_flow):
 @click.option('-r', '--requirements', type=bool, is_flag=True, help="find the requirements of the repository.")
 @click.option('-html', '--html_output', type=bool, is_flag=True,
               help="generates an html file of the DirJson in the output directory.")
-@click.option('-cf', '--control_flow', type=bool, is_flag=True, 
+@click.option('-cf', '--control_flow', type=bool, is_flag=True,
               help="generates the call graph for each file in a different directory.")
 @click.option('-cl', '--call_list', type=bool, is_flag=True,
               help="generates the call list in a separate html file.")
-
-def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list, control_flow):
+def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
+         control_flow):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -799,7 +799,18 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
             dir_info["requirements"] = dir_requirements
 
         dir_info["directory_tree"] = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
-        dir_info["software_invocation"] = software_invocation(dir_info, input_path, call_list_data)
+        # software invocation has both tests and regular invocation info.
+        # separating tests in new category
+        all_soft_invocation_info_list = software_invocation(dir_info, input_path, call_list_data)
+        test_info_list = []
+        soft_invocation_info_list = []
+        for soft_info in all_soft_invocation_info_list:
+            if "test" in soft_info["type"]:
+                test_info_list.append(soft_info)
+            else:
+                soft_invocation_info_list.append((soft_info))
+        dir_info["tests"] = test_info_list
+        dir_info["software_invocation"] = soft_invocation_info_list
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:

@@ -84,7 +84,7 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
 
 def software_invocation(dir_info, input_path, call_list):
     """
-    Method to detect the directory type of a software project.
+    Method to detect the directory type of a software project. This method also detects tests
     We distinguish four main types: script, package, library and service. Some can be more than one.
     :dir_info json file containing all the extracted information about the software repository
     :input_path path of the repository to analyze
@@ -94,9 +94,6 @@ def software_invocation(dir_info, input_path, call_list):
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("flask", "flask_restful", "falcon", "falcon_app", "aiohttp", "bottle", "django", "fastapi",
                            "locust", "pyramid", "hug", "eve", "connexion")
-
-    # Note: just doing a quick fix, so we ignore the ignore_pattern.
-    # ignore_pattern = ("test", "debug")
     ignore_pattern = ()
     # Note: other server dependencies are missing here. More testing is needed.
     flag_package_library = 0
@@ -106,7 +103,8 @@ def software_invocation(dir_info, input_path, call_list):
                 software_invocation_info.append(inspect_setup(input_path, elem))
                 flag_package_library = 1
                 break
-                #### ATENTION!! - I AM COMMENTING THE RETURN TO ALLOW FURTHER EXPLORATION
+                # We continue exploration to make sure we continue exploring mains even after detecting this is a
+                # library
                 # return software_invocation_info
 
     # Looping across all mains
@@ -157,34 +155,34 @@ def software_invocation(dir_info, input_path, call_list):
     m_secondary = [0] * len(main_files)
     for m in range(0, len(main_files)):
         m_calls = find_file_calls(main_files[m], call_list)
-        ## HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
+        # HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
         m_imports = extract_relations(main_files[m], m_calls, main_files, call_list)
-        ## PRINT SANITY CHECK
+
+        # PRINT SANITY CHECK (TO REMOVE)
         print("--- Sanity Check ---")
-        print("Main File --%s-- has (direct/indirect) relation with these other Main Files --%s--" % (
-        main_files[m], m_imports))
+        print("Main File --%s-- has (direct/indirect) relation with these other Main Files --%s--" %
+              (main_files[m], m_imports))
 
         for m_i in m_imports:
             m_secondary[main_files.index(m_i)] = 1
 
     for m in range(0, len(main_files)):
-        #### ONLY SELECT THE ONES THAT ARE PRINCIPALS - WE CAN CHANGE THAT LATER
+        # ONLY SELECT THE main files THAT ARE PRINCIPAL - WE CAN CHANGE THAT LATER
+        # TODO: principal mains should be tagged.
         if not m_secondary[m]:
-            soft_info = {"type": ["script with main"], "run": "python " + main_files[m] + " --help"}
+            soft_info = {"type": "script with main", "run": "python " + main_files[m] + " --help"}
             software_invocation_info.append(soft_info)
 
-    ## ATENTION!!
-    ## WE COULD COMMENT THIS - TO NOT INCLUDE IT IN THE TEST IN THE SOFTWARE INVOCATION
-    ### STORING THE FILES THAT HAVE BEEN DETECTED AS "TESTS WITH MAIN"    
-    for m in range(0, len(test_files)):
-        soft_info = {"type": ["test"], "run": "python " + test_files[m] + " --help"}
+    # tests with main
+    for test_file in test_files:
+        # Test files do not have help, they are usually run by themselves
+        soft_info = {"type": "test", "run": "python " + test_file }
         software_invocation_info.append(soft_info)
 
-    ###### ATENTION: COMENTING IT TO LET IT CONTINUE - EVEN IF IT HAS FOUND A MAIN #####
+    # continue checking (there could be more than 1 main script)
     # if len(main_files) > 0:
     #    return software_invocation_info
 
-    ##### ATENTION: ALLOWING IT TO EXPLORE IT FUTHER 
     # We are now go to try to find services in files without mains
     flag_service_no_main = 0
     for elem in no_main_files:
@@ -193,12 +191,12 @@ def software_invocation(dir_info, input_path, call_list):
         if flag_service:
             flag_service_no_main = 1
 
-    ##### WE NOW ONLY ALLOWING TO EXPLORE MORE IF IT HAS NOT FIND: 1) PACKAGE/LIBRARY OR 2) SERVICES OR 3) MAINS
+    # Only continue exploring if no packages, libraries or scripts with mains found (tests are ignored)
     if flag_service_main or flag_package_library or flag_service_no_main or len(main_files) > 0:
         return software_invocation_info
 
     # NOTE: OPTION 1
-    # Note: Without ingore files and directories
+    # Note: Without ignore files and directories
     python_files = []
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
@@ -206,7 +204,7 @@ def software_invocation(dir_info, input_path, call_list):
                 python_files.append(os.path.abspath(input_path + "/" + directory + "/" + elem))
 
     # NOTE: OPTION 2
-    # Note: Ingoring all the directories and files that matches the ingore_pattern
+    # Note: Ignoring all the directories and files that matches the ingore_pattern
     # to exclude tests, debugs and demos  
     # for directory in dir_info["directory_tree"]:
     #    result_ignore= [directory for ip in ignore_pattern if ip in directory]
@@ -218,7 +216,7 @@ def software_invocation(dir_info, input_path, call_list):
     #                    python_files.append(elem)
 
     for f in range(0, len(python_files)):
-        soft_info = {"type": ["script without main"], "run": "python " + python_files[f] + " --help"}
+        soft_info = {"type": "script without main", "run": "python " + python_files[f] + " --help"}
         software_invocation_info.append(soft_info)
     return software_invocation_info
 
@@ -486,14 +484,14 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info):
     if isinstance(data, list):
         for data_dep in data:
             if data_dep.lower() in server_dependencies:
-                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
+                soft_info = {"type": "service", "run": "python " + elem["file"]["path"]}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
     else:
         if data:
             if data.lower() in server_dependencies:
-                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
+                soft_info = {"type": "service", "run": "python " + elem["file"]["path"]}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
