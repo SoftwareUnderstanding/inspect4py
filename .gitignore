@@ -14,3 +14,4 @@ Scripts/*
 OutputDir/
 output_dir/
 defoe/*
+env_*
