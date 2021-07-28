@@ -146,3 +146,7 @@ Options:
 ## Documentation
 
 For additional documentation and examples, please have a look at our [online documentation](https://code_inspector.readthedocs.io/en/latest/)
+
+## Acknowledgements
+
+We would like to thank Laura Camacho, designer of the logo
