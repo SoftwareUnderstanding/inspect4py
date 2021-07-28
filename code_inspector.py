@@ -265,7 +265,7 @@ class CodeInspection:
         if_main_flag = 0
         if_main_func = ""
         main_info = {}
-        test_dependencies = ('unittest', 'doctest')
+        test_dependencies = ('unittest', 'pytest', 'doctest', 'testify', 'behave', 'lettuce')
 
         for node in if_main_definitions:
             try:
