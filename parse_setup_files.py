@@ -41,20 +41,20 @@ def parse_setup_py(parent_dir):
                 else:
                     break
             if name in cs_list:
-                setup_info["type"] = ["package"]
+                setup_info["type"] = "package"
                 setup_info["installation"] = "pip install " + name
             else:
-                setup_info["type"] = ["library", "package"]
+                setup_info["type"] = "library"
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"].append("import " + name)
             return setup_info
         else:
-            setup_info["type"] = ["library"]
+            setup_info["type"] = "library"
             setup_info["installation"] = "pip install " + name
             setup_info["run"] = "import " + name
             return setup_info
     else:
-        setup_info["type"] = ["library"]
+        setup_info["type"] = "library"
         setup_info["installation"] = "pip install " + name
         setup_info["run"] = "import " + name
         return setup_info
@@ -101,15 +101,15 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                         setup_info["run"].append(cs_string + ' --help')
                         cs_list.append(cs_string)
                     if name not in cs_list:
-                        setup_info["type"] = ["library", "package"]
+                        setup_info["type"] = "library"
                         setup_info["run"].append("import " + name)
                     else:
-                        setup_info["type"] = ["package"]
+                        setup_info["type"] = "package"
                     return setup_info
         if error != 3:
-            setup_info["type"] = ["library"]
+            setup_info["type"] = "library"
             # In some cases, this fails silently
-            if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+            if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"] = "import " + name
             return setup_info
@@ -122,30 +122,30 @@ def inspect_setup_cfg(parent_dir, name, error=2):
         try:
 
             if not name:
-                setup_info["type"]= setuptools_method()
+                setup_info["type"] = setuptools_method()
                 name = subprocess.getoutput("python setup.py --name")
-                if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
-                    name=name.split("\n")[-1]
+                if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
+                    name = name.split("\n")[-1]
                     if ".lib" in name:
-                        name=name.split(".lib")[0]
+                        name = name.split(".lib")[0]
                     setup_info["installation"] = "pip install " + name
                     setup_info["run"] = "import " + name
                 else:
-                    name=name.split("\n")[-1]
+                    name = name.split("\n")[-1]
                     if ".lib" in name:
-                        name=name.split(".lib")[0]
+                        name = name.split(".lib")[0]
                     setup_info["installation"] = "pip install " + name
                 return setup_info
         except:
             name = "UNKNOWN"
         if error == 1:
-            setup_info["type"] = ["package"]
+            setup_info["type"] = "package"
             if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"] = name + " --help"
 
         elif error == 2:
-            setup_info["type"] = ["library"]
+            setup_info["type"] = "library"
             if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"] = "import " + name
@@ -203,15 +203,15 @@ def inspect_setup(parent_dir, elem):
                             setup_info["run"].append(cs_string + " --help")
                             cs_list.append(cs_string)
                         if name not in cs_list:
-                            setup_info["type"] = ["library", "package"]
+                            setup_info["type"] = "library"
                             setup_info["run"].append("import " + name)
                         else:
-                            setup_info["type"] = ["package"]
+                            setup_info["type"] = "package"
                         setup_info["installation"] = "pip install " + name
                         return setup_info
 
                     else:
-                        setup_info["type"] = ["library"]
+                        setup_info["type"] = "library"
                         setup_info["installation"] = "pip install " + name
                         setup_info["run"] = "import " + name
                         return setup_info
@@ -241,14 +241,15 @@ def inspect_setup(parent_dir, elem):
         os.chdir(current_dir)
         return setup_info
 
-def setuptools_method():
 
+def setuptools_method():
     setuptools.setup = setup
     content = open('setup.py').read()
     if "entry_points" in content:
-        return ["package"]
+        return "package"
     else:
-        return ["library"]
+        return "library"
+
 
 def setup(**kwargs):
     print(kwargs)

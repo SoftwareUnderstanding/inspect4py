@@ -9,7 +9,7 @@ import json
 import pandas as pd
 from datetime import datetime
 
-# TO DO: These should be configured separately
+# TODO: These should be configured separately
 repo_path = "../test_repos/"
 benchmark_path = "main_command/execution_commands_python_benchmark.csv"
 # benchmark_path = "main_command/execution_commands_python_benchmark_test.csv"
@@ -26,12 +26,12 @@ def extract_types_from_response(response_data):
     if "software_invocation" in response_data:
         software_info = response_data['software_invocation']
         for soft_entry in software_info:
-            for type_s in soft_entry["type"]:
-                if type_s not in types:
-                    if "script" in type_s:  # we have annotated script with main and without main as script
-                        types.append("script")
-                    else:
-                        types.append(type_s)
+            type_s = soft_entry["type"] # "type" is not a list anymore
+            if type_s not in types:
+                if "script" in type_s:  # we have annotated script with main and without main as script
+                    types.append("script")
+                else:
+                    types.append(type_s)
     return types, software_info
 
 
@@ -90,7 +90,7 @@ for dir_name in os.listdir(repo_path):
     for index, row in benchmark_df.iterrows():
         if dir_name == row["repository"].split("/")[-1].strip():
             row_types = [x.strip() for x in row["type"].split("and")]
-            print("ATENTION DANI-ROSA Annotated types in CSV: --%s--- vs CODE INSPECTOR types --%s--" % (row_types, current_type))
+            print("ATTENTION DANI-ROSA Annotated types in CSV: --%s--- vs CODE INSPECTOR types --%s--" % (row_types, current_type))
             repo_correct = False
             print_err_entities = False
             for row_type in row_types:
