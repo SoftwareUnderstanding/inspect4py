@@ -94,11 +94,10 @@ def software_invocation(dir_info, input_path, call_list):
     setup_files = ("setup.py", "setup.cfg")
     server_dependencies = ("flask", "flask_restful", "falcon", "falcon_app", "aiohttp", "bottle", "django", "fastapi",
                            "locust", "pyramid", "hug", "eve", "connexion")
-    
 
     # Note: just doing a quick fix, so we ignore the ignore_pattern.
-    #ignore_pattern = ("test", "debug")
-    ignore_pattern=()
+    # ignore_pattern = ("test", "debug")
+    ignore_pattern = ()
     # Note: other server dependencies are missing here. More testing is needed.
     flag_package_library = 0
     for directory in dir_info["directory_tree"]:
@@ -108,7 +107,7 @@ def software_invocation(dir_info, input_path, call_list):
                 flag_package_library = 1
                 break
                 #### ATENTION!! - I AM COMMENTING THE RETURN TO ALLOW FURTHER EXPLORATION
-                #return software_invocation_info
+                # return software_invocation_info
 
     # Looping across all mains
     # to decide if it is a service (main + server dep) or just a script (main without server dep)
@@ -116,10 +115,10 @@ def software_invocation(dir_info, input_path, call_list):
     # to exclude tests, debugs and demos  
     main_files = []
 
-    #new list to store the "mains that have been previously classified as "test". 
+    # new list to store the "mains that have been previously classified as "test".
     test_files = []
 
-    #new list to store files without mains
+    # new list to store files without mains
     no_main_files = []
     flag_service_main = 0
     for key in filter(lambda key: key not in "directory_tree", dir_info):
@@ -134,10 +133,12 @@ def software_invocation(dir_info, input_path, call_list):
                             flag_main_service = 0
                             main_stored = 0
                             try:
-                                flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info, server_dependencies)
+                                flag_service, software_invocation_info = service_check(elem, result_ignore,
+                                                                                       software_invocation_info,
+                                                                                       server_dependencies)
                             except:
-                                if elem["main_info"]["type"]!= "test":
-                                     main_files.append(elem["file"]["path"])
+                                if elem["main_info"]["type"] != "test":
+                                    main_files.append(elem["file"]["path"])
                                 else:
                                     test_files.append(elem["file"]["path"])
                                 main_stored = 1
@@ -146,25 +147,26 @@ def software_invocation(dir_info, input_path, call_list):
                                 flag_service_main = 1
 
                             if not flag_service and not main_stored:
-                                if elem["main_info"]["type"]!= "test":
+                                if elem["main_info"]["type"] != "test":
                                     main_files.append(elem["file"]["path"])
                                 else:
                                     test_files.append(elem["file"]["path"])
                     else:
-                        no_main_files.append(elem) 
+                        no_main_files.append(elem)
 
-    m_secondary=[0] * len(main_files)
+    m_secondary = [0] * len(main_files)
     for m in range(0, len(main_files)):
-        m_calls= find_file_calls(main_files[m], call_list)
+        m_calls = find_file_calls(main_files[m], call_list)
         ## HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
         m_imports = extract_relations(main_files[m], m_calls, main_files, call_list)
         ## PRINT SANITY CHECK
         print("--- Sanity Check ---")
-        print("Main File --%s-- has (direct/indirect) relation with these other Main Files --%s--" %(main_files[m], m_imports))
-        
+        print("Main File --%s-- has (direct/indirect) relation with these other Main Files --%s--" % (
+        main_files[m], m_imports))
+
         for m_i in m_imports:
-            m_secondary[main_files.index(m_i)]=1
-  
+            m_secondary[main_files.index(m_i)] = 1
+
     for m in range(0, len(main_files)):
         #### ONLY SELECT THE ONES THAT ARE PRINCIPALS - WE CAN CHANGE THAT LATER
         if not m_secondary[m]:
@@ -179,14 +181,15 @@ def software_invocation(dir_info, input_path, call_list):
         software_invocation_info.append(soft_info)
 
     ###### ATENTION: COMENTING IT TO LET IT CONTINUE - EVEN IF IT HAS FOUND A MAIN #####
-    #if len(main_files) > 0:
+    # if len(main_files) > 0:
     #    return software_invocation_info
 
     ##### ATENTION: ALLOWING IT TO EXPLORE IT FUTHER 
     # We are now go to try to find services in files without mains
     flag_service_no_main = 0
     for elem in no_main_files:
-        flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info, server_dependencies)
+        flag_service, software_invocation_info = service_check(elem, result_ignore, software_invocation_info,
+                                                               server_dependencies)
         if flag_service:
             flag_service_no_main = 1
 
@@ -200,7 +203,7 @@ def software_invocation(dir_info, input_path, call_list):
     for directory in dir_info["directory_tree"]:
         for elem in dir_info["directory_tree"][directory]:
             if ".py" in elem:
-                python_files.append(os.path.abspath(input_path+"/"+ directory+"/"+elem))
+                python_files.append(os.path.abspath(input_path + "/" + directory + "/" + elem))
 
     # NOTE: OPTION 2
     # Note: Ingoring all the directories and files that matches the ingore_pattern
@@ -361,18 +364,19 @@ def find_file_calls(file_name, call_list):
     for dir in call_list:
         for elem in call_list[dir]:
             if elem in file_name:
-                return call_list[dir][elem] 
+                return call_list[dir][elem]
 
 
 def find_module_calls(module, call_list):
     for dir in call_list:
         for elem in call_list[dir]:
             if module in elem:
-                return call_list[dir][elem] 
+                return call_list[dir][elem]
 
-# DFS algorithm - Allowing up to 2 levels of depth. 
+            # DFS algorithm - Allowing up to 2 levels of depth.
+
+
 def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
-  
     ### NOTE: LEVEL is a parameter very important here!
     ### It allows us to track how deep we are inside the recursivity search.
 
@@ -382,18 +386,18 @@ def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
     ## For each call, we extract all its sub_calls (level 1), 
     ## and for each sub_call we extract all its sub_sub_calls (level 2)  
     #### 
-    
+
     if base in call and m_imports.count(file) == 0 and orig_base not in call:
-        #print("--> I found %s in %s" %(base, call))
+        # print("--> I found %s in %s" %(base, call))
         m_imports.append(file)
         return 1
     elif orig_base in call:
-       return 0
+        return 0
 
-    elif level < level_depth :
+    elif level < level_depth:
         m_calls_extern = {}
-        module_base=call.split(".")[0]
-        moudule_base = module_base +"."
+        module_base = call.split(".")[0]
+        moudule_base = module_base + "."
         m_calls_extern = find_module_calls(module_base, call_list)
         ## Note: Here is when we increase the level of recursivity
         level += 1
@@ -406,52 +410,57 @@ def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
     else:
         return 0
 
-def extract_local_function(base, m_calls_local, file,  m_imports, flag_found, call_list, orig_base, level):
+
+def extract_local_function(base, m_calls_local, file, m_imports, flag_found, call_list, orig_base, level):
     for call in m_calls_local:
-        flag_found= file_in_call(base, call, file, m_imports, call_list, orig_base, level)
+        flag_found = file_in_call(base, call, file, m_imports, call_list, orig_base, level)
         if flag_found:
-           return flag_found
+            return flag_found
     return flag_found
+
 
 def extract_nested_function(base, m_calls_nested, file, m_imports, flag_found, call_list, orig_base, level):
     for call in m_calls_nested:
         flag_found = extract_data(base, m_calls_nested, file, m_imports, flag_found, call_list, orig_base, level)
         if flag_found:
-           return flag_found
+            return flag_found
     return flag_found
 
+
 def extract_data(base, m_calls, file, m_imports, flag_found, call_list, orig_base, level):
-  for elem in m_calls:
-      if elem == "local":
-          flag_found = extract_local_function(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
-      elif elem == "nested":
-          flag_found = extract_nested_function(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
-      else:
-          flag_found = extract_data(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
-      if flag_found:
-          return flag_found
-  return flag_found 
+    for elem in m_calls:
+        if elem == "local":
+            flag_found = extract_local_function(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base,
+                                                level)
+        elif elem == "nested":
+            flag_found = extract_nested_function(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base,
+                                                 level)
+        else:
+            flag_found = extract_data(base, m_calls[elem], file, m_imports, flag_found, call_list, orig_base, level)
+        if flag_found:
+            return flag_found
+    return flag_found
 
 
 # We will apply the DFS strategy later to find the external relationships.
 
 def extract_relations(file_name, m_calls, main_files, call_list):
-    m_imports=[]
-    orig_base=os.path.basename(file_name)
-    orig_base=os.path.splitext(orig_base)[0]
-    orig_base = orig_base +"."
+    m_imports = []
+    orig_base = os.path.basename(file_name)
+    orig_base = os.path.splitext(orig_base)[0]
+    orig_base = orig_base + "."
     for file in main_files:
         if file not in file_name:
             flag_found = 0
-            base=os.path.basename(file)
-            base=os.path.splitext(base)[0]
-            base=base+"."
+            base = os.path.basename(file)
+            base = os.path.splitext(base)[0]
+            base = base + "."
             for m_c in m_calls:
                 level = 0
                 flag_found = extract_data(base, m_calls[m_c], file, m_imports, flag_found, call_list, orig_base, level)
                 if flag_found:
                     return m_imports
-                            
+
     return m_imports
 
 
@@ -459,15 +468,18 @@ def service_check(elem, result_ignore, software_invocation_info, server_dependen
     flag_service = 0
     for dep in elem["dependencies"]:
         imports = dep["import"]
-        flag_service, software_invocation_info= service_in_set(imports, server_dependencies, elem, software_invocation_info)
+        flag_service, software_invocation_info = service_in_set(imports, server_dependencies, elem,
+                                                                software_invocation_info)
         if flag_service:
             return flag_service, software_invocation_info
-        else: 
+        else:
             modules = dep["from_module"]
-            flag_service, software_invocation_info= service_in_set(modules, server_dependencies, elem, software_invocation_info)
+            flag_service, software_invocation_info = service_in_set(modules, server_dependencies, elem,
+                                                                    software_invocation_info)
             if flag_service:
                 return flag_service, software_invocation_info
     return flag_service, software_invocation_info
+
 
 def service_in_set(data, server_dependencies, elem, software_invocation_info):
     flag_service = 0
@@ -479,10 +491,10 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info):
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
     else:
-         if data:
-             if data.lower() in server_dependencies:
-                 soft_info = {"type": ["service"], "run": elem["file"]["path"]}
-                 flag_service = 1
-                 if soft_info not in software_invocation_info:
-                     software_invocation_info.append(soft_info)
+        if data:
+            if data.lower() in server_dependencies:
+                soft_info = {"type": ["service"], "run": elem["file"]["path"]}
+                flag_service = 1
+                if soft_info not in software_invocation_info:
+                    software_invocation_info.append(soft_info)
     return flag_service, software_invocation_info
