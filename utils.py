@@ -99,8 +99,8 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     # Note: other server dependencies are missing here. More testing is needed.
     flag_package_library = 0
     for directory in dir_tree_info:
-        for elem in dir_tree_info[directory]:
-            if elem in setup_files:
+        for elem in setup_files: # first check setup.py, then cfg
+            if elem in dir_tree_info[directory]:
                 software_invocation_info.append(inspect_setup(input_path, elem))
                 flag_package_library = 1
                 break

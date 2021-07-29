@@ -135,13 +135,13 @@ def inspect_setup_cfg(parent_dir, name, error=2):
             name = "UNKNOWN"
         if error == 1:
             setup_info["type"] = "package"
-            if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+            if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"] = name + " --help"
 
         elif error == 2:
             setup_info["type"] = "library"
-            if not "Traceback (most recent call last)" in name and not "Warning:" in name and not "Failed " in name:
+            if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
                 setup_info["installation"] = "pip install " + name
                 setup_info["run"] = "import " + name
         return setup_info

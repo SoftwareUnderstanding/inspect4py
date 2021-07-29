@@ -31,3 +31,4 @@ date,#repositories,#entities,acc_repo,acc_entity,error_repos,error_entities
 29/07/2021 12:01:41,96,111,0.9479166666666666,0.9099099099099099,"['asciinema', 'pycg', 'pyan', 'face_recognition', 'mrjob']","['asciinema', 'mlsd', 'autojump', 'pycg', 'pyan', 'pyLODE', 'Morph-OME', 'face_recognition', 'Sublist3r', 'mrjob']"
 29/07/2021 11:51:06,96,111,0.9791666666666666,0.9459459459459459,"['rdflib', 'fabric']","['autojump', 'Sublist3r', 'rdflib', 'fabric', 'mlsd', 'Morph-OME']"
 29/07/2021 12:09:37,96,111,0.9895833333333334,0.954954954954955,['defoe'],"['autojump', 'Sublist3r', 'defoe', 'mlsd', 'Morph-OME']"
+29/07/2021 13:55:15,96,111,0.9895833333333334,0.9459459459459459,['defoe'],"['mlsd', 'autojump', 'defoe', 'pyLODE', 'Morph-OME', 'Sublist3r']"
