@@ -34,7 +34,7 @@ flow of each input file(s), by using another two libraries:
 
 -[cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
 
--[staticfg](./staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), but given a bug in the package's source code, we forked it, and fixed it in our [repository](./staticfg)  
+-[staticfg](src/staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), but given a bug in the package's source code, we forked it, and fixed it in our [repository](src/staticfg)  
 
 For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
 
@@ -135,13 +135,28 @@ Options:
   -r, --requirements              find the requirements of the repository.
   -html, --html_output            generates an html file of the DirJson in the
                                   output directory.
-  -cf, --control_flow             generates the call graph for each file in a
-                                  different directory.
   -cl, --call_list                generates the call list in a separate html
                                   file.
+  -cf, --control_flow             generates the call graph for each file in a
+                                  different directory.
+  -dt, --directory_tree           captures the file directory tree from the
+                                  root path of the target repository.
+  -si, --software_invocation      generates which are the software
+                                  invocation commands to run and test the
+                                  target repository.
   --help                          Show this message and exit.
 
 ```
+
+## Evaluation
+
+Simply cd into the right directory and run it. You can do so with the following commands
+
+```
+cd src/main_command_evaluation
+python3 run_directory_type_evaluation.py
+```
+
 
 ## Documentation
 
