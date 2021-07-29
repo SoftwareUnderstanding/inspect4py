@@ -200,6 +200,8 @@ def inspect_setup(parent_dir, elem):
                         setup_info["type"] = "package"
                         if name not in cs_list:
                             setup_info["run"].append("import " + name)
+                            ### NEW: if the name is not in the cs_list, then we considered it as a library.
+                            setup_info["type"] = "library"
                         setup_info["installation"] = "pip install " + name
                         return setup_info
 
