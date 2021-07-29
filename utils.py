@@ -66,7 +66,7 @@ def prune_json(json_dict):
     return final_dict
 
 
-def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
+def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     """
     Method to obtain the directory tree of a repository.
     The ignored directories and files that were inputted are also ignored.
@@ -82,11 +82,12 @@ def directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     return get_directory_structure(input_path, ignore_set)
 
 
-def software_invocation(dir_info, input_path, call_list):
+def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     """
     Method to detect the directory type of a software project. This method also detects tests
     We distinguish four main types: script, package, library and service. Some can be more than one.
-    :dir_info json file containing all the extracted information about the software repository
+    :dir_info json containing all the extracted information about the software repository
+    :dir_tree_info json containing the directory information of the target repo
     :input_path path of the repository to analyze
     :call_list json file containing the list of calls per file and functions or methods.
     """
@@ -97,8 +98,8 @@ def software_invocation(dir_info, input_path, call_list):
     ignore_pattern = ()
     # Note: other server dependencies are missing here. More testing is needed.
     flag_package_library = 0
-    for directory in dir_info["directory_tree"]:
-        for elem in dir_info["directory_tree"][directory]:
+    for directory in dir_tree_info:
+        for elem in dir_tree_info[directory]:
             if elem in setup_files:
                 software_invocation_info.append(inspect_setup(input_path, elem))
                 flag_package_library = 1
@@ -109,8 +110,7 @@ def software_invocation(dir_info, input_path, call_list):
 
     # Looping across all mains
     # to decide if it is a service (main + server dep) or just a script (main without server dep)
-    # Note: We are going to ignore all the directories and files that matches the ingore_pattern
-    # to exclude tests, debugs and demos  
+    # Note: We are going to ignore all the directories and files that matches the ignore_pattern
     main_files = []
 
     # new list to store the "mains that have been previously classified as "test".
@@ -119,7 +119,7 @@ def software_invocation(dir_info, input_path, call_list):
     # new list to store files without mains
     no_main_files = []
     flag_service_main = 0
-    for key in filter(lambda key: key not in "directory_tree", dir_info):
+    for key in dir_info:  # filter(lambda key: key not in "directory_tree", dir_info):
         result_ignore = [key for ip in ignore_pattern if ip in key]
         if not result_ignore:
             for elem in dir_info[key]:
@@ -198,8 +198,8 @@ def software_invocation(dir_info, input_path, call_list):
     # NOTE: OPTION 1
     # Note: Without ignore files and directories
     python_files = []
-    for directory in dir_info["directory_tree"]:
-        for elem in dir_info["directory_tree"][directory]:
+    for directory in dir_tree_info:
+        for elem in dir_tree_info[directory]:
             if ".py" in elem:
                 python_files.append(os.path.abspath(input_path + "/" + directory + "/" + elem))
 
@@ -221,7 +221,7 @@ def software_invocation(dir_info, input_path, call_list):
     return software_invocation_info
 
 
-def find_requirements(input_path):
+def extract_requirements(input_path):
     print("Finding the requirements with the pigar package for %s" % input_path)
     try:
         file_name = 'requirements_' + os.path.basename(input_path) + '.txt'

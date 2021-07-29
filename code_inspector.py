@@ -60,15 +60,15 @@ class CodeInspection:
             return ast.parse(f.read(), filename=self.path)
 
     def inspect_file(self):
-        """ inspec_file method extracts the features at file level.
+        """
+        inspect_file method extracts the features at file level.
         Those features are path, fileNameBase, extension, docstring.
 	    The method support several levels of docstrings extraction,
-        such as file's long, short a full descrition.
-        :param self self: represent the instance of the class
+	    such as file's long, short a full descrition.
+	    :param self self: represent the instance of the class
         :return dictionary a dictionary with the file information extracted
         """
-        file_info = {}
-        file_info["path"] = os.path.abspath(self.path)
+        file_info = {"path": os.path.abspath(self.path)}
         file_name = os.path.basename(self.path).split(".")
         file_info["fileNameBase"] = file_name[0]
         file_info["extension"] = file_name[1]
@@ -84,8 +84,7 @@ class CodeInspection:
     def inspect_controlflow(self, format):
         """inspect_controlFlow uses two methods for 
         extracting the controlflow of a file. One as a
-        text and another as a figure (PNG/PDF/DOT).   
-        
+        text and another as a figure (PNG/PDF/DOT).
         :param self self: represent the instance of the class
         :param str format: represent the format to save the figure
         :return dictionary: a dictionary with the all information extracted (at file level)
@@ -187,8 +186,7 @@ class CodeInspection:
         body_info = {"body": {}}
         for node in self.tree.body:
             if not isinstance(node, ast.ClassDef) and not isinstance(node, ast.FunctionDef) and not isinstance(node,
-                                                                                                               ast.Import) and not isinstance(
-                    node, ast.ImportFrom):
+                    ast.Import) and not isinstance(node, ast.ImportFrom):
                 body_nodes.append(node)
 
         body_assigns = [node for node in body_nodes if isinstance(node, ast.Assign)]
@@ -286,13 +284,13 @@ class CodeInspection:
         main_info["main_function"] = if_main_func
         if if_main_flag:
             # classifying the type of a main: "test" or "script"
-            #or "test" in self.fileInfo["fileNameBase"]:
-            #Note - I'm just comenting the previous or ("test" in self.fileInfo ...) and adding doctest - but more advanced cases could be considered here.
+            # or "test" in self.fileInfo["fileNameBase"]:
+            # Note - I'm just comenting the previous or ("test" in self.fileInfo ...) and adding doctest - but more advanced cases could be considered here.
 
             # OPTION 1: searching test dependency string inside the if_main_func
-            #if test dependency in if_main_func:
+            # if test dependency in if_main_func:
             #    main_info["type"] = "test"
-            #else:
+            # else:
             #    main_info["type"] = "script"
 
             # OPTION 2: searching the list of potential test in the imports
@@ -320,14 +318,15 @@ class CodeInspection:
         :return dictionary: a dictionary with the all information extracted (at file level)
         """
 
-        file_dict = {}
-        file_dict["file"] = self.fileInfo
-        file_dict["dependencies"] = self.depInfo
-        file_dict["classes"] = self.classesInfo
-        file_dict["functions"] = self.funcsInfo
-        file_dict["body"] = self.bodyInfo["body"]
-        file_dict["controlflow"] = self.controlFlowInfo
-        file_dict["main_info"] = self._ast_if_main()
+        file_dict = {
+            "file": self.fileInfo,
+            "dependencies": self.depInfo,
+            "classes": self.classesInfo,
+            "functions": self.funcsInfo,
+            "body": self.bodyInfo["body"],
+            "controlflow": self.controlFlowInfo,
+            "main_info": self._ast_if_main()
+        }
 
         json_file = self.out_json_path + "/" + self.fileInfo["fileNameBase"] + ".json"
         with open(json_file, 'w') as outfile:
@@ -335,7 +334,7 @@ class CodeInspection:
         return [file_dict, json_file]
 
     def _f_definitions(self, functions_definitions):
-        """_f_definitions extracts the name, args, doscstring 
+        """_f_definitions extracts the name, args, docstring
         returns, raises of a list of functions or a methods.
         Furthermore, it also extracts automatically several values
         from a docstring, such as long and short description, arguments' 
@@ -576,15 +575,16 @@ class CodeInspection:
                                         else:
                                             pass
                                 if not renamed:
-                                    if module_call_name and rest_call_name and self.fileInfo[
-                                        "fileNameBase"] not in call_name:
+                                    if module_call_name and rest_call_name and \
+                                            self.fileInfo["fileNameBase"] not in call_name:
                                         rest_call_name = rest_call_name.split(".")[1]
                                         if module_call_name in classes_info and rest_call_name in \
                                                 classes_info[module_call_name]["methods"].keys():
                                             renamed = 1
                                             renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
                                         elif module_call_name in classes_info:
-                                            renamed = self._dfs(classes_info[module_call_name]["extend"], rest_call_name,
+                                            renamed = self._dfs(classes_info[module_call_name]["extend"],
+                                                                rest_call_name,
                                                                 renamed, classes_info, renamed_calls)
                                             if renamed:
                                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
@@ -713,7 +713,7 @@ def create_output_dirs(output_dir, control_flow):
         else:
             pass
     else:
-        control_flow_dir= ""
+        control_flow_dir = ""
 
     json_dir = output_dir + "/json_files"
 
@@ -739,12 +739,16 @@ def create_output_dirs(output_dir, control_flow):
 @click.option('-r', '--requirements', type=bool, is_flag=True, help="find the requirements of the repository.")
 @click.option('-html', '--html_output', type=bool, is_flag=True,
               help="generates an html file of the DirJson in the output directory.")
-@click.option('-cf', '--control_flow', type=bool, is_flag=True,
-              help="generates the call graph for each file in a different directory.")
 @click.option('-cl', '--call_list', type=bool, is_flag=True,
               help="generates the call list in a separate html file.")
+@click.option('-cf', '--control_flow', type=bool, is_flag=True,
+              help="generates the call graph for each file in the target repository.")
+@click.option('-dt', '--directory_tree', type=bool, is_flag=True,
+              help="captures the file directory tree from the root path of the target repository.")
+@click.option('-si', '--software_invocation', type=bool, is_flag=True,
+              help="generates which are the software invocation commands to run and test the target repository.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
-         control_flow):
+         control_flow, directory_tree, software_invocation):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -795,22 +799,24 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
             generate_output_html(call_list_data, call_file_html)
         # Note:1 for visualising the tree, nothing or 0 for not.
         if requirements:
-            dir_requirements = find_requirements(input_path)
-            dir_info["requirements"] = dir_requirements
-
-        dir_info["directory_tree"] = directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
-        # software invocation has both tests and regular invocation info.
-        # separating tests in new category
-        all_soft_invocation_info_list = software_invocation(dir_info, input_path, call_list_data)
-        test_info_list = []
-        soft_invocation_info_list = []
-        for soft_info in all_soft_invocation_info_list:
-            if "test" in soft_info["type"]:
-                test_info_list.append(soft_info)
-            else:
-                soft_invocation_info_list.append((soft_info))
-        dir_info["tests"] = test_info_list
-        dir_info["software_invocation"] = soft_invocation_info_list
+            dir_info["requirements"] = extract_requirements(input_path)
+        if directory_tree or software_invocation:
+            directory_tree_info = extract_directory_tree(input_path, ignore_dir_pattern, ignore_file_pattern, 1)
+            if directory_tree:
+                dir_info["directory_tree"] = directory_tree_info
+            if software_invocation:
+                # software invocation has both tests and regular invocation info.
+                # Tests are separated in new category
+                all_soft_invocation_info_list = extract_software_invocation(dir_info, directory_tree_info, input_path, call_list_data)
+                test_info_list = []
+                soft_invocation_info_list = []
+                for soft_info in all_soft_invocation_info_list:
+                    if "test" in soft_info["type"]:
+                        test_info_list.append(soft_info)
+                    else:
+                        soft_invocation_info_list.append(soft_info)
+                dir_info["tests"] = test_info_list
+                dir_info["software_invocation"] = soft_invocation_info_list
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
