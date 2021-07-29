@@ -40,12 +40,9 @@ def parse_setup_py(parent_dir):
                     setup_info["run"].append(cs_string + " --help")
                 else:
                     break
-            if name in cs_list:
-                setup_info["type"] = "package"
-                setup_info["installation"] = "pip install " + name
-            else:
-                setup_info["type"] = "library"
-                setup_info["installation"] = "pip install " + name
+            setup_info["type"] = "package"
+            setup_info["installation"] = "pip install " + name
+            if name not in cs_list:
                 setup_info["run"].append("import " + name)
             return setup_info
         else:
@@ -100,11 +97,9 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                         cs_string = cs.split("=")[0].rstrip()
                         setup_info["run"].append(cs_string + ' --help')
                         cs_list.append(cs_string)
+                    setup_info["type"] = "package"
                     if name not in cs_list:
-                        setup_info["type"] = "library"
                         setup_info["run"].append("import " + name)
-                    else:
-                        setup_info["type"] = "package"
                     return setup_info
         if error != 3:
             setup_info["type"] = "library"
@@ -202,11 +197,9 @@ def inspect_setup(parent_dir, elem):
                             cs_string = cs.split("=")[0].rstrip()
                             setup_info["run"].append(cs_string + " --help")
                             cs_list.append(cs_string)
+                        setup_info["type"] = "package"
                         if name not in cs_list:
-                            setup_info["type"] = "library"
                             setup_info["run"].append("import " + name)
-                        else:
-                            setup_info["type"] = "package"
                         setup_info["installation"] = "pip install " + name
                         return setup_info
 
