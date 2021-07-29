@@ -33,3 +33,6 @@ date,#repositories,#entities,acc_repo,acc_entity,error_repos,error_entities
 29/07/2021 12:09:37,96,111,0.9895833333333334,0.954954954954955,['defoe'],"['autojump', 'Sublist3r', 'defoe', 'mlsd', 'Morph-OME']"
 29/07/2021 13:55:15,96,111,0.9895833333333334,0.9459459459459459,['defoe'],"['mlsd', 'autojump', 'defoe', 'pyLODE', 'Morph-OME', 'Sublist3r']"
 29/07/2021 18:12:17,96,113,0.9895833333333334,0.9469026548672567,['defoe'],"['mlsd', 'autojump', 'defoe', 'pyLODE', 'Morph-OME', 'Sublist3r']"
+29/07/2021 17:49:43,95,112,0.9157894736842105,0.8839285714285714,"['.DS_Store', 'qnorm', 'fastseq', 'airflow', 'kgtk', 'obspy', 'defoe', 'table-linker', 'astropy']","['HXL-Data-Science-file-formats', 'autojump', '.DS_Store', 'qnorm', 'fastseq', 'Sublist3r', 'airflow', 'kgtk', 'obspy', 'defoe', 'table-linker', 'mlsd', 'astropy', 'Morph-OME']"
+29/07/2021 18:23:03,95,112,0.9578947368421052,0.9196428571428571,"['.DS_Store', 'qnorm', 'airflow', 'defoe', 'astropy']","['HXL-Data-Science-file-formats', 'autojump', '.DS_Store', 'qnorm', 'Sublist3r', 'airflow', 'defoe', 'mlsd', 'astropy', 'Morph-OME']"
+29/07/2021 19:04:28,95,112,0.968421052631579,0.9285714285714286,"['qnorm', 'airflow', 'defoe']","['pyLODE', 'HXL-Data-Science-file-formats', 'autojump', 'qnorm', 'airflow', 'defoe', 'mlsd', 'Morph-OME']"

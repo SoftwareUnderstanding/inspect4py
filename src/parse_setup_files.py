@@ -42,8 +42,6 @@ def parse_setup_py(parent_dir):
                     break
             setup_info["type"] = "package"
             setup_info["installation"] = "pip install " + name
-            if name not in cs_list:
-                setup_info["run"].append("import " + name)
             return setup_info
         else:
             setup_info["type"] = "library"
@@ -98,7 +96,8 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                         setup_info["run"].append(cs_string + ' --help')
                         cs_list.append(cs_string)
                     setup_info["type"] = "package"
-                    if name not in cs_list:
+                    if name not in cs_list and  name.lower() not in cs_list:
+                        setup_info["type"] = "library"
                         setup_info["run"].append("import " + name)
                     return setup_info
         if error != 3:
@@ -114,8 +113,13 @@ def inspect_setup_cfg(parent_dir, name, error=2):
         # This is the last resource. We got here because an exception
         # or because we are not able to open setup.py and there is not setup.cfg
         # Classify it as package
-        try:
 
+
+        if error == 1:       
+            setup_info = parse_setup_py(parent_dir)
+            return setup_info
+
+        try:
             if not name:
                 setup_info["type"] = setuptools_method()
                 name = subprocess.getoutput("python setup.py --name")
@@ -133,13 +137,13 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                 return setup_info
         except:
             name = "UNKNOWN"
-        if error == 1:
-            setup_info["type"] = "package"
-            if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
-                setup_info["installation"] = "pip install " + name
-                setup_info["run"] = name + " --help"
+        #if error == 1:
+        #    setup_info["type"] = "package"
+        #    if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
+        #        setup_info["installation"] = "pip install " + name
+        #        setup_info["run"] = name + " --help"
 
-        elif error == 2:
+        if error == 2:
             setup_info["type"] = "library"
             if "Traceback (most recent call last)" not in name and "Warning:" not in name and "Failed " not in name:
                 setup_info["installation"] = "pip install " + name
@@ -181,7 +185,7 @@ def inspect_setup(parent_dir, elem):
                 # we have call_args to inspect.
                 print("moc_setup.call_args_list works %s" % mock_setup.call_args_list)
                 args, kwargs = mock_setup.call_args
-                name = kwargs.get('name').lower()
+                name = kwargs.get('name')
                 entry_point = kwargs.get('entry_points')
                 if not entry_point:
                     error = 2
@@ -198,9 +202,8 @@ def inspect_setup(parent_dir, elem):
                             setup_info["run"].append(cs_string + " --help")
                             cs_list.append(cs_string)
                         setup_info["type"] = "package"
-                        if name not in cs_list:
+                        if name not in cs_list and  name.lower() not in cs_list:
                             setup_info["run"].append("import " + name)
-                            ### NEW: if the name is not in the cs_list, then we considered it as a library.
                             setup_info["type"] = "library"
                         setup_info["installation"] = "pip install " + name
                         return setup_info
