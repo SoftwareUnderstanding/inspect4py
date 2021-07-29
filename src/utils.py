@@ -76,7 +76,7 @@ def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
     if visual:
         paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda
-            path: True if path.name not in ignore_set and not os.path.join("./", path.name).endswith(".pyc") else False)
+            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(".pyc") else False)
         for path in paths:
             print(path.displayable())
     return get_directory_structure(input_path, ignore_set)
@@ -99,8 +99,8 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     # Note: other server dependencies are missing here. More testing is needed.
     flag_package_library = 0
     for directory in dir_tree_info:
-        for elem in dir_tree_info[directory]:
-            if elem in setup_files:
+        for elem in setup_files: # first check setup.py, then cfg
+            if elem in dir_tree_info[directory]:
                 software_invocation_info.append(inspect_setup(input_path, elem))
                 flag_package_library = 1
                 break
