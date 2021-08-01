@@ -5,8 +5,8 @@ from pathlib import Path
 
 from json2html import *
 
-from parse_setup_files import inspect_setup
-from structure_tree import DisplayablePath, get_directory_structure
+from code_inspector.parse_setup_files import inspect_setup
+from code_inspector.structure_tree import DisplayablePath, get_directory_structure
 
 
 def print_summary(json_dict):
@@ -170,7 +170,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
         # ONLY SELECT THE main files THAT ARE PRINCIPAL - WE CAN CHANGE THAT LATER
         # TODO: principal mains should be tagged.
         if not m_secondary[m]:
-            soft_info = {"type": "script with main", "run": "python " + main_files[m] + " --help"}
+            soft_info = {"type": "script with main", "run": "python " + main_files[m]}
             software_invocation_info.append(soft_info)
 
     # tests with main
@@ -216,7 +216,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     #                    python_files.append(elem)
 
     for f in range(0, len(python_files)):
-        soft_info = {"type": "script without main", "run": "python " + python_files[f] + " --help"}
+        soft_info = {"type": "script without main", "run": "python " + python_files[f]}
         software_invocation_info.append(soft_info)
     return software_invocation_info
 
@@ -496,3 +496,26 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info):
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
     return flag_service, software_invocation_info
+
+
+def extract_software_type(soft_invocation_info_list):
+    """
+    Function to extract the main software type out of all invocation possibilities.
+    The heuristic is as follows:
+        - if the software component is a package or library, we return this as a priority.
+        - services are prioritized over scripts
+        - if scripts remain, only scripts with main/body are returned (we resolve dependencies to select the main ones)
+    :param soft_invocation_info_list JSON list with the found ways to invoke this software components
+    """
+    services = []
+    scripts = []
+    for entry in soft_invocation_info_list:
+        if "library" in entry["type"] or "package" in entry["type"]:
+            return entry["type"]
+        if "service" in entry["type"]:
+            services.append(entry)
+        if "script with main" in entry["type"]:
+            scripts.append(entry)
+    if len(services) > 0:
+        return "service"
+    return "script"

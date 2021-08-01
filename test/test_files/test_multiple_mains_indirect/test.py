@@ -1,5 +1,4 @@
 # test.py
-import bar  # use an absolute import
 import foo
 
 def test():
