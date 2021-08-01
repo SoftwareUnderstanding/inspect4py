@@ -18,8 +18,8 @@ import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as doc_parse
 
-from staticfg import builder
-from utils import *
+from code_inspector.staticfg import builder
+from code_inspector.utils import *
 
 
 class CodeInspection:
@@ -817,6 +817,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         soft_invocation_info_list.append(soft_info)
                 dir_info["tests"] = test_info_list
                 dir_info["software_invocation"] = soft_invocation_info_list
+                dir_info["software_type"] = extract_software_type(soft_invocation_info_list)
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:

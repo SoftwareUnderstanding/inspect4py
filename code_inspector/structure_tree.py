@@ -1,7 +1,6 @@
-from pathlib import Path
-from functools import reduce
-import sys
 import os
+from functools import reduce
+from pathlib import Path
 
 
 class DisplayablePath(object):
@@ -103,9 +102,9 @@ def get_directory_structure(rootdir, ignore_set):
     return dir
 
 
-def dict_clean(dict):
+def dict_clean(dictionary):
     result = {}
-    for key, value in dict.items():
+    for key, value in dictionary.items():
         if value is None and 'pyc' not in key:
             key_extension = key.split(".")[-1]
 
@@ -117,7 +116,6 @@ def dict_clean(dict):
 
             elif 'txt' in key_extension or 'md' in key_extension:
                 value = "text file"
-
 
             elif 'png' in key_extension.lower() or 'svg' in key_extension.lower() or 'dot' in key_extension.lower():
                 value = 'plot file'
