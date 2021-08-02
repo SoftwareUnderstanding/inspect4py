@@ -37,7 +37,7 @@ setup(
     dependency_links=dependency_links,
     entry_points={
         'console_scripts': [
-            'code_inspector = code_inspector.code_inspector_cli:main',
+            'code_inspector = code_inspector.cli:main',
         ],
     }
 )

@@ -11,6 +11,11 @@ class Test(unittest.TestCase):
         type_script = extract_software_type(json)
         assert (type_script == "service")
 
+    def test_extract_software_type_empty(self):
+        json = []
+        type_script = extract_software_type(json)
+        assert (type_script == "not found")
+
 
 if __name__ == '__main__':
     unittest.main()
