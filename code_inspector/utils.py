@@ -514,8 +514,10 @@ def extract_software_type(soft_invocation_info_list):
             return entry["type"]
         if "service" in entry["type"]:
             services.append(entry)
-        if "script with main" in entry["type"]:
+        if "script" in entry["type"]:  # It does not matter whether it's with or without main here, we only return type
             scripts.append(entry)
     if len(services) > 0:
         return "service"
-    return "script"
+    if len(scripts) > 0:
+        return "script"
+    return "not found"

@@ -11,9 +11,9 @@ from datetime import datetime
 
 # TODO: These should be configured separately, or set by input
 repo_path = "../../../test_repos/"
-benchmark_path = "../../main_command_evaluation/execution_commands_python_benchmark.csv"
-# benchmark_path = "main_command_evaluation/execution_commands_python_benchmark_test.csv"
-benchmark_summary = "../../main_command_evaluation/evaluation_summary.csv"
+benchmark_path = "../../evaluation/software_invocation/execution_commands_python_benchmark.csv"
+# benchmark_path = "evaluation/execution_commands_python_benchmark_test.csv"
+benchmark_summary = "../../evaluation/software_invocation/evaluation_summary.csv"
 
 
 def extract_types_from_response(response_data):

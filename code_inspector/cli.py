@@ -1,16 +1,3 @@
-"""
-Code Inspector
-This script parses a file or files within directory
-(and its subdirectories) to extract all the relevant information,
-such as documentation, classes (and their methods), functions, etc.
-To extract information from docstrings, we have started with the codes
-documented.
-This tool accepts (for now) only python code (.py)
-This script requires `ast`, `cdmcfparser` and `docsting_parse`
-be installed within the Python environment you are running 
-this script in.
-"""
-
 import json
 import tokenize
 
@@ -21,6 +8,18 @@ from docstring_parser import parse as doc_parse
 from code_inspector import __version__
 from code_inspector.staticfg import builder
 from code_inspector.utils import *
+
+"""
+Code Inspector
+This class parses a file or files within directory
+(and its subdirectories) to extract all the relevant information,
+such as documentation, classes (and their methods), functions, etc.
+To extract information from docstrings, we have started with the codes
+documented.
+This script requires `ast`, `cdmcfparser` and `docsting_parse`
+be installed within the Python environment you are running 
+this script in.
+"""
 
 
 class CodeInspection:
