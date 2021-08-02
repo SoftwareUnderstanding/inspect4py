@@ -50,11 +50,11 @@ First, make sure you have graphviz installed:
 sudo apt-get install graphviz
 ```
 
-Then, prepare a virtual Python3 enviroment and install the required packages.
+Then, prepare a virtual Python3 enviroment, `cd` into the `code_inspector` folder and install the package as follows:
 
-`pip install -r requirements.txt`
+`pip install -e .`
 
-- Dependencies: 
+### Dependencies: 
   - cdmcfparser==2.3.2
   - docstring_parser==0.7
   - astor
@@ -105,17 +105,18 @@ The tool by default stores the results in the "OutputDir" directory, but users c
 And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use -f or --fig.  
 
 ```
-python -m code_inspector.code_inspector_cli --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
+code_inspector --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
 ```
 
 
 For clarity, we have added the help option to explain each input parameters
 
-```python -m code_inspector.code_inspector_cli --help
+```code_inspector --help
 
-Usage: code_inspector.py [OPTIONS]
+Usage: code_inspector [OPTIONS]
 
 Options:
+  --version                       Show the version and exit.
   -i, --input_path TEXT           input path of the file or directory to
                                   inspect.  [required]
   -f, --fig                       activate the control_flow figure generator.

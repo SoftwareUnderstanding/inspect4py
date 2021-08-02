@@ -62,8 +62,7 @@ repos_with_error_entity = []
 
 for dir_name in os.listdir(repo_path):
     print("######## Processing: " + dir_name) # repo_path
-    repo_path_tmp = repo_path.replace("../../../", "../") # Temporary hack until we invoke package in non-module mode
-    cmd = 'cd ../.. && python -m code_inspector.code_inspector_cli -i ' + repo_path_tmp + dir_name + " -o output_dir/ -si"
+    cmd = 'code_inspector -i ' + repo_path + dir_name + " -o ../../output_dir/ -si"
     proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
@@ -137,7 +136,3 @@ print("Accuracy (repo): " + str(num_correct_repo) + " out of " + str(num_analyse
 
 print("Accuracy (entities): " + str(num_correct_entity) + " out of " + str(num_analyses_entity) +
       ". Num errors = " + str(num_error_entity) + ". " + str(num_correct_entity / num_analyses_entity))
-
-# TO DO
-# print("Accuracy (entity): " + str(num_correct) + " out of " + str(num_analyses) + ". Num errors=" + str(num_error) + ". " + str(
-#    num_correct / num_analyses))

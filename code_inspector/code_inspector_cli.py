@@ -18,6 +18,7 @@ import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as doc_parse
 
+from code_inspector import __version__
 from code_inspector.staticfg import builder
 from code_inspector.utils import *
 
@@ -726,6 +727,7 @@ def create_output_dirs(output_dir, control_flow):
 
 
 @click.command()
+@click.version_option(__version__)
 @click.option('-i', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
 @click.option('-f', '--fig', type=bool, is_flag=True, help="activate the control_flow figure generator.")
 @click.option('-o', '--output_dir', type=str, default="output_dir",
