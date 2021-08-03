@@ -157,11 +157,11 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     # minitest
-    matrix = [[17, 0, 0, 0],
-              [5, 28, 0, 1],
-              [0, 0, 15, 1],
-              [1, 0, 0, 28]]
-    print_confusion_matrix(matrix)
+    # matrix = [[17, 0, 0, 0],
+    #           [5, 28, 0, 1],
+    #           [0, 0, 15, 1],
+    #           [1, 0, 0, 28]]
+    # print_confusion_matrix(matrix)
     # print(get_precision_from_confusion_matrix(SoftwareTypes.Script, matrix))
