@@ -1,5 +1,5 @@
 repository,type,command,Comments,error?,FIXES AND NOTES
-rosafilgueira/code_inspector,script,python code_inspector.py,,,
+SoftwareUnderstanding/code_inspector,package,code_inspector [command][options],,,
 KnowledgeCaptureAndDiscovery/somef,package,"somef [describe, configure]",,,
 usc-isi-i2/kgtk,package,kgtk [command] [options],,,
 LinkedEarth/Pyleoclim_util,library,import pyleoclim,,,
