@@ -6,6 +6,21 @@ from pathlib import Path
 from unittest import mock
 import configparser
 import setuptools
+import re
+
+NON_AZ_REGEXP = re.compile('[^a-z]')
+
+def normalize(word):
+    """
+    Normalize a word by converting it to lower-case and removing all
+    characters that are not 'a',...,'z'.
+    :param word: Word to normalize
+    :type word: str or unicode
+    :return: normalized word
+    :rtype word: str or unicode
+    """
+    return re.sub(NON_AZ_REGEXP, '', word.lower())
+
 
 
 def parse_setup_py(parent_dir):
@@ -35,9 +50,11 @@ def parse_setup_py(parent_dir):
             setup_info["run"] = []
             for elem in setup_content[console_index + 1:]:
                 if ']' not in elem:
-                    cs_string = elem.split("=")[0].strip().replace('\'', '')
-                    cs_list.append(cs_string)
-                    setup_info["run"].append(cs_string + " --help")
+                    cs =  elem.split("=")
+                    cs_string = cs[0].strip().replace('\'', '')
+                    cs_run = cs[1].rstrip()
+                    setup_info["run"].append(cs_run )
+                    cs_list.append(normalize(cs_string))
                 else:
                     break
             setup_info["type"] = "package"
@@ -81,6 +98,7 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                     name = subprocess.getoutput("python setup.py --name")
                 except:
                     name = "UNKNOWN"
+        name_norm = normalize(name)
         # extracting entry_points
         section = "entry_points"
         for s in parser:
@@ -92,13 +110,17 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                     setup_info["run"] = []
                     cs_list = []
                     for cs in console_scripts:
-                        cs_string = cs.split("=")[0].rstrip()
-                        setup_info["run"].append(cs_string + ' --help')
-                        cs_list.append(cs_string)
+                        cs = cs.split("=")
+                        cs_string = cs[0].rstrip()
+                        cs_run = cs[1].rstrip()
+                        setup_info["run"].append(cs_run )
+                        cs_list.append(normalize(cs_string))
                     setup_info["type"] = "package"
-                    if name not in cs_list and  name.lower() not in cs_list:
-                        setup_info["type"] = "library"
-                        setup_info["run"].append("import " + name)
+                    if name_norm not in cs_list:
+                        cs_list_match_name = [i for i in cs_list if name_norm in i or i in name_norm]
+                        if not cs_list_match_name:  
+                            setup_info["type"] = "library"
+                            setup_info["run"].append("import " + name)
                     return setup_info
         if error != 3:
             setup_info["type"] = "library"
@@ -183,13 +205,13 @@ def inspect_setup(parent_dir, elem):
             # successfully imported mock_setup
             if mock_setup.call_args_list:
                 # we have call_args to inspect.
-                print("moc_setup.call_args_list works %s" % mock_setup.call_args_list)
+                #print("moc_setup.call_args_list works %s" % mock_setup.call_args_list)
                 args, kwargs = mock_setup.call_args
                 name = kwargs.get('name')
                 entry_point = kwargs.get('entry_points')
                 if not entry_point:
                     error = 2
-                    setup_info = inspect_setup_cfg(abs_parent_dir, name, error)
+                    setup_info = inspect_setup_cfg(abs_parent_dir, name,  error)
                     os.chdir(current_dir)
                     return setup_info
                 else:
@@ -198,13 +220,18 @@ def inspect_setup(parent_dir, elem):
                         setup_info["run"] = []
                         cs_list = []
                         for cs in entry_point['console_scripts']:
-                            cs_string = cs.split("=")[0].rstrip()
-                            setup_info["run"].append(cs_string + " --help")
-                            cs_list.append(cs_string)
+                            cs = cs.split("=")
+                            cs_string = cs[0].rstrip()
+                            cs_run = cs[1].rstrip()
+                            setup_info["run"].append(cs_run )
+                            cs_list.append(normalize(cs_string))
                         setup_info["type"] = "package"
-                        if name not in cs_list and  name.lower() not in cs_list:
-                            setup_info["run"].append("import " + name)
-                            setup_info["type"] = "library"
+                        name_norm = normalize(name)
+                        if name_norm not in cs_list:
+                            cs_list_match_name = [i for i in cs_list if name_norm in i or i in name_norm]
+                            if not cs_list_match_name:
+                                setup_info["run"].append("import " + name)
+                                setup_info["type"] = "library"
                         setup_info["installation"] = "pip install " + name
                         return setup_info
 
