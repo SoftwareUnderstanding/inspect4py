@@ -53,6 +53,7 @@ def parse_setup_py(parent_dir):
                     cs =  elem.split("=")
                     cs_string = cs[0].strip().replace('\'', '')
                     #cs_run = cs[1].rstrip().replace(":",".")
+                    cs_run = cs[1].rstrip()
                     setup_info["run"].append("python -m " + cs_run )
                     cs_list.append(normalize(cs_string))
                 else:
