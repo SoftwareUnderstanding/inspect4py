@@ -175,6 +175,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
 
   
     flag_service_body = 0
+    flag_script_body = 0
     for elem in body_only_files:
         # 4. Exploration for services in files with body 
         flag_service, software_invocation_info = service_check(elem, software_invocation_info,
@@ -186,6 +187,20 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
         # 5. Exploration for script without main in files with body 
         if not flag_service_main and not flag_service_body and not flag_package_library and not flag_script_main:
             soft_info = {"type": "script", "run": "python " + elem["file"]["path"], "has_structure": "body"}
+            software_invocation_info.append(soft_info)
+            flage_script_body= 1
+   
+    # Only adding this information if we havent not found libraries, packages, services or scripts with mains or bodies. 
+    #6.  Exploration for script without main or body in files with body
+    if not flag_script_body and not flag_service_main and not flag_service_body and not flag_package_library and not flag_script_main:
+        python_files = []
+        for directory in dir_tree_info:
+            for elem in dir_tree_info[directory]:
+                if ".py" in elem:
+                    python_files.append(os.path.abspath(input_path + "/" + directory + "/" + elem))
+
+        for f in range(0, len(python_files)):
+            soft_info = {"type": "script without main", "import": python_files[f] , "has_strcuture": "without_body"}
             software_invocation_info.append(soft_info)
 
     return software_invocation_info
