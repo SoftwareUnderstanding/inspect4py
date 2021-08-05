@@ -52,7 +52,7 @@ def parse_setup_py(parent_dir):
                 if ']' not in elem:
                     cs =  elem.split("=")
                     cs_string = cs[0].strip().replace('\'', '')
-                    cs_run = cs[1].rstrip().replace(":",".")
+                    #cs_run = cs[1].rstrip().replace(":",".")
                     setup_info["run"].append("python -m " + cs_run )
                     cs_list.append(normalize(cs_string))
                 else:
@@ -113,7 +113,6 @@ def inspect_setup_cfg(parent_dir, name, error=2):
                         cs = cs.split("=")
                         cs_string = cs[0].rstrip()
                         cs_run = cs[1].rstrip()
-                        cs_run = cs[1].rstrip().replace(":",".")
                         setup_info["run"].append("python -m " + cs_run )
                         cs_list.append(normalize(cs_string))
                     setup_info["type"] = "package"
@@ -223,7 +222,7 @@ def inspect_setup(parent_dir, elem):
                         for cs in entry_point['console_scripts']:
                             cs = cs.split("=")
                             cs_string = cs[0].rstrip()
-                            cs_run = cs[1].rstrip().replace(":",".")
+                            cs_run = cs[1].rstrip()
                             setup_info["run"].append("python -m " + cs_run )
                             cs_list.append(normalize(cs_string))
                         setup_info["type"] = "package"
