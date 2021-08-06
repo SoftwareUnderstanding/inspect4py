@@ -38,3 +38,4 @@ date,#repositories,#entities,acc_repo,acc_entity,error_repos,error_entities
 29/07/2021 19:04:28,95,112,0.968421052631579,0.9285714285714286,"['qnorm', 'airflow', 'defoe']","['pyLODE', 'HXL-Data-Science-file-formats', 'autojump', 'qnorm', 'airflow', 'defoe', 'mlsd', 'Morph-OME']"
 04/08/2021 16:31:30,94,111,0.9574468085106383,0.9279279279279279,"['Graphormer', 'qnorm', 'obspy', 'Calliar', 'fabric']","['Graphormer', 'HXL-Data-Science-file-formats', 'autojump', 'qnorm', 'obspy', 'Calliar', 'fabric', 'mlsd', 'Morph-OME']"
 05/08/2021 18:01:20,95,112,0.9789473684210527,0.9464285714285714,"['qnorm', 'fabric']","['HXL-Data-Science-file-formats', 'autojump', 'qnorm', 'fabric', 'mlsd', 'Morph-OME']"
+06/08/2021 13:41:56,95,112,0.9894736842105263,0.9553571428571429,['fabric'],"['HXL-Data-Science-file-formats', 'autojump', 'fabric', 'mlsd', 'Morph-OME']"
