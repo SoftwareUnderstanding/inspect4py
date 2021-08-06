@@ -37,34 +37,43 @@ def parse_setup_py(parent_dir):
             break
         else:
             name_index += 1
+
     if flag_name:
         name = setup_content[name_index].split('=')[1].split(',')[0].replace('\'', '')
-        for elem in setup_content:
-            if 'console_scripts' in elem:
-                flag_console = 1
-                break
-            else:
-                console_index += 1
-        if flag_console:
-            cs_list = []
-            setup_info["run"] = []
-            for elem in setup_content[console_index + 1:]:
+    single_line = 0
+    for elem in setup_content:
+        if 'console_scripts' in elem:
+            flag_console = 1
+            if ']' in elem:
+               single_line = 1
+            break
+        else:
+            console_index += 1
+    if flag_console:
+        cs_list = []
+        setup_info["run"] = []
+
+        if single_line:
+            elem= setup_content[console_index]
+            cs =  elem.split("=")
+            cs_string = cs[0].strip().replace('\'', '').split('["')[1]
+            cs_list.append(normalize(cs_string))
+            setup_info["installation"] = "pip install " + cs_string
+            setup_info["run"].append(cs_string)
+            setup_info["type"] = "package"
+
+        else:
+            for elem in setup_content[console_index+1:]:
                 if ']' not in elem:
                     cs =  elem.split("=")
                     cs_string = cs[0].strip().replace('\'', '')
-                    #cs_run = cs[1].rstrip().replace(":",".")
                     setup_info["run"].append(cs)
                     cs_list.append(normalize(cs_string))
                 else:
                     break
             setup_info["type"] = "package"
             setup_info["installation"] = "pip install " + name
-            return setup_info
-        else:
-            setup_info["type"] = "library"
-            setup_info["installation"] = "pip install " + name
-            setup_info["run"] = "import " + name
-            return setup_info
+        return setup_info
     else:
         setup_info["type"] = "library"
         setup_info["installation"] = "pip install " + name
