@@ -30,7 +30,7 @@ class CodeInspection:
         :param str out_control_flow_path: the output directory to store the control flow information
         :param str out_json_path: the output directory to store the json file with features extracted from the ast tree.
         :param int flag_png: flag to indicate to generate or not control flow figures
-        :param bool control_flow: boolean to indicate to generate the control flow 
+        :param bool control_flow: boolean to indicate to generate the control flow
         """
 
         self.path = path
@@ -771,6 +771,13 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
 
     else:
         dir_info = {}
+        # retrieve readme text at the root level (if any)
+        readme = ""
+        try:
+            with open(os.path.join(input_path, "README.md")) as readme_file:
+                readme = readme_file.read()
+        except:
+            print("Readme not found at root level")
         for subdir, dirs, files in os.walk(input_path):
 
             for ignore_d in ignore_dir_pattern:
@@ -808,7 +815,8 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
             if software_invocation:
                 # software invocation has both tests and regular invocation info.
                 # Tests are separated in new category
-                all_soft_invocation_info_list = extract_software_invocation(dir_info, directory_tree_info, input_path, call_list_data)
+                all_soft_invocation_info_list = extract_software_invocation(dir_info, directory_tree_info, input_path,
+                                                                            call_list_data, readme)
                 test_info_list = []
                 soft_invocation_info_list = []
                 for soft_info in all_soft_invocation_info_list:

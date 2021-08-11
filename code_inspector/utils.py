@@ -52,7 +52,7 @@ def prune_json(json_dict):
         return json_dict
     else:
         for a, b in json_dict.items():
-            if b:
+            if b or isinstance(b, bool):
                 if isinstance(b, dict):
                     aux_dict = prune_json(b)
                     if aux_dict:  # Remove empty dicts
@@ -82,7 +82,7 @@ def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     return get_directory_structure(input_path, ignore_set)
 
 
-def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
+def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, readme):
     """
     Method to detect the directory type of a software project. This method also detects tests
     We distinguish four main types: script, package, library and service. Some can be more than one.
@@ -90,6 +90,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     :dir_tree_info json containing the directory information of the target repo
     :input_path path of the repository to analyze
     :call_list json file containing the list of calls per file and functions or methods.
+    :readme content of the readme file of the project (if any)
     """
 
     software_invocation_info = []
@@ -100,9 +101,9 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     # Note: other server dependencies are missing here. More testing is needed.
     flag_package_library = 0
     for directory in dir_tree_info:
-        for elem in setup_files: # first check setup.py, then cfg
+        for elem in setup_files:  # first check setup.py, then cfg
             if elem in dir_tree_info[directory]:
-                #1. Exploration for package or library
+                # 1. Exploration for package or library
                 software_invocation_info.append(inspect_setup(input_path, elem))
                 flag_package_library = 1
                 break
@@ -119,7 +120,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
     # new list to store files without mains
     body_only_files = []
     flag_service_main = 0
-    for key in dir_info:  # filter(lambda key: key not in "directory_tree", dir_info):
+    for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
         for elem in dir_info[key]:
             if elem["main_info"]["main_flag"]:
                 flag_main_service = 0
@@ -127,7 +128,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
                 try:
                     # 2. Exploration for services in files with "mains"
                     flag_service, software_invocation_info = service_check(elem, software_invocation_info,
-                                                                                 server_dependencies, "main")
+                                                                                 server_dependencies, "main", readme)
                 except:
                     if elem["main_info"]["type"] != "test":
                         main_files.append(elem["file"]["path"])
@@ -161,19 +162,19 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
 
     for m in range(0, len(main_files)):
         # ONLY SELECT THE main files THAT ARE PRINCIPAL - WE CAN CHANGE THAT LATER
-        # TODO: principal mains should be tagged.
         if not m_secondary[m]:
-            soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main"}
+            soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main",
+                             "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
             software_invocation_info.append(soft_info)
             flag_script_main = 1
 
     # tests with main
     for test_file in test_files:
         # Test files do not have help, they are usually run by themselves
-        soft_info = {"type": "test", "run": "python " + test_file, "has_structure": "main" }
+        soft_info = {"type": "test", "run": "python " + test_file, "has_structure": "main",
+                             "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
         software_invocation_info.append(soft_info)
 
-  
     flag_service_body = 0
     flag_script_body = 0
     for elem in body_only_files:
@@ -183,16 +184,19 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
         if flag_service:
             flag_service_body = 1
 
-        # Only adding this information if we havent not found libraries, packages, services or scripts with mains. 
+        # Only adding this information if we haven't not found libraries, packages, services or scripts with mains.
         # 5. Exploration for script without main in files with body 
         if not flag_service_main and not flag_service_body and not flag_package_library and not flag_script_main:
-            soft_info = {"type": "script", "run": "python " + elem["file"]["path"], "has_structure": "body"}
+            soft_info = {"type": "script", "run": "python " + elem["file"]["path"], "has_structure": "body",
+                             "mentioned_in_readme": elem["file"]["fileNameBase"] in readme}
             software_invocation_info.append(soft_info)
             flage_script_body= 1
    
-    # Only adding this information if we havent not found libraries, packages, services or scripts with mains or bodies. 
-    #6.  Exploration for script without main or body in files with body
-    if not flag_script_body and not flag_service_main and not flag_service_body and not flag_package_library and not flag_script_main:
+    # Only adding this information if we haven't not found libraries, packages, services or scripts with mains
+    # or bodies.
+    # 6.  Exploration for script without main or body in files with body
+    if not flag_script_body and not flag_service_main and not flag_service_body and not flag_package_library \
+            and not flag_script_main:
         python_files = []
         for directory in dir_tree_info:
             for elem in dir_tree_info[directory]:
@@ -200,7 +204,8 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list):
                     python_files.append(os.path.abspath(input_path + "/" + directory + "/" + elem))
 
         for f in range(0, len(python_files)):
-            soft_info = {"type": "script without main", "import": python_files[f] , "has_strcuture": "without_body"}
+            soft_info = {"type": "script without main", "import": python_files[f], "has_structure": "without_body",
+                         "mentioned_in_readme": os.path.basename(os.path.normpath(python_files[f])) in readme}
             software_invocation_info.append(soft_info)
 
     return software_invocation_info
@@ -296,29 +301,29 @@ def type_module(m, i, path):
         return "external"
 
 
-def extract_call_functions(funcsInfo, body=0):
+def extract_call_functions(funcs_info, body=0):
     call_list = {}
     if body:
-        if funcsInfo["body"]["calls"]:
-            call_list["local"] = funcsInfo["body"]["calls"]
+        if funcs_info["body"]["calls"]:
+            call_list["local"] = funcs_info["body"]["calls"]
     else:
-        for funct in funcsInfo:
-            if funcsInfo[funct]["calls"]:
+        for funct in funcs_info:
+            if funcs_info[funct]["calls"]:
                 call_list[funct] = {}
-                call_list[funct]["local"] = funcsInfo[funct]["calls"]
-                if funcsInfo[funct]["functions"]:
-                    call_list[funct]["nested"] = extract_call_functions(funcsInfo[funct]["functions"])
+                call_list[funct]["local"] = funcs_info[funct]["calls"]
+                if funcs_info[funct]["functions"]:
+                    call_list[funct]["nested"] = extract_call_functions(funcs_info[funct]["functions"])
     return call_list
 
 
-def extract_call_methods(classesInfo):
+def extract_call_methods(classes_info):
     call_list = {}
-    for method in classesInfo:
-        if classesInfo[method]["calls"]:
+    for method in classes_info:
+        if classes_info[method]["calls"]:
             call_list[method] = {}
-            call_list[method]["local"] = classesInfo[method]["calls"]
-            if classesInfo[method]["functions"]:
-                call_list[method]["nested"] = extract_call_methods(classesInfo[method]["functions"])
+            call_list[method]["local"] = classes_info[method]["calls"]
+            if classes_info[method]["functions"]:
+                call_list[method]["nested"] = extract_call_methods(classes_info[method]["functions"])
     return call_list
 
 
@@ -447,36 +452,40 @@ def extract_relations(file_name, m_calls, main_files, call_list):
     return m_imports
 
 
-def service_check(elem, software_invocation_info, server_dependencies, has_structure):
+def service_check(elem, software_invocation_info, server_dependencies, has_structure, readme):
     flag_service = 0
     for dep in elem["dependencies"]:
         imports = dep["import"]
         flag_service, software_invocation_info = service_in_set(imports, server_dependencies, elem,
-                                                                software_invocation_info, has_structure)
+                                                                software_invocation_info, has_structure, readme)
         if flag_service:
             return flag_service, software_invocation_info
         else:
             modules = dep["from_module"]
             flag_service, software_invocation_info = service_in_set(modules, server_dependencies, elem,
-                                                                    software_invocation_info, has_structure)
+                                                                    software_invocation_info, has_structure, readme)
             if flag_service:
                 return flag_service, software_invocation_info
     return flag_service, software_invocation_info
 
 
-def service_in_set(data, server_dependencies, elem, software_invocation_info, has_structure):
+def service_in_set(data, server_dependencies, elem, software_invocation_info, has_structure, readme):
     flag_service = 0
     if isinstance(data, list):
         for data_dep in data:
             if data_dep.lower() in server_dependencies:
-                soft_info = {"type": "service" , "run": "python " + elem["file"]["path"], "has_structure": has_structure}
+                soft_info = {"type": "service", "run": "python " + elem["file"]["path"],
+                             "has_structure": has_structure,
+                             "mentioned_in_readme": elem["file"]["fileNameBase"] in readme}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
     else:
         if data:
             if data.lower() in server_dependencies:
-                soft_info = {"type": "service", "run": "python " + elem["file"]["path"], "has_structure": has_structure}
+                soft_info = {"type": "service", "run": "python " + elem["file"]["path"],
+                             "has_structure": has_structure,
+                             "mentioned_in_readme": elem["file"]["fileNameBase"] in readme}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
