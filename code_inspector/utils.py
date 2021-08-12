@@ -165,6 +165,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         if not m_secondary[m]:
             soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main",
                              "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
+   
             software_invocation_info.append(soft_info)
             flag_script_main = 1
 
@@ -188,7 +189,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         # 5. Exploration for script without main in files with body 
         if not flag_service_main and not flag_service_body and not flag_package_library and not flag_script_main:
             soft_info = {"type": "script", "run": "python " + elem["file"]["path"], "has_structure": "body",
-                             "mentioned_in_readme": elem["file"]["fileNameBase"] in readme}
+                             "mentioned_in_readme": elem["file"]["fileNameBase"]+"."+elem["file"]["extension"]  in readme}
             software_invocation_info.append(soft_info)
             flage_script_body= 1
    
@@ -476,7 +477,7 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info, ha
             if data_dep.lower() in server_dependencies:
                 soft_info = {"type": "service", "run": "python " + elem["file"]["path"],
                              "has_structure": has_structure,
-                             "mentioned_in_readme": elem["file"]["fileNameBase"] in readme}
+                             "mentioned_in_readme": elem["file"]["fileNameBase"]+"."+elem["file"]["extension"] in readme}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
@@ -485,7 +486,7 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info, ha
             if data.lower() in server_dependencies:
                 soft_info = {"type": "service", "run": "python " + elem["file"]["path"],
                              "has_structure": has_structure,
-                             "mentioned_in_readme": elem["file"]["fileNameBase"] in readme}
+                             "mentioned_in_readme": elem["file"]["fileNameBase"]+"."+elem["file"]["extension"] in readme}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
