@@ -170,10 +170,11 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
             flag_script_main = 1
 
     # tests with main
-    for test_file in test_files:
+    for t in range(0, len(test_files)):
         # Test files do not have help, they are usually run by themselves
-        soft_info = {"type": "test", "run": "python " + test_file, "has_structure": "main",
-                             "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
+        soft_info = {"type": "test", "run": "python " + test_files[t], "has_structure": "main",
+                             "mentioned_in_readme": os.path.basename(os.path.normpath(test_files[t])) in readme}
+
         software_invocation_info.append(soft_info)
 
     flag_service_body = 0
