@@ -180,7 +180,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     for elem in body_only_files:
         # 4. Exploration for services in files with body 
         flag_service, software_invocation_info = service_check(elem, software_invocation_info,
-                                                               server_dependencies, "body")
+                                                               server_dependencies, "body", readme)
         if flag_service:
             flag_service_body = 1
 
