@@ -118,10 +118,8 @@ class CodeInspection:
 
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
         funct_def_info = self._f_definitions(functions_definitions)
-
         # improving the list of calls
-        funct_def_info = self._fill_call_name(funct_def_info, self.classesInfo)
-        return funct_def_info
+        return self._fill_call_name(funct_def_info, self.classesInfo)
 
     def inspect_classes(self):
         """ inspect_classes detects all the classes and their methods,
@@ -208,7 +206,8 @@ class CodeInspection:
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
-        body_info = self._fill_call_name(body_info, self.classesInfo, body=1)
+        body_info = self._fill_call_name(body_info, self.classesInfo, body=1, additional_info=self.funcsInfo)
+        #body_info = self._fill_call_name(body_info, self.classesInfo, body=1)
         return body_info
 
     def inspect_dependencies(self):
@@ -476,7 +475,7 @@ class CodeInspection:
                     break
         return renamed
 
-    def _fill_call_name(self, funct_def_info, classes_info, class_name="", extend=[], body=0):
+    def _fill_call_name(self, funct_def_info, classes_info, class_name="", extend=[], body=0, additional_info={}):
         for funct in funct_def_info:
             renamed_calls = []
             f_store_vars = funct_def_info[funct]["store_vars_calls"]
@@ -497,7 +496,8 @@ class CodeInspection:
                 # check if we are calling to the constructor of a class
                 # in that case, add fileNameBase and __init__
                 if call_name in classes_info:
-                    renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name + ".__init__")
+                    #renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name + ".__init__")
+                    renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name )
 
                 # check if we are calling "self" or  the module is a variable containing "self"
                 elif "self" in module_call_name:
@@ -551,9 +551,11 @@ class CodeInspection:
                                 pass
 
                         if not renamed:
-                            #print("ENTRO 4 - call_name: %s - funct_def_info %s" %(call_name, funct_def_info))
                             # check if the call is a function of the current module
                             if call_name in funct_def_info.keys():
+                                renamed = 1
+                                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                            elif body and call_name in additional_info.keys():
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
                             else:
