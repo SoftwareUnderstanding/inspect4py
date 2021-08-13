@@ -262,14 +262,17 @@ def generate_output_html(pruned_json, output_file_html):
 def top_level_functions(body):
     return (f for f in body if isinstance(f, ast.FunctionDef))
 
+def top_level_classes(body):
+    return (c for c in body if isinstance(c, ast.ClassDef))
+
 
 def parse_module(filename):
     with open(filename, "rt") as file:
         return ast.parse(file.read(), filename=filename)
 
 
-def list_functions_from_module(m, path):
-    functions = []
+def list_functions_classes_from_module(m, path):
+    functions_classes = []
 
     try:
         # to open a module inside a directory
@@ -279,13 +282,18 @@ def list_functions_from_module(m, path):
         file_module = abs_repo_path + "/" + m + ".py"
         tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
-            functions.append(func.name)
+            functions_classes.append(func.name)
+
+        for cl in top_level_classes(tree.body):
+            functions_classes.append(cl.name)
+
         type = "internal"
     except:
         module = __import__(m)
         functions = dir(module)
         type = "external"
-    return functions, type
+    return functions_classes, type
+
 
 
 def type_module(m, i, path):
