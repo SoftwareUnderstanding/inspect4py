@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
         assert (call_list_data['Square'] == dictionary['Square'])
 
     def test_call_list_nested(self):
-        dictionary = {'functions': {'test': {'local': ['nested_call.MyClass.__init__', 'nested_call.MyClass.func']}}, 'body': {'local': ['test']}, 'MyClass': {'func': {'local': ['nested_call.MyClass.func.nested', 'print'], 'nested': {'nested': {'local': ['print']}}}}}
+        dictionary =  {'functions': {'test': {'local': ['nested_call.MyClass', 'nested_call.MyClass.func']}}, 'body': {'local': ['nested_call.test']}, 'MyClass': {'func': {'local': ['nested_call.MyClass.func.nested', 'print'], 'nested': {'nested': {'local': ['print']}}}}}
         input_path="./test_files/test_inheritance/nested_call.py"
         output_dir="./output_dir"
         control_flow= False
