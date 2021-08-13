@@ -246,7 +246,7 @@ class CodeInspection:
                                    "import": import_name,
                                    "alias": n.asname,
                                    "type": type}
-                dep_info.append(current_dep)
+                    dep_info.append(current_dep)
 
         return dep_info
 
