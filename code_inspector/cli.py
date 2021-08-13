@@ -232,8 +232,8 @@ class CodeInspection:
                 continue
             for n in node.names:
                 if "*" in n.name:
-                    functions, type = list_functions_from_module(module, self.path)
-                    for f in functions:
+                    functions_classes, type = list_functions_classes_from_module(module, self.path)
+                    for f in functions_classes:
                         current_dep = {"from_module": module,
                                        "import": f,
                                        "alias": n.asname,
@@ -246,7 +246,7 @@ class CodeInspection:
                                    "import": import_name,
                                    "alias": n.asname,
                                    "type": type}
-                dep_info.append(current_dep)
+                    dep_info.append(current_dep)
 
         return dep_info
 
@@ -514,7 +514,7 @@ class CodeInspection:
                         rest_call_name = "." + rest_call_name
                     else:
                         rest_call_name = ""
-
+                    
                     for dep in self.depInfo:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
@@ -537,7 +537,6 @@ class CodeInspection:
                                     break
                             else:
                                 pass
-
                     if not renamed:
                         # checking if the function has been imported "from module import *"
                         for dep in self.depInfo:
@@ -552,6 +551,7 @@ class CodeInspection:
                                 pass
 
                         if not renamed:
+                            #print("ENTRO 4 - call_name: %s - funct_def_info %s" %(call_name, funct_def_info))
                             # check if the call is a function of the current module
                             if call_name in funct_def_info.keys():
                                 renamed = 1
