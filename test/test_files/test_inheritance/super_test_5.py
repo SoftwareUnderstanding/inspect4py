@@ -26,5 +26,6 @@ class Cube(VolumeMixin, Square):
         return super().area() * 6
 
 cube = Cube(2)
-print(cube.surface_area())
-print(cube.volume())
+cube.surface_area()
+cube.volume()
+
