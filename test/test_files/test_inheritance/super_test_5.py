@@ -25,7 +25,6 @@ class Cube(VolumeMixin, Square):
     def surface_area(self):
         return super().area() * 6
 
-def test():
-    cube = Cube(2)
-    print(cube.surface_area())
-    print(cube.volume())
+cube = Cube(2)
+print(cube.surface_area())
+print(cube.volume())
