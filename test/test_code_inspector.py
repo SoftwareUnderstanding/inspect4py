@@ -54,11 +54,21 @@ class Test(unittest.TestCase):
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir) 
         assert (call_list_data == dictionary)
+    
+    def test_call_list_external_module(self):
+        dictionary={'body': {'local': ['random.seed', 'print', 'random.seed', 'print']}}
+        input_path="./test_files/test_random.py"
+        output_dir="./output_dir"
+        control_flow= False
+        fig= False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        call_list_data = call_list_file(code_info)
+        shutil.rmtree(output_dir) 
+        assert (call_list_data['body'] == dictionary['body'])
 
 
 if __name__ == '__main__':
     unittest.main()
 
 
-if __name__ == '__main__':
-    unittest.main()
