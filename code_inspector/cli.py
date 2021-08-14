@@ -41,6 +41,7 @@ class CodeInspection:
         self.depInfo = self.inspect_dependencies()
         self.classesInfo = self.inspect_classes()
         self.funcsInfo = self.inspect_functions()
+        self.classesInfo = self.re_fill_call_list()
         self.bodyInfo = self.inspect_body()
         if control_flow:
             format = "png"
@@ -179,6 +180,18 @@ class CodeInspection:
                                                              classesInfo[c]["extend"])
         return classesInfo
 
+    def re_fill_call_list(self):
+        """ re fill call list,
+        :param self self: represent the instance of the class
+        :return dictionary: a dictionary with the all classes information extracted
+        """
+
+        # improving the list of calls
+        for c in self.classesInfo:
+            self.classesInfo[c]["methods"] = self._fill_call_name(self.classesInfo[c]["methods"], self.classesInfo, c,
+                                                             self.classesInfo[c]["extend"], type=2, additional_info=self.funcsInfo)
+        return self.classesInfo
+
     def inspect_body(self):
         body_nodes = []
         body_info = {"body": {}}
@@ -206,7 +219,7 @@ class CodeInspection:
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
-        body_info = self._fill_call_name(body_info, self.classesInfo, body=1, additional_info=self.funcsInfo)
+        body_info = self._fill_call_name(body_info, self.classesInfo, type=1, additional_info=self.funcsInfo)
         #body_info = self._fill_call_name(body_info, self.classesInfo, body=1)
         return body_info
 
@@ -475,7 +488,7 @@ class CodeInspection:
                     break
         return renamed
 
-    def _fill_call_name(self, funct_def_info, classes_info, class_name="", extend=[], body=0, additional_info={}):
+    def _fill_call_name(self, funct_def_info, classes_info, class_name="", extend=[], type=0, additional_info={}):
         for funct in funct_def_info:
             renamed_calls = []
             f_store_vars = funct_def_info[funct]["store_vars_calls"]
@@ -555,14 +568,14 @@ class CodeInspection:
                             if call_name in funct_def_info.keys():
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
-                            elif body and call_name in additional_info.keys():
+                            elif type != 0 and call_name in additional_info.keys():
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
                             else:
                                 pass
 
                             if not renamed:
-                                if not body:
+                                if type != 1:
                                     for inter_f in funct_def_info:
                                         if call_name in funct_def_info[inter_f]["functions"].keys():
                                             renamed = 1
