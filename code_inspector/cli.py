@@ -39,9 +39,7 @@ class CodeInspection:
         self.tree = self.parser_file()
         self.fileInfo = self.inspect_file()
         self.depInfo = self.inspect_dependencies()
-        self.classesInfo = self.inspect_classes()
-        self.funcsInfo = self.inspect_functions()
-        self.classesInfo = self.re_fill_call_list()
+        self.classesInfo, self.funcsInfo = self.inspect_classes_funcs()
         self.bodyInfo = self.inspect_body()
         if control_flow:
             format = "png"
@@ -110,7 +108,20 @@ class CodeInspection:
             control_info["png"] = "None"
         return control_info
 
-    def inspect_functions(self):
+    def inspect_classes_funcs(self):
+        """ inspect classes and functions and detects all the functions, classes and their methods,
+        and features. 
+        :param self self: represent the instance of the class
+        :return dictionary: a dictionary with the all classes information extracted
+        :return dictionary: a dictionary with the all functions information extracted
+        """
+
+        classesInfo = self.inspect_classes()
+        funcsInfo = self.inspect_functions(classesInfo)
+        classesInfo = self.re_fill_call_list(classesInfo, funcsInfo)
+        return classesInfo,  funcsInfo 
+
+    def inspect_functions(self, classesInfo):
         """ inspect_functions detects all the functions in a AST tree, and calls
         to _f_definitions method to extracts all the features at function level.
         :param self self: represent the instance of the class
@@ -120,7 +131,7 @@ class CodeInspection:
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
         funct_def_info = self._f_definitions(functions_definitions)
         # improving the list of calls
-        return self._fill_call_name(funct_def_info, self.classesInfo)
+        return self._fill_call_name(funct_def_info, classesInfo)
 
     def inspect_classes(self):
         """ inspect_classes detects all the classes and their methods,
@@ -180,17 +191,17 @@ class CodeInspection:
                                                              classesInfo[c]["extend"])
         return classesInfo
 
-    def re_fill_call_list(self):
+    def re_fill_call_list(self, classesInfo, funcsInfo):
         """ re fill call list,
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all classes information extracted
         """
 
         # improving the list of calls
-        for c in self.classesInfo:
-            self.classesInfo[c]["methods"] = self._fill_call_name(self.classesInfo[c]["methods"], self.classesInfo, c,
-                                                             self.classesInfo[c]["extend"], type=2, additional_info=self.funcsInfo)
-        return self.classesInfo
+        for c in classesInfo:
+            classesInfo[c]["methods"] = self._fill_call_name(classesInfo[c]["methods"], classesInfo, c,
+                                                             classesInfo[c]["extend"], type=2, additional_info=funcsInfo)
+        return classesInfo
 
     def inspect_body(self):
         body_nodes = []
