@@ -9,16 +9,18 @@ class MyClass:
 
         func_b()
 
-def test():
+
+def func_d():
+    def func_e():
+        print("nested func e")
+    func_e()
+
+def main():
     a = MyClass()
     a.func_a()
     func_d()
 
 
-def func_d():
-    def func_d():
-        print("nested func d")
-    func_d()
-
 if __name__ == "__main__":
-    test()
+    main()
+

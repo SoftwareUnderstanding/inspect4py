@@ -426,6 +426,11 @@ class CodeInspection:
                     nested_definitions.remove(nested)
             funcs_info[f.name]["functions"] = self._f_definitions(nested_definitions)
 
+            for n_f in funcs_info[f.name]["functions"]:
+                  if n_f in funcs_info[f.name]["calls"]:
+                      remove_index = funcs_info[f.name]["calls"].index(n_f)
+                      del funcs_info[f.name]["calls"][remove_index+1:]
+
         return funcs_info
 
     def _get_func_name(self, func):
@@ -499,6 +504,9 @@ class CodeInspection:
         return renamed
 
     def _fill_call_name(self, funct_def_info, classes_info, class_name="", extend=[], type=0, additional_info={}):
+        """
+        :param type: 1 represents body, 2 represents re_fill_call, 3 represents nested call
+        """
         for funct in funct_def_info:
             renamed_calls = []
             f_store_vars = funct_def_info[funct]["store_vars_calls"]
@@ -507,7 +515,6 @@ class CodeInspection:
                 module_call_name = call_name.split(".")[0]
                 rest_call_name = call_name.split(".")[1:]
                 rest_call_name = '.'.join(rest_call_name)
-
                 # We have to change the name of the calls and modules if we have
                 # the module stored as a variable in store_vars_calls
                 for key, val in f_store_vars.items():
@@ -576,9 +583,10 @@ class CodeInspection:
 
                         if not renamed:
                             # check if the call is a function of the current module
-                            if call_name in funct_def_info.keys():
+                            if call_name in funct_def_info.keys() and type!=3:
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                            #if body or re_fill_class
                             elif type != 0 and call_name in additional_info.keys():
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
@@ -586,6 +594,7 @@ class CodeInspection:
                                 pass
 
                             if not renamed:
+                                #if not body
                                 if type != 1:
                                     for inter_f in funct_def_info:
                                         if call_name in funct_def_info[inter_f]["functions"].keys():
@@ -628,6 +637,10 @@ class CodeInspection:
                                         else:
                                             pass
             funct_def_info[funct]["calls"] = renamed_calls
+
+  
+            if "functions" in funct_def_info[funct]:
+                 funct_def_info[funct]["functions"]=self._fill_call_name(funct_def_info[funct]["functions"], classes_info, class_name, extend, type=3, additional_info=funct_def_info)
         return funct_def_info
 
     def _get_ids(self, elt):
