@@ -231,7 +231,6 @@ class CodeInspection:
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
         body_info = self._fill_call_name(body_info, self.classesInfo, type=1, additional_info=self.funcsInfo)
-        #body_info = self._fill_call_name(body_info, self.classesInfo, body=1)
         return body_info
 
     def inspect_dependencies(self):
@@ -534,6 +533,7 @@ class CodeInspection:
                     if not renamed:
                         renamed_calls.append(call_name)
                 else:
+  
                     if rest_call_name:
                         rest_call_name = "." + rest_call_name
                     else:
@@ -612,10 +612,10 @@ class CodeInspection:
                                             renamed = self._dfs(classes_info[module_call_name]["extend"],
                                                                 rest_call_name,
                                                                 renamed, classes_info, renamed_calls)
-                                            if renamed:
-                                                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
-                                            else:
-                                                pass
+                                            #if renamed:
+                                            #    renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                                            #else:
+                                            #    pass
                                         else:
                                             renamed = 1
                                             renamed_calls.append(call_name)
@@ -788,7 +788,8 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
         call_list_data = call_list_file(code_info)
         if call_list:
             call_file_html = json_dir + "/CallGraph.html"
-            generate_output_html(call_list_data, call_file_html)
+            pruned_call_list_data = prune_json(call_list_data)
+            generate_output_html(pruned_call_list_data, call_file_html)
         if html_output:
             output_file_html = json_dir + "/FileInfo.html"
             f = open(code_info.fileJson[1])
@@ -828,9 +829,10 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
 
         # Generate the call list of the Dir
         call_list_data = call_list_dir(dir_info)
+        pruned_call_list_data = prune_json(call_list_data)
         if call_list:
             call_file_html = output_dir + "/call_graph.html"
-            generate_output_html(call_list_data, call_file_html)
+            generate_output_html(pruned_call_list_data, call_file_html)
         # Note:1 for visualising the tree, nothing or 0 for not.
         if requirements:
             dir_info["requirements"] = extract_requirements(input_path)
