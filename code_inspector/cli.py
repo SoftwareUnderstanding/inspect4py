@@ -424,12 +424,20 @@ class CodeInspection:
             for nested in nested_definitions:
                 if f.name == nested.name:
                     nested_definitions.remove(nested)
+
             funcs_info[f.name]["functions"] = self._f_definitions(nested_definitions)
 
             for n_f in funcs_info[f.name]["functions"]:
                   if n_f in funcs_info[f.name]["calls"]:
                       remove_index = funcs_info[f.name]["calls"].index(n_f)
                       del funcs_info[f.name]["calls"][remove_index+1:]
+
+            for n_f in funcs_info[f.name]["functions"].copy():
+                  for n_f_2 in funcs_info[f.name]["functions"].copy():
+                       if n_f in funcs_info[f.name]["functions"][n_f_2]["functions"]:
+                            funcs_info[f.name]["functions"].pop(n_f)
+                            break
+                   
 
         return funcs_info
 
