@@ -1,21 +1,26 @@
 class MyClass:
-    def func(self):
-        def f_nested():
-            print("nested")
-            def supernested():
-                print("nested")
+    def func_a(self):
+        print("nested func a")
+        def func_b():
+            print("nested func b")
+            def func_c():
+                print("nested func c")
+            func_c()
 
-        f_nested()
+        func_b()
 
-def test():
+
+def func_d():
+    def func_e():
+        print("nested func e")
+    func_e()
+
+def main():
     a = MyClass()
-    a.func()
+    a.func_a()
+    func_d()
 
-
-def kk():
-    def pp():
-        print("pp")
-    pp()
 
 if __name__ == "__main__":
-    test()
+    main()
+
