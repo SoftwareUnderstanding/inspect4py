@@ -803,6 +803,9 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
             call_file_html = json_dir + "/CallGraph.html"
             pruned_call_list_data = prune_json(call_list_data)
             generate_output_html(pruned_call_list_data, call_file_html)
+            call_json_file = json_dir + "/CallGraph.json"
+            with open(call_json_file, 'w') as outfile:
+                 json.dump(pruned_call_list_data, outfile)
         if html_output:
             output_file_html = json_dir + "/FileInfo.html"
             f = open(code_info.fileJson[1])
@@ -846,6 +849,9 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
         if call_list:
             call_file_html = output_dir + "/call_graph.html"
             generate_output_html(pruned_call_list_data, call_file_html)
+            call_json_file = output_dir + "/call_graph.json"
+            with open(call_json_file, 'w') as outfile:
+                 json.dump(pruned_call_list_data, outfile)
         # Note:1 for visualising the tree, nothing or 0 for not.
         if requirements:
             dir_info["requirements"] = extract_requirements(input_path)
