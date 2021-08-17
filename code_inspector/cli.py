@@ -251,7 +251,7 @@ class CodeInspection:
         remove_func=0
         for f_name in remove_calls:
             for call in self.funcsInfo[f_name]["calls"]:
-                if self.fileInfo["fileNameBase"] not in call:
+                if (self.fileInfo["fileNameBase"] not in call) and ("print" not in call):
                      self.funcsInfo[f_name]["calls"].remove(call)
                      remove_func += 1
  
