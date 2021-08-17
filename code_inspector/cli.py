@@ -219,6 +219,10 @@ class CodeInspection:
             if isinstance(b_as.value, ast.Call):
                 body_name = self._get_func_name(b_as.value.func)
                 body_calls.append(body_name)
+
+                #new : check if we have calls in the arguments  
+                body_calls=self._get_arguments_calls(b_as.value.args, body_calls)
+
                 for target in b_as.targets:
                     target_name = self._get_func_name(target)
                     body_store_vars[target_name] = body_name
@@ -227,6 +231,9 @@ class CodeInspection:
             if isinstance(b_ex.value, ast.Call):
                 body_name = self._get_func_name(b_ex.value.func)
                 body_calls.append(body_name)
+
+                #new: check if we have calls in the arguments of the function
+                body_calls=self._get_arguments_calls(b_ex.value.args, body_calls)
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
@@ -401,13 +408,20 @@ class CodeInspection:
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
             funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
-            funcs_calls = [node.func for node in ast.walk(f) if isinstance(node, ast.Call)]
-            func_name_id = [self._get_func_name(func) for func in funcs_calls]
+            funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
+            func_name_id = [self._get_func_name(func.func) for func in funcs_calls]
+
             # If we want to store all the calls, included the repeat ones, comment the next
             # line
-            func_name_id = list(dict.fromkeys(func_name_id))
+            #func_name_id = list(dict.fromkeys(func_name_id))
+
             func_name_id = [f_x for f_x in func_name_id if f_x is not None]
             funcs_info[f.name]["calls"] = func_name_id
+
+            #new : check if we have calls in the arguments  
+            #for func in funcs_calls:
+            #      funcs_info[f.name]["calls"]=self._get_arguments_calls(func.args, funcs_info[f.name]["calls"])
+
             funcs_assigns = [node for node in ast.walk(f) if isinstance(node, ast.Assign)]
             funcs_store_vars = {}
             for f_as in funcs_assigns:
@@ -427,6 +441,7 @@ class CodeInspection:
 
             funcs_info[f.name]["functions"] = self._f_definitions(nested_definitions)
 
+            # remove repeated calls in nested functions
             for n_f in funcs_info[f.name]["functions"]:
                   if n_f in funcs_info[f.name]["calls"]:
                       remove_index = funcs_info[f.name]["calls"].index(n_f)
@@ -440,6 +455,14 @@ class CodeInspection:
                    
 
         return funcs_info
+
+
+    def _get_arguments_calls(self, f_args , list_calls):
+        for f_arg in f_args:
+            if isinstance(f_arg, ast.Call):
+                name = self._get_func_name(f_arg.func)
+                list_calls.append(name)
+        return list_calls
 
     def _get_func_name(self, func):
         func_name = ""
