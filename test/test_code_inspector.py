@@ -104,6 +104,17 @@ class Test(unittest.TestCase):
         shutil.rmtree(output_dir) 
         assert (call_list_data['body'] == dictionary['body'])
 
+    def test_call_list_dynamic(self):
+        dictionary={'functions': {'func_2': {'local': ['test_dynamic.func_1']}}, 'body': {'local': ['test_dynamic.func_2', 'print']}}
+        input_path="./test_files/test_dynamic/test_dynamic.py"
+        output_dir="./output_dir"
+        control_flow= False
+        fig= False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        call_list_data = call_list_file(code_info)
+        shutil.rmtree(output_dir) 
+        assert (call_list_data['body'] == dictionary['body'])
 
 
 if __name__ == '__main__':
