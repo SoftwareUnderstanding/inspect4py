@@ -189,6 +189,7 @@ class CodeInspection:
         for c in classesInfo:
             classesInfo[c]["methods"] = self._fill_call_name(classesInfo[c]["methods"], classesInfo, c,
                                                              classesInfo[c]["extend"])
+
         return classesInfo
 
     def re_fill_call_list(self, classesInfo, funcsInfo):
@@ -408,8 +409,8 @@ class CodeInspection:
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
             funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
-            funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
-            func_name_id = [self._get_func_name(func.func) for func in funcs_calls]
+            funcs_calls = [node.func for node in ast.walk(f) if isinstance(node, ast.Call)]
+            func_name_id = [self._get_func_name(func) for func in funcs_calls]
 
             # If we want to store all the calls, included the repeat ones, comment the next
             # line
@@ -418,9 +419,6 @@ class CodeInspection:
             func_name_id = [f_x for f_x in func_name_id if f_x is not None]
             funcs_info[f.name]["calls"] = func_name_id
 
-            #new : check if we have calls in the arguments  
-            #for func in funcs_calls:
-            #      funcs_info[f.name]["calls"]=self._get_arguments_calls(func.args, funcs_info[f.name]["calls"])
 
             funcs_assigns = [node for node in ast.walk(f) if isinstance(node, ast.Assign)]
             funcs_store_vars = {}
@@ -453,7 +451,6 @@ class CodeInspection:
                             funcs_info[f.name]["functions"].pop(n_f)
                             break
                    
-
         return funcs_info
 
 
@@ -544,6 +541,8 @@ class CodeInspection:
             for call_name in funct_def_info[funct]["calls"]:
                 renamed = 0
                 module_call_name = call_name.split(".")[0]
+                if "super()" not in module_call_name:
+                     module_call_name=module_call_name.split("()")[0]
                 rest_call_name = call_name.split(".")[1:]
                 rest_call_name = '.'.join(rest_call_name)
                 # We have to change the name of the calls and modules if we have
@@ -618,6 +617,7 @@ class CodeInspection:
                                 if call_name in classes_info[class_name]["methods"].keys() and type!=3:
                                      renamed = 1
                                      renamed_calls.append(self.fileInfo["fileNameBase"] + "." + class_name +"."+call_name)
+                                     break
                              
                             # check if the call is to a function of the current module
                             if not renamed and call_name in funct_def_info.keys() and type!=3:
@@ -669,7 +669,7 @@ class CodeInspection:
                                         if module_call_name in classes_info and rest_call_name in \
                                                 classes_info[module_call_name]["methods"].keys():
                                             renamed = 1
-                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
+                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + module_call_name+ "." + rest_call_name)
                                         elif module_call_name in classes_info:
                                             renamed = self._dfs(classes_info[module_call_name]["extend"],
                                                                 rest_call_name,
