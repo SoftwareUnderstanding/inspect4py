@@ -1,9 +1,10 @@
 class MyClass:
+    def func_b(self):
+        return 3
+
     def func_a(self):
          print(func_b())
 
-    def func_b(self):
-        return 3
 
 
 def func_1():
