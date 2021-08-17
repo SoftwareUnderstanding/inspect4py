@@ -101,7 +101,6 @@ class Test(unittest.TestCase):
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
         call_list_data = call_list_file(code_info)
-        print(call_list_data)
         shutil.rmtree(output_dir) 
         assert (call_list_data['body'] == dictionary['body'])
 
