@@ -602,19 +602,34 @@ class CodeInspection:
                                 pass
 
                             if not renamed:
-                                #if not body
+                                #if not body 
                                 if type != 1:
                                     for inter_f in funct_def_info:
                                         if call_name in funct_def_info[inter_f]["functions"].keys():
-                                            renamed = 1
-                                            if class_name:
-                                                renamed_calls.append(self.fileInfo[
-                                                                         "fileNameBase"] + "." + class_name + "." + inter_f + "." + call_name)
-                                                break
-                                            else:
-                                                renamed_calls.append(
-                                                    self.fileInfo["fileNameBase"] + "." + inter_f + "." + call_name)
-                                                break
+                                            # if we are in a nested call
+                                            if type == 3:
+                                                for nested_f in additional_info:
+                                                     if inter_f in additional_info[nested_f]["functions"].keys():
+                                                         renamed = 1
+                                                         if class_name:
+                                                             renamed_calls.append(self.fileInfo[
+                                                                                "fileNameBase"] + "." + class_name + "." + nested_f + "."+ inter_f + "." + call_name)
+                                                             break
+                                                         else:
+                                                             renamed_calls.append(
+                                                                self.fileInfo["fileNameBase"] + "." + nested_f+ "."+ inter_f + "." + call_name)
+                                                             break
+                                            # otherwise
+                                            else: 
+                                                 renamed = 1
+                                                 if class_name:
+                                                     renamed_calls.append(self.fileInfo[
+                                                                            "fileNameBase"] + "." + class_name + "." + inter_f + "." + call_name)
+                                                     break
+                                                 else:
+                                                     renamed_calls.append(
+                                                        self.fileInfo["fileNameBase"] + "." + inter_f + "." + call_name)
+                                                     break
                                         else:
                                             pass
                                 if not renamed:

@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
         assert (call_list_data == dictionary)
 
     def test_call_list_super_nested(self):
-        dictionary={'functions': {'func_d': {'local': ['super_nested_call.func_d.func_e'], 'nested': {'func_e': {'local': ['print']}}}, 'main': {'local': ['super_nested_call.MyClass', 'super_nested_call.MyClass.func_a', 'super_nested_call.func_d']}}, 'body': {}, 'MyClass': {'func_a': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b'], 'nested': {'func_b': {'local': ['print', 'super_nested_call.MyClass.func_b.func_c'], 'nested': {'func_c': {'local': ['print']}}}}}}}
+        dictionary={'functions': {'func_d': {'local': ['super_nested_call.func_d.func_e'], 'nested': {'func_e': {'local': ['print']}}}, 'main': {'local': ['super_nested_call.MyClass', 'super_nested_call.MyClass.func_a', 'super_nested_call.func_d']}}, 'body': {}, 'MyClass': {'func_a': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b'], 'nested': {'func_b': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b.func_c'], 'nested': {'func_c': {'local': ['print']}}}}}}}
         input_path="./test_files/test_inheritance/super_nested_call.py"
         output_dir="./output_dir"
         control_flow= False
