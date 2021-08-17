@@ -93,7 +93,7 @@ class Test(unittest.TestCase):
 
 
     def test_call_list_argument_call(self):
-        dictionary={'functions': {'func_1': {'local': ['print', 'argument_call.func_2']}}, 'body': {'local': ['print', 'argument_call.func_1', 'MyClass().func_a']}, 'MyClass': {'func_a': {'local': ['print', 'argument_call.func_b']}}}
+        dictionary={'functions': {'func_1': {'local': ['print', 'argument_call.func_2']}}, 'body': {'local': ['print', 'argument_call.func_1', 'MyClass().func_a']}, 'MyClass': {'func_a': {'local': ['print', 'argument_call.MyClass.func_b']}}}
         input_path="./test_files/test_dynamic/argument_call.py"
         output_dir="./output_dir"
         control_flow= False

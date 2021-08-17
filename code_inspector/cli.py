@@ -613,11 +613,18 @@ class CodeInspection:
                                 pass
 
                         if not renamed:
-                            # check if the call is a function of the current module
-                            if call_name in funct_def_info.keys() and type!=3:
+                            # check if the call is to a  method of the current class
+                            if class_name!="" and type!=3:
+                                if call_name in classes_info[class_name]["methods"].keys() and type!=3:
+                                     renamed = 1
+                                     renamed_calls.append(self.fileInfo["fileNameBase"] + "." + class_name +"."+call_name)
+                             
+                            # check if the call is to a function of the current module
+                            if not renamed and call_name in funct_def_info.keys() and type!=3:
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
-                            #if body or re_fill_class
+
+                            #if body or re_fill_class. 
                             elif type != 0 and call_name in additional_info.keys():
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
