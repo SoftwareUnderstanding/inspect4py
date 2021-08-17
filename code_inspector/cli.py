@@ -216,6 +216,8 @@ class CodeInspection:
         body_expr = [node for node in body_nodes if isinstance(node, ast.Expr)]
         body_store_vars = {}
         body_calls = []
+        dynamic_func = 0
+        remove_calls = []
         for b_as in body_assigns:
             if isinstance(b_as.value, ast.Call):
                 body_name = self._get_func_name(b_as.value.func)
@@ -223,6 +225,9 @@ class CodeInspection:
 
                 #new : check if we have calls in the arguments  
                 body_calls=self._get_arguments_calls(b_as.value.args, body_calls)
+                
+                #new: dynamic functions
+                dynamic_func, remove_calls =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls) 
 
                 for target in b_as.targets:
                     target_name = self._get_func_name(target)
@@ -232,9 +237,26 @@ class CodeInspection:
             if isinstance(b_ex.value, ast.Call):
                 body_name = self._get_func_name(b_ex.value.func)
                 body_calls.append(body_name)
-
+                
                 #new: check if we have calls in the arguments of the function
                 body_calls=self._get_arguments_calls(b_ex.value.args, body_calls)
+               
+                #new: dynamic functions
+                dynamic_func, remove_calls=self._dynamic_calls(b_ex.value.args, body_name, dynamic_func, remove_calls) 
+
+
+        #NEW 
+        #remove the previous call, because the dynamic calls have been already added.
+        # identifyng those because they do not have the fileNameBase in the calls 
+        remove_func=0
+        for f_name in remove_calls:
+            for call in self.funcsInfo[f_name]["calls"]:
+                if self.fileInfo["fileNameBase"] not in call:
+                     self.funcsInfo[f_name]["calls"].remove(call)
+                     remove_func += 1
+ 
+        if dynamic_func != remove_func:
+             print("ATENTION, dynamic_func %s, remove func %s" %(dynamic_func, remove_func))
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
@@ -453,6 +475,20 @@ class CodeInspection:
                    
         return funcs_info
 
+
+    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls):
+        #new: dynamic programming
+        for f_arg in f_args:
+            try:
+                if f_arg.id in self.funcsInfo.keys():
+                    #add the real dynamic call
+                    self.funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+f_arg.id)
+                    dynamic_func += 1
+                    remove_calls.append(f_name)
+            except:
+                pass
+
+        return dynamic_func, remove_calls 
 
     def _get_arguments_calls(self, f_args , list_calls):
         for f_arg in f_args:
