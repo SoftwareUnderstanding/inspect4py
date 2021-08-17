@@ -80,7 +80,7 @@ class Test(unittest.TestCase):
         assert (call_list_data == dictionary)
     
     def test_call_list_external_module(self):
-        dictionary={'body': {'local': ['random.seed', 'print', 'random.seed', 'print']}}
+        dictionary={'body': {'local': ['random.seed', 'print', 'random.random', 'random.random', 'random.random', 'random.seed', 'print', 'random.random', 'random.random', 'random.random']}}
         input_path="./test_files/test_random.py"
         output_dir="./output_dir"
         control_flow= False
@@ -92,6 +92,17 @@ class Test(unittest.TestCase):
         assert (call_list_data['body'] == dictionary['body'])
 
 
+    def test_call_list_argument_call(self):
+        dictionary={'functions': {'func_1': {'local': ['print', 'argument_call.func_2']}}, 'body': {'local': ['print', 'argument_call.func_1', 'MyClass().func_a']}, 'MyClass': {'func_a': {'local': ['print', 'argument_call.MyClass.func_b']}}}
+        input_path="./test_files/test_dynamic/argument_call.py"
+        output_dir="./output_dir"
+        control_flow= False
+        fig= False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        call_list_data = call_list_file(code_info)
+        shutil.rmtree(output_dir) 
+        assert (call_list_data['body'] == dictionary['body'])
 
 
 
