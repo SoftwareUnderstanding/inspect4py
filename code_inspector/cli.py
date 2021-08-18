@@ -507,7 +507,7 @@ class CodeInspection:
         #new: dynamic call
         for f_arg in f_args:
             call_name= self._get_func_name(f_arg)
-            if call_name != "":
+            if call_name :
                 # 1st, I look if the function_name (passes as an argument)
                 # matches with any of the functions (of the curent module) 
                 #, which are stored in funcsInfo
@@ -518,7 +518,10 @@ class CodeInspection:
                     remove_calls.append(f_name)
               
                 else:
-                    module_call_name = call_name.split(".")[0]
+                    if "." in call_name:
+                         module_call_name = call_name.split(".")[0]
+                    else:
+                         module_call_name = call_name
                     for dep in self.depInfo:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
