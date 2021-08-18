@@ -564,7 +564,7 @@ class CodeInspection:
 
                          if  module_call_name in classesInfo.keys():
                              if rest_call_name in classesInfo[module_call_name]["methods"].keys():
-                                 funcsInfo[f_name]["calls"].append(call_name)
+                                 funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+module_call_name+"."+rest_call_name)
                                  dynamic_func += 1
                                  remove_calls.append(f_name)
                                  found = 1
