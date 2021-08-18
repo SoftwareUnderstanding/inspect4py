@@ -76,7 +76,8 @@ def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
     if visual:
         paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda
-            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(".pyc") else False)
+            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(
+            ".pyc") else False)
         for path in paths:
             print(path.displayable())
     return get_directory_structure(input_path, ignore_set)
@@ -128,7 +129,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                 try:
                     # 2. Exploration for services in files with "mains"
                     flag_service, software_invocation_info = service_check(elem, software_invocation_info,
-                                                                                 server_dependencies, "main", readme)
+                                                                           server_dependencies, "main", readme)
                 except:
                     if elem["main_info"]["type"] != "test":
                         main_files.append(elem["file"]["path"])
@@ -145,7 +146,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                     else:
                         test_files.append(elem["file"]["path"])
             else:
-                #NEW: Filtering only files with body 
+                # NEW: Filtering only files with body
                 if elem['body']['calls']:
                     body_only_files.append(elem)
 
@@ -164,8 +165,8 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         # ONLY SELECT THE main files THAT ARE PRINCIPAL - WE CAN CHANGE THAT LATER
         if not m_secondary[m]:
             soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main",
-                             "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
-   
+                         "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
+
             software_invocation_info.append(soft_info)
             flag_script_main = 1
 
@@ -173,7 +174,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     for t in range(0, len(test_files)):
         # Test files do not have help, they are usually run by themselves
         soft_info = {"type": "test", "run": "python " + test_files[t], "has_structure": "main",
-                             "mentioned_in_readme": os.path.basename(os.path.normpath(test_files[t])) in readme}
+                     "mentioned_in_readme": os.path.basename(os.path.normpath(test_files[t])) in readme}
 
         software_invocation_info.append(soft_info)
 
@@ -190,10 +191,11 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         # 5. Exploration for script without main in files with body 
         if not flag_service_main and not flag_service_body and not flag_package_library and not flag_script_main:
             soft_info = {"type": "script", "run": "python " + elem["file"]["path"], "has_structure": "body",
-                             "mentioned_in_readme": elem["file"]["fileNameBase"]+"."+elem["file"]["extension"]  in readme}
+                         "mentioned_in_readme": elem["file"]["fileNameBase"] + "." + elem["file"][
+                             "extension"] in readme}
             software_invocation_info.append(soft_info)
-            flage_script_body= 1
-   
+            flage_script_body = 1
+
     # Only adding this information if we haven't not found libraries, packages, services or scripts with mains
     # or bodies.
     # 6.  Exploration for script without main or body in files with body
@@ -262,6 +264,7 @@ def generate_output_html(pruned_json, output_file_html):
 def top_level_functions(body):
     return (f for f in body if isinstance(f, ast.FunctionDef))
 
+
 def top_level_classes(body):
     return (c for c in body if isinstance(c, ast.ClassDef))
 
@@ -293,7 +296,6 @@ def list_functions_classes_from_module(m, path):
         functions = dir(module)
         type = "external"
     return functions_classes, type
-
 
 
 def type_module(m, i, path):
@@ -486,7 +488,8 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info, ha
             if data_dep.lower() in server_dependencies:
                 soft_info = {"type": "service", "run": "python " + elem["file"]["path"],
                              "has_structure": has_structure,
-                             "mentioned_in_readme": elem["file"]["fileNameBase"]+"."+elem["file"]["extension"] in readme}
+                             "mentioned_in_readme": elem["file"]["fileNameBase"] + "." + elem["file"][
+                                 "extension"] in readme}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
@@ -495,7 +498,8 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info, ha
             if data.lower() in server_dependencies:
                 soft_info = {"type": "service", "run": "python " + elem["file"]["path"],
                              "has_structure": has_structure,
-                             "mentioned_in_readme": elem["file"]["fileNameBase"]+"."+elem["file"]["extension"] in readme}
+                             "mentioned_in_readme": elem["file"]["fileNameBase"] + "." + elem["file"][
+                                 "extension"] in readme}
                 flag_service = 1
                 if soft_info not in software_invocation_info:
                     software_invocation_info.append(soft_info)
