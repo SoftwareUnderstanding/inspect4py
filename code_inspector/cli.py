@@ -232,6 +232,7 @@ class CodeInspection:
                 
                 #new: dynamic functions
                 dynamic_func, remove_calls, self.funcsInfo  =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo) 
+                
 
                 for target in b_as.targets:
                     target_name = self._get_func_name(target)
@@ -255,7 +256,7 @@ class CodeInspection:
         remove_func=0
         for f_name in remove_calls:
             for call in self.funcsInfo[f_name]["calls"]:
-                if (self.fileInfo["fileNameBase"] not in call) and ("print" not in call):
+                if ("." not in call) and ("print" not in call):
                      self.funcsInfo[f_name]["calls"].remove(call)
                      remove_func += 1
  
@@ -493,7 +494,7 @@ class CodeInspection:
         remove_func=0
         for f_name in remove_calls:
             for call in funcsInfo[f_name]["calls"]:
-                if (self.fileInfo["fileNameBase"] not in call) and ("print" not in call):
+                if ("." not in call) and ("print" not in call):
                      funcsInfo[f_name]["calls"].remove(call)
                      remove_func += 1
         if dynamic_func != remove_func:
@@ -505,13 +506,52 @@ class CodeInspection:
     def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls, funcsInfo):
         #new: dynamic call
         for f_arg in f_args:
-            try:
-                if f_arg.id in funcsInfo.keys():
+            call_name= self._get_func_name(f_arg)
+            if call_name != "":
+                # 1st, I look if the function_name (passes as an argument)
+                # matches with any of the functions (of the curent module) 
+                #, which are stored in funcsInfo
+                if call_name in funcsInfo.keys():
                     #add the real dynamic call
-                    funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+f_arg.id)
+                    funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+call_name)
                     dynamic_func += 1
                     remove_calls.append(f_name)
-            except:
+              
+                else:
+                    module_call_name = call_name.split(".")[0]
+                    for dep in self.depInfo:
+                        if dep["import"] == module_call_name:
+                            if dep["from_module"]:
+                                 funcsInfo[f_name]["calls"].append(dep["from_module"]+"."+call_name)
+                                 dynamic_func += 1
+                                 remove_calls.append(f_name)
+                            else:
+                                 funcsInfo[f_name]["calls"].append(call_name)
+                                 dynamic_func += 1
+                                 remove_calls.append(f_name)
+
+                        elif dep["alias"]:
+                            if "." in call_name:
+                                 rest_call_name = call_name.split(".")[1:]
+                                 rest_call_name = '.'.join(rest_call_name)
+                            else:
+                                 rest_call_name = call_name
+
+                            if dep["alias"] == module_call_name:
+                                if dep["from_module"]:
+                                    funcsInfo[f_name]["calls"].append(dep["from_module"] + "." + dep["import"])
+                                    dynamic_func += 1
+                                    remove_calls.append(f_name)
+                                else:
+                                    funcsInfo[f_name]["calls"].append(dep["import"] + "." +rest_call_name)
+                                    dynamic_func += 1
+                                    remove_calls.append(f_name)
+                            else:
+                                pass
+
+
+
+            else:
                 pass
 
         return dynamic_func, remove_calls, funcsInfo 
