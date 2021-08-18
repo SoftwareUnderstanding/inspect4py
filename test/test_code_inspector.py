@@ -165,7 +165,7 @@ class Test(unittest.TestCase):
         assert (call_list_data == dictionary)
 
     def test_call_list_dynamic_import_method(self):
-        dictionary={'functions': {'func_2': {'local': ['MyClass().func_1']}, 'main': {'local': ['test_dynamic_method.func_2', 'print', 'test_dynamic_method.MyClass']}}, 'body': {}, 'MyClass': {}}
+        dictionary={'functions': {'func_2': {'local': ['test_dynamic_method.MyClass.func_1']}, 'main': {'local': ['test_dynamic_method.func_2', 'print', 'test_dynamic_method.MyClass']}}, 'body': {}, 'MyClass': {}}
         input_path="./test_files/test_dynamic/test_dynamic_method.py"
         output_dir="./output_dir"
         control_flow= False
@@ -176,6 +176,19 @@ class Test(unittest.TestCase):
         shutil.rmtree(output_dir) 
         assert (call_list_data == dictionary)
 
+    def test_call_list_dynamic_import_method_varibale(self):
+        dictionary={'functions': {'func_2': {'local': ['test_dynamic_method_variable.MyClass.func_1']}, 'main': {'local': ['test_dynamic_method_variable.MyClass', 'test_dynamic_method_variable.func_2', 'print']}}, 'body': {}, 'MyClass': {}}
+        input_path="./test_files/test_dynamic/test_dynamic_method_variable.py"
+        output_dir="./output_dir"
+        control_flow= False
+        fig= False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        call_list_data = call_list_file(code_info)
+        shutil.rmtree(output_dir) 
+        assert (call_list_data == dictionary)
+
+                 
 
 if __name__ == '__main__':
     unittest.main()

@@ -230,13 +230,17 @@ class CodeInspection:
                 #new : check if we have calls in the arguments  
                 body_calls=self._get_arguments_calls(b_as.value.args, body_calls)
                 
-                #new: dynamic functions
-                dynamic_func, remove_calls, self.funcsInfo  =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo, self.classesInfo) 
-                
-
+              
                 for target in b_as.targets:
                     target_name = self._get_func_name(target)
                     body_store_vars[target_name] = body_name
+ 
+                #new: dynamic functions
+                dynamic_func, remove_calls, self.funcsInfo =self._dynamic_calls(b_as.value.args,\
+                                                                                    body_name, dynamic_func,\
+                                                                                    remove_calls, self.funcsInfo,\
+                                                                                    self.classesInfo, body_store_vars) 
+
 
         for b_ex in body_expr:
             if isinstance(b_ex.value, ast.Call):
@@ -487,7 +491,10 @@ class CodeInspection:
             funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
             for node in funcs_calls:
                  func_name_id = self._get_func_name(node.func)
-                 dynamic_func, remove_calls, funcsInfo =self._dynamic_calls(node.args, func_name_id, dynamic_func, remove_calls, funcsInfo, classesInfo) 
+                 store_vars=funcsInfo[f.name]["store_vars_calls"]
+                 dynamic_func, remove_calls, funcsInfo =self._dynamic_calls(node.args, func_name_id,\
+                                                                              dynamic_func, remove_calls, funcsInfo,\
+                                                                              classesInfo, store_vars) 
         #NEW 
         #remove the previous call, because the dynamic calls have been already added.
         # identifyng those because they do not have the fileNameBase in the calls 
@@ -503,7 +510,7 @@ class CodeInspection:
 
 
 
-    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls, funcsInfo, classesInfo):
+    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls, funcsInfo, classesInfo, store_vars = {}):
         #new: dynamic call
         for f_arg in f_args:
             call_name= self._get_func_name(f_arg)
@@ -558,13 +565,16 @@ class CodeInspection:
                                 pass
 
                     if not found:
+                         if module_call_name in store_vars.keys():
+                              module_call_name=store_vars[module_call_name]
+
                          #check if the call name matches with a class and method. 
                          if "()" in module_call_name:
                              module_call_name = module_call_name.split("()")[0]
 
                          if  module_call_name in classesInfo.keys():
                              if rest_call_name in classesInfo[module_call_name]["methods"].keys():
-                                 funcsInfo[f_name]["calls"].append(call_name)
+                                 funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+module_call_name+"."+rest_call_name)
                                  dynamic_func += 1
                                  remove_calls.append(f_name)
                                  found = 1
