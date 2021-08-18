@@ -134,7 +134,7 @@ class CodeInspection:
         funcsInfo = self._fill_call_name(funct_def_info, classesInfo)
         
         #check for dynamic calls
-        funcsInfo = self._check_dynamic_calls(functions_definitions, funcsInfo)
+        funcsInfo = self._check_dynamic_calls(functions_definitions, funcsInfo, classesInfo)
         return funcsInfo
 
     def inspect_classes(self):
@@ -231,7 +231,7 @@ class CodeInspection:
                 body_calls=self._get_arguments_calls(b_as.value.args, body_calls)
                 
                 #new: dynamic functions
-                dynamic_func, remove_calls, self.funcsInfo  =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo) 
+                dynamic_func, remove_calls, self.funcsInfo  =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo, self.classesInfo) 
                 
 
                 for target in b_as.targets:
@@ -247,7 +247,7 @@ class CodeInspection:
                 body_calls=self._get_arguments_calls(b_ex.value.args, body_calls)
                
                 #new: dynamic functions
-                dynamic_func, remove_calls, self.funcsInfo =self._dynamic_calls(b_ex.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo) 
+                dynamic_func, remove_calls, self.funcsInfo =self._dynamic_calls(b_ex.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo, self.classesInfo) 
 
 
         #NEW 
@@ -480,14 +480,14 @@ class CodeInspection:
                    
         return funcs_info
 
-    def _check_dynamic_calls(self, functions_defintions, funcsInfo):
+    def _check_dynamic_calls(self, functions_defintions, funcsInfo, classesInfo):
         dynamic_func = 0
         remove_calls = []
         for f in functions_defintions:
             funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
             for node in funcs_calls:
                  func_name_id = self._get_func_name(node.func)
-                 dynamic_func, remove_calls, funcsInfo =self._dynamic_calls(node.args, func_name_id, dynamic_func, remove_calls, funcsInfo) 
+                 dynamic_func, remove_calls, funcsInfo =self._dynamic_calls(node.args, func_name_id, dynamic_func, remove_calls, funcsInfo, classesInfo) 
         #NEW 
         #remove the previous call, because the dynamic calls have been already added.
         # identifyng those because they do not have the fileNameBase in the calls 
@@ -503,12 +503,13 @@ class CodeInspection:
 
 
 
-    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls, funcsInfo):
+    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls, funcsInfo, classesInfo):
         #new: dynamic call
         for f_arg in f_args:
             call_name= self._get_func_name(f_arg)
             if call_name :
-                # 1st, I look if the function_name (passes as an argument)
+                found = 0
+                # 1st, I look if the call_name 
                 # matches with any of the functions (of the curent module) 
                 #, which are stored in funcsInfo
                 if call_name in funcsInfo.keys():
@@ -516,43 +517,59 @@ class CodeInspection:
                     funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+call_name)
                     dynamic_func += 1
                     remove_calls.append(f_name)
+                    found = 1
               
                 else:
+                    # 2nd, check if we find it the call_name
+                    # can be found at in the imports /from_module/alias
                     if "." in call_name:
                          module_call_name = call_name.split(".")[0]
+                         rest_call_name = call_name.split(".")[1:]
+                         rest_call_name = '.'.join(rest_call_name)
                     else:
                          module_call_name = call_name
+                         rest_call_name = call_name
                     for dep in self.depInfo:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
                                  funcsInfo[f_name]["calls"].append(dep["from_module"]+"."+call_name)
                                  dynamic_func += 1
                                  remove_calls.append(f_name)
+                                 found = 1
                             else:
                                  funcsInfo[f_name]["calls"].append(call_name)
                                  dynamic_func += 1
                                  remove_calls.append(f_name)
+                                 found = 1
 
                         elif dep["alias"]:
-                            if "." in call_name:
-                                 rest_call_name = call_name.split(".")[1:]
-                                 rest_call_name = '.'.join(rest_call_name)
-                            else:
-                                 rest_call_name = call_name
-
                             if dep["alias"] == module_call_name:
                                 if dep["from_module"]:
                                     funcsInfo[f_name]["calls"].append(dep["from_module"] + "." + dep["import"])
                                     dynamic_func += 1
                                     remove_calls.append(f_name)
+                                    found = 1
                                 else:
-                                    funcsInfo[f_name]["calls"].append(dep["import"] + "." +rest_call_name)
+                                    funcsInfo[f_name]["calls"].append(dep["import"] + "." + call_name)
                                     dynamic_func += 1
                                     remove_calls.append(f_name)
+                                    found = 1
                             else:
                                 pass
 
+                    if not found:
+                         #check if the call name matches with a class and method. 
+                         if "()" in module_call_name:
+                             module_call_name = module_call_name.split("()")[0]
 
+                         if  module_call_name in classesInfo.keys():
+                             if rest_call_name in classesInfo[module_call_name]["methods"].keys():
+                                 funcsInfo[f_name]["calls"].append(call_name)
+                                 dynamic_func += 1
+                                 remove_calls.append(f_name)
+                                 found = 1
+                    else:
+                        pass
 
             else:
                 pass
