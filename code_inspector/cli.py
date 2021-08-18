@@ -131,7 +131,11 @@ class CodeInspection:
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
         funct_def_info = self._f_definitions(functions_definitions)
         # improving the list of calls
-        return self._fill_call_name(funct_def_info, classesInfo)
+        funcsInfo = self._fill_call_name(funct_def_info, classesInfo)
+        
+        #check for dynamic calls
+        funcsInfo = self._check_dynamic_calls(functions_definitions, funcsInfo)
+        return funcsInfo
 
     def inspect_classes(self):
         """ inspect_classes detects all the classes and their methods,
@@ -227,7 +231,7 @@ class CodeInspection:
                 body_calls=self._get_arguments_calls(b_as.value.args, body_calls)
                 
                 #new: dynamic functions
-                dynamic_func, remove_calls =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls) 
+                dynamic_func, remove_calls, self.funcsInfo  =self._dynamic_calls(b_as.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo) 
 
                 for target in b_as.targets:
                     target_name = self._get_func_name(target)
@@ -242,7 +246,7 @@ class CodeInspection:
                 body_calls=self._get_arguments_calls(b_ex.value.args, body_calls)
                
                 #new: dynamic functions
-                dynamic_func, remove_calls=self._dynamic_calls(b_ex.value.args, body_name, dynamic_func, remove_calls) 
+                dynamic_func, remove_calls, self.funcsInfo =self._dynamic_calls(b_ex.value.args, body_name, dynamic_func, remove_calls, self.funcsInfo) 
 
 
         #NEW 
@@ -256,7 +260,7 @@ class CodeInspection:
                      remove_func += 1
  
         if dynamic_func != remove_func:
-             print("ATENTION, dynamic_func %s, remove func %s" %(dynamic_func, remove_func))
+             print("WARNING: dynamic_func %s are not the same as remove func %s" %(dynamic_func, remove_func))
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
@@ -475,20 +479,42 @@ class CodeInspection:
                    
         return funcs_info
 
+    def _check_dynamic_calls(self, functions_defintions, funcsInfo):
+        dynamic_func = 0
+        remove_calls = []
+        for f in functions_defintions:
+            funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
+            for node in funcs_calls:
+                 func_name_id = self._get_func_name(node.func)
+                 dynamic_func, remove_calls, funcsInfo =self._dynamic_calls(node.args, func_name_id, dynamic_func, remove_calls, funcsInfo) 
+        #NEW 
+        #remove the previous call, because the dynamic calls have been already added.
+        # identifyng those because they do not have the fileNameBase in the calls 
+        remove_func=0
+        for f_name in remove_calls:
+            for call in funcsInfo[f_name]["calls"]:
+                if (self.fileInfo["fileNameBase"] not in call) and ("print" not in call):
+                     funcsInfo[f_name]["calls"].remove(call)
+                     remove_func += 1
+        if dynamic_func != remove_func:
+             print("WARNING: dynamic_func %s are not the same as remove func %s" %(dynamic_func, remove_func))
+        return funcsInfo
 
-    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls):
-        #new: dynamic programming
+
+
+    def _dynamic_calls(self, f_args , f_name, dynamic_func, remove_calls, funcsInfo):
+        #new: dynamic call
         for f_arg in f_args:
             try:
-                if f_arg.id in self.funcsInfo.keys():
+                if f_arg.id in funcsInfo.keys():
                     #add the real dynamic call
-                    self.funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+f_arg.id)
+                    funcsInfo[f_name]["calls"].append(self.fileInfo["fileNameBase"]+"."+f_arg.id)
                     dynamic_func += 1
                     remove_calls.append(f_name)
             except:
                 pass
 
-        return dynamic_func, remove_calls 
+        return dynamic_func, remove_calls, funcsInfo 
 
     def _get_arguments_calls(self, f_args , list_calls):
         for f_arg in f_args:
