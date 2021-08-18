@@ -39,7 +39,7 @@ class CodeInspection:
         self.tree = self.parser_file()
         self.fileInfo = self.inspect_file()
         self.depInfo = self.inspect_dependencies()
-        self.classesInfo, self.funcsInfo = self.inspect_classes_funcs()
+        self.funcsInfo, self.classesInfo = self.inspect_classes_funcs()
         self.bodyInfo = self.inspect_body()
         if control_flow:
             format = "png"
@@ -62,9 +62,9 @@ class CodeInspection:
         """
         inspect_file method extracts the features at file level.
         Those features are path, fileNameBase, extension, docstring.
-	    The method support several levels of docstrings extraction,
-	    such as file's long, short a full descrition.
-	    :param self self: represent the instance of the class
+        The method support several levels of docstrings extraction,
+        such as file's long, short a full descrition.
+        :param self self: represent the instance of the class
         :return dictionary a dictionary with the file information extracted
         """
         file_info = {"path": os.path.abspath(self.path)}
@@ -81,7 +81,7 @@ class CodeInspection:
         return file_info
 
     def inspect_controlflow(self, format):
-        """inspect_controlFlow uses two methods for 
+        """inspect_controlFlow uses two methods for
         extracting the controlflow of a file. One as a
         text and another as a figure (PNG/PDF/DOT).
         :param self self: represent the instance of the class
@@ -110,34 +110,33 @@ class CodeInspection:
 
     def inspect_classes_funcs(self):
         """ inspect classes and functions and detects all the functions, classes and their methods,
-        and features. 
+        and features.
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all classes information extracted
         :return dictionary: a dictionary with the all functions information extracted
         """
 
         classes_info = self.inspect_classes()
-        funcs_info = self.inspect_functions(classes_info)
-        classes_info = self.re_fill_call_list(classes_info, funcs_info)
-        return classes_info, funcs_info
+        funcs_info, classes_info = self.inspect_functions(classes_info)
+        funcs_info, classes_info = self.re_fill_call_list(classes_info, funcs_info)
+        return funcs_info, classes_info
 
-    def inspect_functions(self, info_classes):
-        """
-        inspect_functions detects all the functions in a AST tree, and calls
+    def inspect_functions(self, classes_info):
+        """ inspect_functions detects all the functions in a AST tree, and calls
         to _f_definitions method to extracts all the features at function level.
         :param self self: represent the instance of the class
-        :info_classes: information about the classes
         :return dictionary: a dictionary with the all functions information extracted
         """
 
         functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
-        funcs_def_info = self._f_definitions(functions_definitions)
+        function_definition_info = self._f_definitions(functions_definitions)
         # improving the list of calls
-        funcs_info = self._fill_call_name(funcs_def_info, info_classes)
+        functions_info = self._fill_call_name(function_definition_info, classes_info)
 
         # check for dynamic calls
-        funcs_info = self._check_dynamic_calls(functions_definitions, funcs_info, info_classes)
-        return funcs_info
+        functions_info, classes_info = self._check_dynamic_calls(functions_definitions, functions_info,
+                                                                 classes_info, type=1)
+        return functions_info, classes_info
 
     def inspect_classes(self):
         """ inspect_classes detects all the classes and their methods,
@@ -172,7 +171,7 @@ class CodeInspection:
                         if isinstance(b, ast.Call) and hasattr(b, 'value'):
                             extend.append(b.value.func.id)
 
-                        # capturing extension type: module.import 
+                        # capturing extension type: module.import
                         elif b.value.id and b.attr:
                             extend.append(b.value.id + "." + b.attr)
                         elif b.value.id:
@@ -182,8 +181,8 @@ class CodeInspection:
                     classes_info[c.name]["extend"] = extend
                     # classes_info[c.name]["extend"] = [
                     #    b.value.func.id if isinstance(b, ast.Call) and hasattr(b, 'value') else b.value.id if hasattr(b,
-                    #    'value') else ""
-                    #    for b in c.bases] #'value') else ""
+                    #                                                                                  'value') else ""
+                    #    for b in c.bases]                                                             #'value') else ""
                 except:
                     classes_info[c.name]["extend"] = []
 
@@ -201,8 +200,6 @@ class CodeInspection:
     def re_fill_call_list(self, classes_info, funcs_info):
         """ re fill call list,
         :param self self: represent the instance of the class
-        :classes_info: information about classes
-        :funcs_info: information about functions
         :return dictionary: a dictionary with the all classes information extracted
         """
 
@@ -211,14 +208,17 @@ class CodeInspection:
             classes_info[c]["methods"] = self._fill_call_name(classes_info[c]["methods"], classes_info, c,
                                                               classes_info[c]["extend"], type=2,
                                                               additional_info=funcs_info)
-        return classes_info
+        classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
+
+        funcs_info, classes_info = self._check_dynamic_calls(classes_definitions, funcs_info, classes_info, type=2)
+        return funcs_info, classes_info
 
     def inspect_body(self):
         body_nodes = []
         body_info = {"body": {}}
         for node in self.tree.body:
-            if not isinstance(node, ast.ClassDef) and not isinstance(node, ast.FunctionDef) and \
-                    not isinstance(node, ast.Import) and not isinstance(node, ast.ImportFrom):
+            if not isinstance(node, ast.ClassDef) and not isinstance(node, ast.FunctionDef) and not isinstance(node,
+                    ast.Import) and not isinstance(node, ast.ImportFrom):
                 body_nodes.append(node)
 
         body_assigns = [node for node in body_nodes if isinstance(node, ast.Assign)]
@@ -227,6 +227,8 @@ class CodeInspection:
         body_calls = []
         dynamic_func = 0
         remove_calls = []
+        dynamic_methods = 0
+        remove_methods_calls = []
         for b_as in body_assigns:
             if isinstance(b_as.value, ast.Call):
                 body_name = self._get_func_name(b_as.value.func)
@@ -240,10 +242,12 @@ class CodeInspection:
                     body_store_vars[target_name] = body_name
 
                 # new: dynamic functions
-                dynamic_func, remove_calls, self.funcsInfo = self._dynamic_calls(b_as.value.args,
-                                                                                 body_name, dynamic_func,
-                                                                                 remove_calls, self.funcsInfo,
-                                                                                 self.classesInfo, body_store_vars)
+                dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                    b_as.value.args, \
+                    body_name, dynamic_func, \
+                    remove_calls, dynamic_methods, remove_methods_calls, \
+                    self.funcsInfo, \
+                    self.classesInfo, body_store_vars)
 
         for b_ex in body_expr:
             if isinstance(b_ex.value, ast.Call):
@@ -254,22 +258,39 @@ class CodeInspection:
                 body_calls = self._get_arguments_calls(b_ex.value.args, body_calls)
 
                 # new: dynamic functions
-                dynamic_func, remove_calls, self.funcsInfo = self._dynamic_calls(b_ex.value.args, body_name,
-                                                                                 dynamic_func, remove_calls,
-                                                                                 self.funcsInfo, self.classesInfo)
+                dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                    b_ex.value.args, \
+                    body_name, dynamic_func, \
+                    remove_calls, dynamic_methods, remove_methods_calls, \
+                    self.funcsInfo, \
+                    self.classesInfo, body_store_vars)
 
                 # NEW
         # remove the previous call, because the dynamic calls have been already added.
         # identifying those because they do not have the fileNameBase in the calls
         remove_func = 0
-        for f_name in remove_calls:
-            for call in self.funcsInfo[f_name]["calls"]:
-                if ("." not in call) and ("print" not in call):
-                    self.funcsInfo[f_name]["calls"].remove(call)
-                    remove_func += 1
+        if dynamic_func > 0:
+            for f_name in remove_calls:
+                for call in self.funcsInfo[f_name]["calls"]:
+                    if ("." not in call) and ("print" not in call):
+                        self.funcsInfo[f_name]["calls"].remove(call)
+                        remove_func += 1
 
-        if dynamic_func != remove_func:
-            print("WARNING: dynamic_func %s are not the same as remove func %s" % (dynamic_func, remove_func))
+            if dynamic_func != remove_func:
+                print("WARNING: dynamic_func %s are not the same as remove_func %s" % (dynamic_func, remove_func))
+
+        remove_methods = 0
+        if dynamic_methods > 0:
+
+            for elem in remove_methods_calls:
+                for call in self.classesInfo[elem[0]]["methods"][elem[1]]["calls"]:
+                    if ("." not in call) and ("print" not in call):
+                        self.classesInfo[elem[0]]["methods"][elem[1]]["calls"].remove(call)
+                        remove_methods += 1
+
+            if dynamic_methods != remove_methods:
+                print("WARNING: dynamic_methods %s are not the same as remove_methods %s" % (
+                    dynamic_methods, remove_methods))
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
@@ -320,7 +341,7 @@ class CodeInspection:
         Method for getting if the file has a if __name__ == "__main__"
         and if it calls a method (e.g. main, version) or not.
         :param self self: represent the instance of the class
-        :return main_info : dictionary with a flag stored in "main_flag" (1 if the if __name__ == main is found, 0 otherwise) 
+        :return main_info : dictionary with a flag stored in "main_flag" (1 if the if __name__ == main is found, 0 otherwise)
          and then "main_function" with the name of the function that is called.
         """
 
@@ -350,7 +371,8 @@ class CodeInspection:
         if if_main_flag:
             # classifying the type of a main: "test" or "script"
             # or "test" in self.fileInfo["fileNameBase"]:
-            # Note - I'm just comenting the previous or ("test" in self.fileInfo ...) and adding doctest - but more advanced cases could be considered here.
+            # Note - I'm just comenting the previous or ("test" in self.fileInfo ...)
+            # and adding doctest - but more advanced cases could be considered here.
 
             # OPTION 1: searching test dependency string inside the if_main_func
             # if test dependency in if_main_func:
@@ -375,9 +397,9 @@ class CodeInspection:
 
     def file_json(self):
         """file_json method aggregates all the features previously
-        extracted from a given file such as, functions, classes 
+        extracted from a given file such as, functions, classes
         and dependencies levels into the same dictionary.
-        
+
         It also writes this new dictionary to a json file.
         :param self self: represent the instance of the class
         :return dictionary: a dictionary with the all information extracted (at file level)
@@ -402,9 +424,9 @@ class CodeInspection:
         """_f_definitions extracts the name, args, docstring
         returns, raises of a list of functions or a methods.
         Furthermore, it also extracts automatically several values
-        from a docstring, such as long and short description, arguments' 
+        from a docstring, such as long and short description, arguments'
         name, description, type, default values and if it they are optional
-        or not. 
+        or not.
         :param self self: represent the instance of the class
         :param list functions_definitions: represent a list with all functions or methods nodes
         :return dictionary: a dictionary with the all the information at function/method level
@@ -487,49 +509,97 @@ class CodeInspection:
 
         return funcs_info
 
-    def _check_dynamic_calls(self, functions_definitions, funcs_info, classes_info):
+    def _check_dynamic_calls(self, functions_defintions, funcs_info, classes_info, type=1):
+        # type 1- from functions; type 2 from classes
         dynamic_func = 0
         remove_calls = []
-        for f in functions_definitions:
+        dynamic_methods = 0
+        remove_methods_calls = 0
+        for f in functions_defintions:
             funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
             for node in funcs_calls:
                 func_name_id = self._get_func_name(node.func)
-                store_vars = funcs_info[f.name]["store_vars_calls"]
-                dynamic_func, remove_calls, funcs_info = self._dynamic_calls(node.args, func_name_id,
-                                                                             dynamic_func, remove_calls, funcs_info,
-                                                                             classes_info, store_vars)
-        # NEW
-        # remove the previous call, because the dynamic calls have been already added.
-        # identifying those because they do not have the fileNameBase in the calls
-        remove_func = 0
-        for f_name in remove_calls:
-            for call in funcs_info[f_name]["calls"]:
-                if ("." not in call) and ("print" not in call):
-                    funcs_info[f_name]["calls"].remove(call)
-                    remove_func += 1
-        if dynamic_func != remove_func:
-            print("WARNING: dynamic_func %s are not the same as remove func %s" % (dynamic_func, remove_func))
-        return funcs_info
+                if type == 1:
+                    store_vars = funcs_info[f.name]["store_vars_calls"]
+                else:
+                    store_vars = {}
+                    # store_vars=classesInfo[f.name]["store_vars_calls"]
+                dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
+                    node.args, func_name_id, \
+                    dynamic_func, remove_calls, \
+                    dynamic_methods, remove_methods_calls, \
+                    funcs_info, classes_info, store_vars)
 
-    def _dynamic_calls(self, f_args, f_name, dynamic_func, remove_calls, funcs_info, classes_info, store_vars={}):
+                # NEW
+        # remove the previous call, because the dynamic calls have been already added.
+        # identifyng those because they do not have the fileNameBase in the calls
+        remove_func = 0
+        if dynamic_func > 0:
+            for f_name in remove_calls:
+                for call in funcs_info[f_name]["calls"]:
+                    if ("." not in call) and ("print" not in call):
+                        funcs_info[f_name]["calls"].remove(call)
+                        remove_func += 1
+
+            if dynamic_func != remove_func:
+                print("WARNING: dynamic_func %s are not the same as remove_func %s" % (dynamic_func, remove_func))
+
+        remove_methods = 0
+        if dynamic_methods > 0:
+            for elem in remove_methods_calls:
+                for call in classes_info[elem[0]]["methods"][elem[1]]["calls"]:
+                    if ("." not in call) and ("print" not in call):
+                        classes_info[elem[0]]["methods"][elem[1]]["calls"].remove(call)
+                        remove_methods += 1
+
+            if dynamic_methods != remove_methods:
+                print("WARNING: dynamic_methods %s are not the same as remove_methods %s" % (
+                dynamic_methods, remove_methods))
+
+        return funcs_info, classes_info
+
+    def _dynamic_calls(self, f_args, f_name_id, dynamic_funcs, remove_funcs, dynamic_methods, remove_methods_calls,
+                       funcs_info, classes_info, store_vars={}):
         # new: dynamic call
+
+        if "." in f_name_id:
+            f_name = f_name_id.split(".")[0]
+            if "()" in f_name:
+                f_name = f_name.split("()")[0]
+            f_name_rest = f_name_id.split(".")[1]
+
+            if f_name in store_vars.keys():
+                f_name = store_vars[f_name]
+        else:
+            f_name = f_name_id
         for f_arg in f_args:
             call_name = self._get_func_name(f_arg)
-            print(call_name)
             if call_name:
                 found = 0
-                # 1st, I look if the call_name 
-                # matches with any of the functions (of the curent module),
-                # which are stored in funcsInfo
+                # 1st, I look if the call_name
+                # matches with any of the functions (of the curent module)
+                # , which are stored in funcsInfo
                 if call_name in funcs_info.keys():
                     # add the real dynamic call
-                    funcs_info[f_name]["calls"].append(self.fileInfo["fileNameBase"] + "." + call_name)
-                    dynamic_func += 1
-                    remove_calls.append(f_name)
-                    found = 1
+                    try:
+                        funcs_info[f_name]["calls"].append(self.fileInfo["fileNameBase"] + "." + call_name)
+                        dynamic_funcs += 1
+                        remove_funcs.append(f_name)
+                        found = 1
+                    except:
+                        try:
+                            # TO ROSA: this is in try/catch because it yields an error (double check)
+                            classes_info[f_name]["methods"][f_name_rest]["calls"].append(
+                                self.fileInfo["fileNameBase"] + "." + call_name)
+                            dynamic_methods += 1
+                            remove_methods_calls.append([f_name, f_name_rest])
+                            found = 1
+                        except:
+                            print("Error when processing dependency: %s" % f_name)
+
                 else:
                     # 2nd, check if we find it the call_name
-                    # can be found in the imports /from_module/alias
+                    # can be found at in the imports /from_module/alias
                     if "." in call_name:
                         module_call_name = call_name.split(".")[0]
                         rest_call_name = call_name.split(".")[1:]
@@ -540,44 +610,103 @@ class CodeInspection:
                     for dep in self.depInfo:
                         if dep["import"] == module_call_name:
                             if dep["from_module"]:
-                                funcs_info[f_name]["calls"].append(dep["from_module"] + "." + call_name)
-                                dynamic_func += 1
-                                remove_calls.append(f_name)
-                                found = 1
+                                try:
+                                    funcs_info[f_name]["calls"].append(dep["from_module"] + "." + call_name)
+                                    dynamic_funcs += 1
+                                    remove_funcs.append(f_name)
+                                    found = 1
+                                except:
+                                    try:
+                                        # TO ROSA: this is in try/catch because it yields an error (double check)
+                                        classes_info[f_name]["methods"][f_name_rest]["calls"].append(
+                                            dep["from_module"] + "." + call_name)
+                                        dynamic_methods += 1
+                                        remove_methods_calls.append([f_name, f_name_rest])
+                                        found = 1
+                                    except:
+                                        print("Error when processing dependency: %s" % f_name)
                             else:
-                                funcs_info[f_name]["calls"].append(call_name)
-                                dynamic_func += 1
-                                remove_calls.append(f_name)
-                                found = 1
+                                try:
+                                    funcs_info[f_name]["calls"].append(call_name)
+                                    dynamic_funcs += 1
+                                    remove_funcs.append(f_name)
+                                    found = 1
+                                except:
+                                    try:
+                                        # TO ROSA: this is in try/catch because it yields an error (double check)
+                                        classes_info[f_name]["methods"][f_name_rest]["calls"].append(call_name)
+                                        dynamic_methods += 1
+                                        remove_methods_calls.append([f_name, f_name_rest])
+                                        found = 1
+                                    except:
+                                        print("Error when processing dependency: %s" % f_name)
+
                         elif dep["alias"]:
                             if dep["alias"] == module_call_name:
                                 if dep["from_module"]:
-                                    funcs_info[f_name]["calls"].append(dep["from_module"] + "." + dep["import"])
-                                    dynamic_func += 1
-                                    remove_calls.append(f_name)
-                                    found = 1
+                                    try:
+                                        funcs_info[f_name]["calls"].append(dep["from_module"] + "." + dep["import"])
+                                        dynamic_funcs += 1
+                                        remove_funcs.append(f_name)
+                                        found = 1
+                                    except:
+                                        try:
+                                            # TO ROSA: this is in try/catch because it yields an error (double check)
+                                            classes_info[f_name]["methods"][f_name_rest]["calls"].append(
+                                                dep["from_module"] + "." + dep["import"])
+                                            dynamic_methods += 1
+                                            remove_methods_calls.append([f_name, f_name_rest])
+                                            found = 1
+                                        except:
+                                            print("Error when processing dependency: %s" % f_name)
                                 else:
-                                    funcs_info[f_name]["calls"].append(dep["import"] + "." + call_name)
-                                    dynamic_func += 1
-                                    remove_calls.append(f_name)
+                                    try:
+                                        funcs_info[f_name]["calls"].append(dep["import"] + "." + call_name)
+                                        dynamic_funcs += 1
+                                        remove_funcs.append(f_name)
+                                        found = 1
+                                    except:
+                                        try:
+                                            # TO ROSA: this is in try/catch because it yields an error (double check)
+                                            classes_info[f_name]["methods"][f_name_rest]["calls"].append(
+                                                dep["import"] + "." + call_name)
+                                            dynamic_methods += 1
+                                            remove_methods_calls.append([f_name, f_name_rest])
+                                            found = 1
+                                        except:
+                                            print("Error when processing dependency: %s" % f_name)
+                            else:
+                                pass
+
+                    if not found:
+                        if module_call_name in store_vars.keys():
+                            module_call_name = store_vars[module_call_name]
+
+                        # check if the call name matches with a class and method.
+                        if "()" in module_call_name:
+                            module_call_name = module_call_name.split("()")[0]
+
+                        if module_call_name in classes_info.keys():
+                            if rest_call_name in classes_info[module_call_name]["methods"].keys():
+                                try:
+                                    funcs_info[f_name]["calls"].append(
+                                        self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
+                                    dynamic_funcs += 1
+                                    remove_funcs.append(f_name)
                                     found = 1
-                if not found:
-                    if module_call_name in store_vars.keys():
-                        module_call_name = store_vars[module_call_name]
+                                except:
+                                    classes_info[f_name]["methods"][f_name_rest]["calls"].append(
+                                        self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
+                                    dynamic_methods += 1
+                                    remove_methods_calls.append([f_name, f_name_rest])
+                                    found = 1
+                    else:
+                        pass
 
-                    # check if the call name matches with a class and method.
-                    if "()" in module_call_name:
-                        module_call_name = module_call_name.split("()")[0]
+            else:
+                pass
 
-                    if module_call_name in classes_info.keys():
-                        if rest_call_name in classes_info[module_call_name]["methods"].keys():
-                            funcs_info[f_name]["calls"].append(
-                                self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
-                            dynamic_func += 1
-                            remove_calls.append(f_name)
-                            found = 1
-
-        return dynamic_func, remove_calls, funcs_info
+        return dynamic_funcs, remove_funcs, dynamic_methods, remove_methods_calls, funcs_info
 
     def _get_arguments_calls(self, f_args, list_calls):
         for f_arg in f_args:
@@ -656,14 +785,15 @@ class CodeInspection:
                     break
         return renamed
 
-    def _fill_call_name(self, funct_def_info, classes_info, class_name="", extend=[], type=0, additional_info={}):
+    def _fill_call_name(self, function_definition_info, classes_info, class_name="", extend=[],
+                        type=0, additional_info={}):
         """
         :param type: 1 represents body, 2 represents re_fill_call, 3 represents nested call
         """
-        for funct in funct_def_info:
+        for funct in function_definition_info:
             renamed_calls = []
-            f_store_vars = funct_def_info[funct]["store_vars_calls"]
-            for call_name in funct_def_info[funct]["calls"]:
+            f_store_vars = function_definition_info[funct]["store_vars_calls"]
+            for call_name in function_definition_info[funct]["calls"]:
                 renamed = 0
                 module_call_name = call_name.split(".")[0]
                 if "super()" not in module_call_name:
@@ -695,7 +825,6 @@ class CodeInspection:
                     if not renamed:
                         renamed_calls.append(call_name)
                 else:
-
                     if rest_call_name:
                         rest_call_name = "." + rest_call_name
                     else:
@@ -746,7 +875,7 @@ class CodeInspection:
                                     break
 
                             # check if the call is to a function of the current module
-                            if not renamed and call_name in funct_def_info.keys() and type != 3:
+                            if not renamed and call_name in function_definition_info.keys() and type != 3:
                                 renamed = 1
                                 renamed_calls.append(self.fileInfo["fileNameBase"] + "." + call_name)
 
@@ -760,8 +889,8 @@ class CodeInspection:
                             if not renamed:
                                 # if not body
                                 if type != 1:
-                                    for inter_f in funct_def_info:
-                                        if call_name in funct_def_info[inter_f]["functions"].keys():
+                                    for inter_f in function_definition_info:
+                                        if call_name in function_definition_info[inter_f]["functions"].keys():
                                             # if we are in a nested call
                                             if type == 3:
                                                 for nested_f in additional_info:
@@ -769,19 +898,22 @@ class CodeInspection:
                                                         renamed = 1
                                                         if class_name:
                                                             renamed_calls.append(self.fileInfo[
-                                                                                     "fileNameBase"] + "." + class_name + "." + nested_f + "." + inter_f + "." + call_name)
+                                                                                 "fileNameBase"] + "." + class_name
+                                                                                 + "." + nested_f + "." + inter_f + "."
+                                                                                 + call_name)
                                                             break
                                                         else:
                                                             renamed_calls.append(
-                                                                self.fileInfo[
-                                                                    "fileNameBase"] + "." + nested_f + "." + inter_f + "." + call_name)
+                                                                self.fileInfo["fileNameBase"] + "." + nested_f + "." +
+                                                                inter_f + "." + call_name)
                                                             break
                                             # otherwise
                                             else:
                                                 renamed = 1
                                                 if class_name:
-                                                    renamed_calls.append(self.fileInfo[
-                                                                             "fileNameBase"] + "." + class_name + "." + inter_f + "." + call_name)
+                                                    renamed_calls.append(self.fileInfo["fileNameBase"] +
+                                                                         "." + class_name + "." + inter_f +
+                                                                         "." + call_name)
                                                     break
                                                 else:
                                                     renamed_calls.append(
@@ -796,8 +928,8 @@ class CodeInspection:
                                         if module_call_name in classes_info and rest_call_name in \
                                                 classes_info[module_call_name]["methods"].keys():
                                             renamed = 1
-                                            renamed_calls.append(self.fileInfo[
-                                                                     "fileNameBase"] + "." + module_call_name + "." + rest_call_name)
+                                            renamed_calls.append(self.fileInfo["fileNameBase"] + "." + module_call_name
+                                                                 + "." + rest_call_name)
                                         elif module_call_name in classes_info:
                                             renamed = self._dfs(classes_info[module_call_name]["extend"],
                                                                 rest_call_name,
@@ -817,16 +949,17 @@ class CodeInspection:
                                             renamed_calls.append(call_name)
                                         else:
                                             pass
-            funct_def_info[funct]["calls"] = renamed_calls
+            function_definition_info[funct]["calls"] = renamed_calls
 
-            if "functions" in funct_def_info[funct]:
-                funct_def_info[funct]["functions"] = self._fill_call_name(funct_def_info[funct]["functions"],
-                                                                          classes_info, class_name, extend, type=3,
-                                                                          additional_info=funct_def_info)
-        return funct_def_info
+            if "functions" in function_definition_info[funct]:
+                function_definition_info[funct]["functions"] = self._fill_call_name(
+                    function_definition_info[funct]["functions"],
+                    classes_info, class_name, extend, type=3,
+                    additional_info=function_definition_info)
+        return function_definition_info
 
     def _get_ids(self, elt):
-        """_get_ids extracts identifiers if present. 
+        """_get_ids extracts identifiers if present.
          If not return None
         :param self self: represent the instance of the class
         :param ast.node elt: AST node
@@ -857,7 +990,7 @@ class CodeInspection:
         """_formatFlow reformats the control flow output
         as a text.
         :param self self: represent the instance of the class
-        :param cfg_graph s: control flow graph 
+        :param cfg_graph s: control flow graph
         :return str: cfg formated as a text
         """
 
@@ -919,10 +1052,10 @@ def create_output_dirs(output_dir, control_flow):
        to save the results. ControlFlow to save the
        cfg information (txt and PNG) and JsonFiles to
        save the aggregated json file with all the information
-       extracted per file. 
+       extracted per file.
        :param str output_dir: Output Directory in which the new subdirectories
                           will be created.
-       :param bool control_flow: Boolean to indicate the generation of the control flow 
+       :param bool control_flow: Boolean to indicate the generation of the control flow
        """
 
     if control_flow:
