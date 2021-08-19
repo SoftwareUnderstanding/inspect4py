@@ -1,0 +1,14 @@
+Click
+bs4
+click-option-group
+markdown
+matplotlib
+nltk
+numpy
+pandas
+rdflib
+rdflib-jsonld
+requests
+requests
+scikit-learn==0.21.2
+textblob
