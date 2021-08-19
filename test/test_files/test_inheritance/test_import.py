@@ -1,5 +1,5 @@
-from test_classes import *
-from test_functions import *
+from .test_classes import *
+from .test_functions import *
 
 class MyClass_D:
     def __init__(self):
