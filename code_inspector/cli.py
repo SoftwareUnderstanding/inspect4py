@@ -1,6 +1,7 @@
 import json
 import tokenize
-
+import types
+import builtins
 import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as doc_parse
@@ -20,6 +21,9 @@ This script requires `ast`, `cdmcfparser` and `docsting_parse`
 be installed within the Python environment you are running 
 this script in.
 """
+
+builtin_function_names = [name for name, obj in vars(builtins).items() 
+                          if isinstance(obj, types.BuiltinFunctionType)]
 
 
 class CodeInspection:
@@ -241,13 +245,16 @@ class CodeInspection:
                     target_name = self._get_func_name(target)
                     body_store_vars[target_name] = body_name
 
+                #skipping looking dynamic calls into imported moudules/libraries and built-in-functions
+                skip = self._skip_dynamic_calls(body_name) 
                 # new: dynamic functions
-                dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
-                    b_as.value.args, \
-                    body_name, dynamic_func, \
-                    remove_calls, dynamic_methods, remove_methods_calls, \
-                    self.funcsInfo, \
-                    self.classesInfo, body_store_vars)
+                if not skip:
+                    dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                        b_as.value.args, \
+                        body_name, dynamic_func, \
+                        remove_calls, dynamic_methods, remove_methods_calls, \
+                        self.funcsInfo, \
+                        self.classesInfo, body_store_vars)
 
         for b_ex in body_expr:
             if isinstance(b_ex.value, ast.Call):
@@ -257,13 +264,17 @@ class CodeInspection:
                 # new: check if we have calls in the arguments of the function
                 body_calls = self._get_arguments_calls(b_ex.value.args, body_calls)
 
+                #skipping looking dynamic calls into imported moudules/libraries and built-in-functions
+                skip = self._skip_dynamic_calls(body_name) 
+                   
                 # new: dynamic functions
-                dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
-                    b_ex.value.args, \
-                    body_name, dynamic_func, \
-                    remove_calls, dynamic_methods, remove_methods_calls, \
-                    self.funcsInfo, \
-                    self.classesInfo, body_store_vars)
+                if not skip:
+                    dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                        b_ex.value.args, \
+                        body_name, dynamic_func, \
+                        remove_calls, dynamic_methods, remove_methods_calls, \
+                        self.funcsInfo, \
+                        self.classesInfo, body_store_vars)
 
                 # NEW
         # remove the previous call, because the dynamic calls have been already added.
@@ -509,6 +520,37 @@ class CodeInspection:
 
         return funcs_info
 
+    def _skip_dynamic_calls(self, func_name_id):
+        skip=0
+        if "." in func_name_id:
+            func_name=func_name_id.split(".")[0]
+        else:
+            func_name= func_name_id
+      
+        try: 
+            for built_func in __builtins__.__dict__ :
+                if func_name == built_func or func_name_id == built_func:
+                    skip = 1
+                    break
+        except:
+            for built_func in builtin_function_names:
+                if func_name == built_func or func_name_id == built_func:
+                    skip = 1
+
+        if not skip:
+            for dep in self.depInfo:
+                if dep["import"] == func_name or dep["import"]==func_name_id:
+                    skip = 1
+                    break
+                elif dep["alias"]:
+                    if dep["alias"] == func_name or dep["alias"] == func_name_id:
+                        skip = 1
+                        break
+                else:
+                    pass
+        return skip
+ 
+
     def _check_dynamic_calls(self, functions_defintions, funcs_info, classes_info, type=1):
         # type 1- from functions; type 2 from classes
         dynamic_func = 0
@@ -519,16 +561,18 @@ class CodeInspection:
             funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
             for node in funcs_calls:
                 func_name_id = self._get_func_name(node.func)
-                if type == 1:
-                    store_vars = funcs_info[f.name]["store_vars_calls"]
-                else:
-                    store_vars = {}
-                    # store_vars=classesInfo[f.name]["store_vars_calls"]
-                dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
-                    node.args, func_name_id, \
-                    dynamic_func, remove_calls, \
-                    dynamic_methods, remove_methods_calls, \
-                    funcs_info, classes_info, store_vars)
+                skip = self._skip_dynamic_calls(func_name_id) 
+                if not skip:
+                    if type == 1:
+                        store_vars = funcs_info[f.name]["store_vars_calls"]
+                    else:
+                        store_vars = {}
+                        # store_vars=classesInfo[f.name]["store_vars_calls"]
+                    dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
+                        node.args, func_name_id, \
+                        dynamic_func, remove_calls, \
+                        dynamic_methods, remove_methods_calls, \
+                        funcs_info, classes_info, store_vars)
 
                 # NEW
         # remove the previous call, because the dynamic calls have been already added.
@@ -572,6 +616,7 @@ class CodeInspection:
                 f_name = store_vars[f_name]
         else:
             f_name = f_name_id
+
         for f_arg in f_args:
             call_name = self._get_func_name(f_arg)
             if call_name:
@@ -595,7 +640,7 @@ class CodeInspection:
                             remove_methods_calls.append([f_name, f_name_rest])
                             found = 1
                         except:
-                            print("Error when processing dependency: %s" % f_name)
+                            print("Error when processing dependency-1: %s" % f_name)
 
                 else:
                     # 2nd, check if we find it the call_name
@@ -624,7 +669,7 @@ class CodeInspection:
                                         remove_methods_calls.append([f_name, f_name_rest])
                                         found = 1
                                     except:
-                                        print("Error when processing dependency: %s" % f_name)
+                                        print("Error when processing dependency-2: %s" % f_name)
                             else:
                                 try:
                                     funcs_info[f_name]["calls"].append(call_name)
@@ -658,7 +703,7 @@ class CodeInspection:
                                             remove_methods_calls.append([f_name, f_name_rest])
                                             found = 1
                                         except:
-                                            print("Error when processing dependency: %s" % f_name)
+                                            print("Error when processing dependency-3: %s" % f_name)
                                 else:
                                     try:
                                         funcs_info[f_name]["calls"].append(dep["import"] + "." + call_name)
@@ -674,7 +719,7 @@ class CodeInspection:
                                             remove_methods_calls.append([f_name, f_name_rest])
                                             found = 1
                                         except:
-                                            print("Error when processing dependency: %s" % f_name)
+                                            print("Error when processing dependency-4: %s" % f_name)
                             else:
                                 pass
 
