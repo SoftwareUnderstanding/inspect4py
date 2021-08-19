@@ -256,7 +256,16 @@ class CodeInspection:
                         check_body_name=body_name
                     #print("1.check body_name %s , body_store_vars %s" %(check_body_name, body_store_vars))
                     if check_body_name in body_store_vars.keys() and not skip:
-                        skip= self._skip_dynamic_calls(body_store_vars[check_body_name])
+                        var_name= body_store_vars[check_body_name]
+                        skip= self._skip_dynamic_calls(var_name)
+                    else:
+                        var_name=""
+
+                if not skip:
+                    if body_name not in self.funcsInfo.keys() and check_body_name not in self.funcsInfo.keys() and var_name not in self.funcsInfo.keys():
+                        if body_name not in self.classesInfo and check_body_name not in self.classesInfo.keys() and var_name not in self.classesInfo.keys():
+                            #print("1.skipping body_name %s" %body_name)
+                            skip = 1
 
                 # new: dynamic functions
                 if not skip:
@@ -284,9 +293,18 @@ class CodeInspection:
                         check_body_name=body_name.split(".")[0]
                     else:
                         check_body_name=body_name
-                    #print("2.check body_name %s , body_store_vars %s" %(check_body_name, body_store_vars))
+
                     if check_body_name in body_store_vars.keys() and not skip:
-                        skip= self._skip_dynamic_calls(body_store_vars[check_body_name])
+                        var_name= body_store_vars[check_body_name]
+                        skip= self._skip_dynamic_calls(var_name)
+                    else:
+                        var_name=""
+
+                if not skip:
+                    if body_name not in self.funcsInfo.keys() and check_body_name not in self.funcsInfo.keys() and var_name not in self.funcsInfo.keys():
+                        if body_name not in self.classesInfo and check_body_name not in self.classesInfo.keys() and var_name not in self.classesInfo.keys():
+                            #print("2.skipping body_name %s" %body_name)
+                            skip = 1
                    
                 # new: dynamic functions
                 if not skip:
@@ -604,14 +622,22 @@ class CodeInspection:
                         check_func_name_id=func_name_id
 
                     if check_func_name_id in store_vars.keys():
-                        skip= self._skip_dynamic_calls(store_vars[check_func_name_id])
-           
-                    if not skip:
-                        dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
-                            node.args, func_name_id, \
-                            dynamic_func, remove_calls, \
-                            dynamic_methods, remove_methods_calls, \
-                            funcs_info, classes_info, store_vars)
+                        var_name=store_vars[check_func_name_id]
+                        skip= self._skip_dynamic_calls(var_name)
+                    else:
+                        var_name=""
+
+                if not skip:
+                        if func_name_id not in funcs_info.keys() and check_func_name_id not in funcs_info.keys() and var_name not in funcs_info.keys():
+                            if func_name_id not in classes_info and check_func_name_id not in classes_info.keys() and var_name not in classes_info.keys():
+                                #print("3.skipping func_name_id %s" %func_name_id)
+                                skip = 1
+                if not skip:
+                    dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
+                        node.args, func_name_id, \
+                        dynamic_func, remove_calls, \
+                        dynamic_methods, remove_methods_calls, \
+                        funcs_info, classes_info, store_vars)
 
                 # NEW
         # remove the previous call, because the dynamic calls have been already added.
