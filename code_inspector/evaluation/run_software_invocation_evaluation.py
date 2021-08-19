@@ -19,7 +19,7 @@ benchmark_summary = "../../evaluation/software_invocation/evaluation_summary.csv
 def extract_types_from_response(response_data):
     """
     This function extracts the list of types found by code_inspector from the response.
-    :response_data json response from code_inspector
+    :param response_data json response from code_inspector
     """
     types = []
     software_info = {}
