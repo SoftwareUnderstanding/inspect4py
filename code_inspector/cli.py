@@ -254,6 +254,7 @@ class CodeInspection:
                         check_body_name=body_name.split(".")[0]
                     else:
                         check_body_name=body_name
+                    #print("1.check body_name %s , body_store_vars %s" %(check_body_name, body_store_vars))
                     if check_body_name in body_store_vars.keys() and not skip:
                         skip= self._skip_dynamic_calls(body_store_vars[check_body_name])
 
@@ -283,6 +284,7 @@ class CodeInspection:
                         check_body_name=body_name.split(".")[0]
                     else:
                         check_body_name=body_name
+                    #print("2.check body_name %s , body_store_vars %s" %(check_body_name, body_store_vars))
                     if check_body_name in body_store_vars.keys() and not skip:
                         skip= self._skip_dynamic_calls(body_store_vars[check_body_name])
                    
@@ -542,6 +544,7 @@ class CodeInspection:
     def _skip_dynamic_calls(self, func_name_id):
         custom_list=["self", "str", "type", "super"]
         skip=0
+
         if "." in func_name_id:
             func_name=func_name_id.split(".")[0]
         else:
@@ -675,7 +678,7 @@ class CodeInspection:
                             remove_methods_calls.append([f_name, f_name_rest])
                             found = 1
                         except:
-                            print("Error when processing dependency-1: %s" % f_name)
+                            print("Error when processing dependency-1: %s call name: %s" % (f_name, call_name))
 
                 else:
                     # 2nd, check if we find it the call_name
@@ -703,8 +706,7 @@ class CodeInspection:
                                         remove_methods_calls.append([f_name, f_name_rest])
                                         found = 1
                                     except:
-                                        print("call_name %s" %call_name)
-                                        print("Error when processing dependency-2: %s" % f_name)
+                                        print("Error when processing dependency-2: %s call name: %s" % (f_name, call_name))
                             else:
                                 try:
                                     funcs_info[f_name]["calls"].append(call_name)
@@ -718,7 +720,7 @@ class CodeInspection:
                                         remove_methods_calls.append([f_name, f_name_rest])
                                         found = 1
                                     except:
-                                        print("Error when processing dependency-3: %s" % f_name)
+                                        print("Error when processing dependency-3: %s call name: %s" % (f_name, call_name))
 
                         elif dep["alias"]:
                             if dep["alias"] == module_call_name:
@@ -736,7 +738,7 @@ class CodeInspection:
                                             remove_methods_calls.append([f_name, f_name_rest])
                                             found = 1
                                         except:
-                                            print("Error when processing dependency-4: %s" % f_name)
+                                            print("Error when processing dependency-4: %s call name: %s" % (f_name, call_name))
                                 else:
                                     try:
                                         funcs_info[f_name]["calls"].append(dep["import"] + "." + call_name)
@@ -751,7 +753,7 @@ class CodeInspection:
                                             remove_methods_calls.append([f_name, f_name_rest])
                                             found = 1
                                         except:
-                                            print("Error when processing dependency-5: %s" % f_name)
+                                            print("Error when processing dependency-5: %s call_name: %s" % (f_name, call_name))
                             else:
                                 pass
 
