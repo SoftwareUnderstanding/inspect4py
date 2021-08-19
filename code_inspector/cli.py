@@ -633,7 +633,6 @@ class CodeInspection:
                         found = 1
                     except:
                         try:
-                            # TO ROSA: this is in try/catch because it yields an error (double check)
                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                 self.fileInfo["fileNameBase"] + "." + call_name)
                             dynamic_methods += 1
@@ -662,7 +661,6 @@ class CodeInspection:
                                     found = 1
                                 except:
                                     try:
-                                        # TO ROSA: this is in try/catch because it yields an error (double check)
                                         classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                             dep["from_module"] + "." + call_name)
                                         dynamic_methods += 1
@@ -678,7 +676,6 @@ class CodeInspection:
                                     found = 1
                                 except:
                                     try:
-                                        # TO ROSA: this is in try/catch because it yields an error (double check)
                                         classes_info[f_name]["methods"][f_name_rest]["calls"].append(call_name)
                                         dynamic_methods += 1
                                         remove_methods_calls.append([f_name, f_name_rest])
@@ -696,7 +693,6 @@ class CodeInspection:
                                         found = 1
                                     except:
                                         try:
-                                            # TO ROSA: this is in try/catch because it yields an error (double check)
                                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                 dep["from_module"] + "." + dep["import"])
                                             dynamic_methods += 1
@@ -712,7 +708,6 @@ class CodeInspection:
                                         found = 1
                                     except:
                                         try:
-                                            # TO ROSA: this is in try/catch because it yields an error (double check)
                                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                 dep["import"] + "." + call_name)
                                             dynamic_methods += 1
