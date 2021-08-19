@@ -540,7 +540,7 @@ class CodeInspection:
         return funcs_info
 
     def _skip_dynamic_calls(self, func_name_id):
-
+        custom_list=["self", "str", "type", "super"]
         skip=0
         if "." in func_name_id:
             func_name=func_name_id.split(".")[0]
@@ -569,6 +569,11 @@ class CodeInspection:
                         break
                 else:
                     pass
+        if not skip:
+            for c_list in custom_list:
+                if c_list == func_name_id or c_list == func_name:
+                    skip = 1
+                    break
         return skip
  
 
@@ -698,6 +703,7 @@ class CodeInspection:
                                         remove_methods_calls.append([f_name, f_name_rest])
                                         found = 1
                                     except:
+                                        print("call_name %s" %call_name)
                                         print("Error when processing dependency-2: %s" % f_name)
                             else:
                                 try:
