@@ -1,7 +1,7 @@
 import unittest
 import shutil
 from code_inspector.cli import *
-from code_inspector import cli
+from code_inspector import cli, utils
 
 
 class Test(unittest.TestCase):
@@ -236,7 +236,7 @@ class Test(unittest.TestCase):
                                     call_list, control_flow, directory_tree, software_invocation)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
-        assert current_type == "service"
+        assert current_type[0]["type"] == "service"
 
     def test_package(self):
         input_path = "./test_files/somef"
@@ -253,7 +253,7 @@ class Test(unittest.TestCase):
                                     call_list, control_flow, directory_tree, software_invocation)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
-        assert current_type == "package"
+        assert current_type[0]["type"] == "package"
 
     def test_library(self):
         input_path = "./test_files/pylops"
@@ -270,7 +270,7 @@ class Test(unittest.TestCase):
                                     call_list, control_flow, directory_tree, software_invocation)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
-        assert current_type == "library"
+        assert current_type[0]["type"] == "library"
 
     def test_script(self):
         input_path = "./test_files/BoostingMonocularDepth"
@@ -287,7 +287,7 @@ class Test(unittest.TestCase):
                                     call_list, control_flow, directory_tree, software_invocation)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
-        assert current_type == "script"
+        assert current_type[0]["type"] == "script"
 
 
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
@@ -355,7 +355,7 @@ def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_fil
             # Order and rank the software invocation files found
 
             # Extract the first for software type.
-            dir_info["software_type"] = extract_software_type(soft_invocation_info_list)
+            dir_info["software_type"] = rank_software_invocation(soft_invocation_info_list)
     return dir_info
 
 

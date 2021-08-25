@@ -248,25 +248,16 @@ class CodeInspection:
                     body_store_vars[target_name] = body_name
 
                 # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                skip = self._skip_dynamic_calls(body_name)
+                if "." in body_name:
+                     check_body_name=body_name.split(".")[0]
+                else:
+                     check_body_name=body_name
+                if check_body_name in body_store_vars.keys():
+                    var_name= body_store_vars[check_body_name]
+                else:
+                    var_name=""
 
-                if not skip:
-                    if "." in body_name:
-                        check_body_name = body_name.split(".")[0]
-                    else:
-                        check_body_name = body_name
-                    # print("1.check body_name %s , body_store_vars %s" %(check_body_name, body_store_vars))
-                    if check_body_name in body_store_vars.keys() and not skip:
-                        var_name = body_store_vars[check_body_name]
-                        skip = self._skip_dynamic_calls(var_name)
-                    else:
-                        var_name = ""
-
-                if not skip:
-                    if body_name not in self.funcsInfo.keys() and check_body_name not in self.funcsInfo.keys() and var_name not in self.funcsInfo.keys():
-                        if body_name not in self.classesInfo and check_body_name not in self.classesInfo.keys() and var_name not in self.classesInfo.keys():
-                            # print("1.skipping body_name %s" %body_name)
-                            skip = 1
+                skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name, var_name)
 
                 # new: dynamic functions
                 if not skip:
@@ -286,25 +277,17 @@ class CodeInspection:
                 body_calls = self._get_arguments_calls(b_ex.value.args, body_calls)
 
                 # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                skip = self._skip_dynamic_calls(body_name)
+                if "." in body_name:
+                    check_body_name = body_name.split(".")[0]
+                else:
+                    check_body_name = body_name
 
-                if not skip:
-                    if "." in body_name:
-                        check_body_name = body_name.split(".")[0]
-                    else:
-                        check_body_name = body_name
+                if check_body_name in body_store_vars.keys():
+                    var_name = body_store_vars[check_body_name]
+                else:
+                    var_name = ""
 
-                    if check_body_name in body_store_vars.keys() and not skip:
-                        var_name = body_store_vars[check_body_name]
-                        skip = self._skip_dynamic_calls(var_name)
-                    else:
-                        var_name = ""
-
-                if not skip:
-                    if body_name not in self.funcsInfo.keys() and check_body_name not in self.funcsInfo.keys() and var_name not in self.funcsInfo.keys():
-                        if body_name not in self.classesInfo and check_body_name not in self.classesInfo.keys() and var_name not in self.classesInfo.keys():
-                            # print("2.skipping body_name %s" %body_name)
-                            skip = 1
+                skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name, var_name)
 
                 # new: dynamic functions
                 if not skip:
@@ -559,42 +542,12 @@ class CodeInspection:
 
         return funcs_info
 
-    def _skip_dynamic_calls(self, func_name_id):
-        custom_list = ["self", "str", "type", "super"]
+    def _skip_dynamic_calls(self, funcs_info, classes_info, check_name, name, var_name):
         skip = 0
+        if name not in funcs_info.keys() and check_name not in funcs_info.keys() and var_name not in funcs_info.keys():
+            if name not in classes_info and check_name not in classes_info.keys() and var_name not in classes_info.keys():
+                skip = 1
 
-        if "." in func_name_id:
-            func_name = func_name_id.split(".")[0]
-        else:
-            func_name = func_name_id
-
-        try:
-            for built_func in __builtins__.__dict__:
-                if func_name == built_func or func_name_id == built_func:
-                    skip = 1
-                    break
-        except:
-            for built_func in builtin_function_names:
-                if func_name == built_func or func_name_id == built_func:
-                    skip = 1
-                    break
-
-        if not skip:
-            for dep in self.depInfo:
-                if dep["import"] == func_name or dep["import"] == func_name_id:
-                    skip = 1
-                    break
-                elif dep["alias"]:
-                    if dep["alias"] == func_name or dep["alias"] == func_name_id:
-                        skip = 1
-                        break
-                else:
-                    pass
-        if not skip:
-            for c_list in custom_list:
-                if c_list == func_name_id or c_list == func_name:
-                    skip = 1
-                    break
         return skip
 
     def _check_dynamic_calls(self, functions_defintions, funcs_info, classes_info, type=1):
@@ -606,34 +559,31 @@ class CodeInspection:
         for f in functions_defintions:
             funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
             for node in funcs_calls:
+                skip = 0
                 func_name_id = self._get_func_name(node.func)
-                skip = self._skip_dynamic_calls(func_name_id)
-                check_func_name_id = ""
-                var_name = ""
-                store_vars = {}
-                if not skip:
-                    if type == 1:
-                        store_vars = funcs_info[f.name]["store_vars_calls"]
+                if type == 1:
+                     store_vars = funcs_info[f.name]["store_vars_calls"]
+                else:
+                     store_vars = {}
+                     # store_vars=classesInfo[f.name]["store_vars_calls"]
 
-                    if "." in func_name_id:
-                        check_func_name_id = func_name_id.split(".")[0]
-                    else:
-                        check_func_name_id = func_name_id
+                if "." in func_name_id:
+                    check_func_name_id=func_name_id.split(".")[0]
+                else:
+                    check_func_name_id=func_name_id
 
-                    if check_func_name_id in store_vars.keys():
-                        var_name = store_vars[check_func_name_id]
-                        skip = self._skip_dynamic_calls(var_name)
+                if check_func_name_id in store_vars.keys():
+                    var_name=store_vars[check_func_name_id]
+                else:
+                    var_name=""
 
-                if not skip:
-                    if func_name_id not in funcs_info.keys() and check_func_name_id not in funcs_info.keys() and var_name not in funcs_info.keys():
-                        if func_name_id not in classes_info and check_func_name_id not in classes_info.keys() and var_name not in classes_info.keys():
-                            # print("3.skipping func_name_id %s" %func_name_id)
-                            skip = 1
+                skip= self._skip_dynamic_calls(funcs_info, classes_info, check_func_name_id, func_name_id, var_name)
+
                 if not skip:
                     dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
-                        node.args, func_name_id,
-                        dynamic_func, remove_calls,
-                        dynamic_methods, remove_methods_calls,
+                        node.args, func_name_id, \
+                        dynamic_func, remove_calls, \
+                        dynamic_methods, remove_methods_calls, \
                         funcs_info, classes_info, store_vars)
 
         # NEW
