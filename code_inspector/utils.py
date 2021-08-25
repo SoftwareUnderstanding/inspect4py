@@ -506,26 +506,52 @@ def service_in_set(data, server_dependencies, elem, software_invocation_info, ha
     return flag_service, software_invocation_info
 
 
-def extract_software_type(soft_invocation_info_list):
+def rank_software_invocation(soft_invocation_info_list):
     """
-    Function to extract the main software type out of all invocation possibilities.
-    The heuristic is as follows:
-        - if the software component is a package or library, we return this as a priority.
-        - services are prioritized over scripts
-        - if scripts remain, only scripts with main/body are returned (we resolve dependencies to select the main ones)
-    :param soft_invocation_info_list JSON list with the found ways to invoke this software components
+    Function to create a ranking over the different ways of executing a program.
+    If two elements have the same position in the ranking, it means that there is no priority among them.
+    Heuristic to order the invocation list is as follows, in decreasing order of prioritization:
+        - If package or library is detected, this will be always first.
+        - If something (script or service) is mentioned in the readme file, it is considered a priority.
+        - Services are prioritized over scripts
+        - Scripts with main are prioritized over script with body.
+        - Scripts with body are prioritized over scripts with no body.
+        TO DOs:
+        - If a script imports other scripts, it gets prioritized (TO DO when examples are available)
+        - If several scripts are available, those at root level are prioritized (TO DO when examples are available)
+    :param soft_invocation_info_list JSON list with the different ways to execute a program.
     """
-    services = []
-    scripts = []
+    # Calculate score for every entry in the list
     for entry in soft_invocation_info_list:
+        score = 0
         if "library" in entry["type"] or "package" in entry["type"]:
-            return entry["type"]
+            score += 100
+        try:
+            if entry["mentioned_in_readme"]:
+                score += 10
+        except:
+            pass
         if "service" in entry["type"]:
-            services.append(entry)
-        if "script" in entry["type"]:  # It does not matter whether it's with or without main here, we only return type
-            scripts.append(entry)
-    if len(services) > 0:
-        return "service"
-    if len(scripts) > 0:
-        return "script"
-    return "not found"
+            score += 5
+        try:
+            if "main" in entry["has_structure"]:
+                score += 2
+            if "body" in entry["has_structure"]:
+                score += 1
+        except:
+            pass
+        entry["ranking"] = score
+
+    # Reorder vector and assign ranking
+    soft_invocation_info_list.sort(key=lambda x: x["ranking"], reverse=True)
+
+    # Replace score by number (but keep those with same score with the same ranking)
+    position = 1
+    previous_score = soft_invocation_info_list[0]["ranking"]
+    for entry in soft_invocation_info_list:
+        current_score = entry["ranking"]
+        if previous_score > current_score:  # Ordered in descending order
+            position += 1
+            previous_score = current_score
+        entry["ranking"] = position
+    return soft_invocation_info_list
