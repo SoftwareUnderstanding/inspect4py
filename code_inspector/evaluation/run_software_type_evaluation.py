@@ -59,6 +59,7 @@ def main():
     repo_path = "../../../test_repos/"
     benchmark_path = "../../evaluation/software_type/software_type_benchmark.csv"
     benchmark_summary = "../../evaluation/software_type/evaluation_summary.csv"
+    benchmark_summary_part_2= "../../evaluation/software_type/evaluation_summary_part2.csv"
 
     benchmark_df = pd.read_csv(benchmark_path)
 
@@ -77,7 +78,11 @@ def main():
         stdout, stderr = proc.communicate()
 
     repos_with_error = []
+    repos_with_error_script = []
     num_repos = 0
+    num_entries_script_service = 0
+    total_precision_scripts = 0
+    total_recall_scripts = 0
     for dir_name in os.listdir(repo_path):
         print("######## Processing: " + dir_name)  # repo_path
         cmd = 'code_inspector -i ' + repo_path + dir_name + " -o ../../output_dir/ -si"
@@ -96,10 +101,10 @@ def main():
         current_type = ""
         if 'software_type' in data.keys() and data['software_type']:
             current_type = data['software_type']
-
         flag = 0
         for index, row in benchmark_df.iterrows():
             if dir_name == row["repository"].split("/")[-1].strip():
+                # First evaluation: type comparison
                 type_benchmark = return_type(row["label"].strip())
                 type_predicted = return_type(current_type)
                 print("Label: %s; Predicted: %s" % (type_benchmark, type_predicted))
@@ -112,15 +117,63 @@ def main():
                     # If they are not the same, we annotate the error
                     if type_predicted != type_benchmark:
                         repos_with_error.append(dir_name)
+
+                # Second evaluation (part 1): Precision/recall for scripts and services:
+                # Do we detect all the scripts that have been annotated (and vice versa)?
+                priority_1 = []
+                priority_2 = []
+                priority_3 = []
+                try:
+                    priority_1 = row["main_file_paths_1"].split(";")
+                    priority_2 = row["main_file_paths_2"].split(";")
+                    priority_3 = row["main_file_paths_3"].split(";")
+                except:
+                    pass
+                # precision/recall are calculated per entry, and averaged at the end.
+                if len(priority_1) > 0:
+                    num_entries_script_service += 1
+                    tp_entry = 0
+                    software_invocation_entries = data["software_invocation"]
+                    for entry in software_invocation_entries:
+                        try:
+                            entry_file = entry["run"].split(dir_name+"/")[-1]
+                        except:
+                            try:
+                                entry_file = entry["import"].split(dir_name + "/")[-1]
+                            except:
+                                print("Entry does not have import or run keys")
+                        # is the file found in the target list?
+                        # Here we don't care about the order
+                        if entry_file in priority_1 or entry_file in priority_2 or entry_file in priority_3:
+                            tp_entry += 1
+                    # software invocation entries contain all the predictions from code_inspector
+                    precision_entry = tp_entry / len(software_invocation_entries)
+                    # the priority lists contain all annotated scripts
+                    recall_entry = tp_entry / (len(priority_1) + len(priority_2) + len(priority_3))
+                    if precision_entry < 1 or recall_entry < 1:
+                        repos_with_error_script.append(dir_name + "P:" + str(precision_entry) + ";R:" +
+                                                       str(recall_entry))
+                    total_precision_scripts += precision_entry
+                    total_recall_scripts += recall_entry
+                    # Second evaluation (part 2): Discounted Cumulative Gain between obtained ranking
+                    # and labeled ranking
+                    # TO DO
                 flag = 1
                 num_repos += 1
+
         if not flag:
             print("--> ATTENTION! %s NOT FOUND in CSV (may not be a problem) " % dir_name)
 
-    # Print confusion matrix
+    # Print confusion matrix (software type evaluation)
     print_confusion_matrix(confusion_matrix)
 
-    # Create evaluation_summary.
+    # Print average precision/recall for scripts and services detection
+    average_precision_scripts = total_precision_scripts / num_entries_script_service
+    average_recall_scripts = total_recall_scripts / num_entries_script_service
+    print("Average precision for scripts: ", average_precision_scripts)
+    print("Average recall for scripts: ", average_recall_scripts)
+
+    # Create evaluation_summary (software type evaluation)
     write_header = False
     if not os.path.exists(benchmark_summary):
         write_header = True
@@ -155,8 +208,24 @@ def main():
                          p_avg, r_avg, repos_with_error
                          ])
 
-    # Second evaluation: Ranking
-    # TO DO
+        # Write second eval
+        write_header = False
+        if not os.path.exists(benchmark_summary_part_2):
+            write_header = True
+
+        with open(benchmark_summary_part_2, 'a') as summary_part_2:
+            writer = csv.writer(summary_part_2, delimiter=',')
+            if write_header:
+                writer.writerow(
+                    ['date', '#repositories',
+                     'precision_avg', 'recall_avg',
+                     'errors'])
+            date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+            writer.writerow([date, num_entries_script_service,
+                             average_precision_scripts,
+                             average_recall_scripts,
+                             repos_with_error_script])
 
 
 if __name__ == "__main__":
