@@ -150,6 +150,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                 if elem['body']['calls']:
                     body_only_files.append(elem)
 
+
     m_secondary = [0] * len(main_files)
     flag_script_main = 0
     # 3. Exploration for main scripts
@@ -157,7 +158,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         m_calls = find_file_calls(main_files[m], call_list)
         # HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
         m_imports = extract_relations(main_files[m], m_calls, main_files, call_list)
-
+     
         for m_i in m_imports:
             m_secondary[main_files.index(m_i)] = 1
 
@@ -370,7 +371,8 @@ def find_file_calls(file_name, call_list):
 def find_module_calls(module, call_list):
     for dir in call_list:
         for elem in call_list[dir]:
-            if module in elem:
+            if "/"+module+"." in elem:
+                #print("---MODULE %s, elem %s, giving call_list[%s][%s]" %(module, elem, dir, elem))
                 return call_list[dir][elem]
 
             # DFS algorithm - Allowing up to 2 levels of depth.
@@ -388,13 +390,12 @@ def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
     #### 
 
     if base in call and m_imports.count(file) == 0 and orig_base not in call:
-        # print("--> I found %s in %s" %(base, call))
         m_imports.append(file)
         return 1
     elif orig_base in call:
         return 0
 
-    elif level < level_depth:
+    elif level < level_depth and call!="":
         m_calls_extern = {}
         module_base = call.split(".")[0]
         moudule_base = module_base + "."
