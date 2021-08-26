@@ -155,6 +155,9 @@ def main():
                          p_avg, r_avg, repos_with_error
                          ])
 
+    # Second evaluation: Ranking
+    # TO DO
+
 
 if __name__ == "__main__":
     main()

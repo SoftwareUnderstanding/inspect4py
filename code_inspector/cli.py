@@ -1241,6 +1241,8 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                 # Extract the first for software type.
                 if len(soft_invocation_info_list) > 0:
                     dir_info["software_type"] = soft_invocation_info_list[0]["type"]
+                else:
+                    dir_info["software_type"] = "not found"
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:

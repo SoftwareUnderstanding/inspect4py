@@ -521,6 +521,8 @@ def rank_software_invocation(soft_invocation_info_list):
         - If several scripts are available, those at root level are prioritized (TO DO when examples are available)
     :param soft_invocation_info_list JSON list with the different ways to execute a program.
     """
+    if len(soft_invocation_info_list) == 0:
+        return soft_invocation_info_list
     # Calculate score for every entry in the list
     for entry in soft_invocation_info_list:
         score = 0
