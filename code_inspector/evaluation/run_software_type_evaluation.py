@@ -84,7 +84,7 @@ def main():
     total_precision_scripts = 0
     total_recall_scripts = 0
     for dir_name in os.listdir(repo_path):
-        print("######## Processing: " + dir_name)  # repo_path
+        print("######## Processing: " + dir_name + " Num repo:" + str(num_repos))  # repo_path
         cmd = 'code_inspector -i ' + repo_path + dir_name + " -o ../../output_dir/ -si"
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
