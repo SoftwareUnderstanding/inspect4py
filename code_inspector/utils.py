@@ -153,23 +153,38 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
 
     m_secondary = [0] * len(main_files)
     flag_script_main = 0
+
+    ##this list (of lists) stores the mains that each main import
+    import_mains = []
+   
+    ##this list (of lists) stores the mains that each main is imported by
+    imported_by=[None]*len(main_files)
+
     # 3. Exploration for main scripts
     for m in range(0, len(main_files)):
         m_calls = find_file_calls(main_files[m], call_list)
         # HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
         m_imports = extract_relations(main_files[m], m_calls, main_files, call_list)
-     
+      
+        # storing those m_imports in the import_mains[m]
+        import_mains.append(m_imports)
+      
         for m_i in m_imports:
             m_secondary[main_files.index(m_i)] = 1
 
-    for m in range(0, len(main_files)):
-        # ONLY SELECT THE main files THAT ARE PRINCIPAL - WE CAN CHANGE THAT LATER
-        if not m_secondary[m]:
-            soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main",
-                         "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme}
+            if not imported_by[main_files.index(m_i)]:
+                imported_by[main_files.index(m_i)]=[]
+            imported_by[main_files.index(m_i)].append(main_files[m])
 
-            software_invocation_info.append(soft_info)
-            flag_script_main = 1
+        
+
+    for m in range(0, len(main_files)):
+        soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main",
+                    "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme, 
+                    "import_mains": import_mains[m], "imported_by": imported_by[m], "secondary": m_secondary[m] }
+
+        software_invocation_info.append(soft_info)
+        flag_script_main = 1
 
     # tests with main
     for t in range(0, len(test_files)):
