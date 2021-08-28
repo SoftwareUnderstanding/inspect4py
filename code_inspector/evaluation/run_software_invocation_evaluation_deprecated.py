@@ -1,6 +1,8 @@
 """
 Very simple class to test out the test_dir method.
 Note: this assumes that the ../../../test_repos/ repo exist.
+
+This file is deprecated. The run_software_type_evaluation.py is the most dated evaluation
 """
 import csv
 import os
