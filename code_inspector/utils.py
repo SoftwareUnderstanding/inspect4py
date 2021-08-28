@@ -157,7 +157,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     import_mains = []
    
     # this list (of lists) stores the mains that each main is imported by
-    imported_by=[None]*len(main_files)
+    imported_by = [None]*len(main_files)
 
     # 3. Exploration for main scripts
     for m in range(0, len(main_files)):
@@ -172,7 +172,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
             m_secondary[main_files.index(m_i)] = 1
 
             if not imported_by[main_files.index(m_i)]:
-                imported_by[main_files.index(m_i)]=[]
+                imported_by[main_files.index(m_i)] = []
             imported_by[main_files.index(m_i)].append(main_files[m])
 
     for m in range(0, len(main_files)):
@@ -187,7 +187,6 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         # Test files do not have help, they are usually run by themselves
         soft_info = {"type": "test", "run": "python " + test_files[t], "has_structure": "main",
                      "mentioned_in_readme": os.path.basename(os.path.normpath(test_files[t])) in readme}
-
         software_invocation_info.append(soft_info)
 
     flag_service_body = 0
@@ -529,7 +528,7 @@ def rank_software_invocation(soft_invocation_info_list):
         - Scripts with main are prioritized over script with body.
         - Scripts with body are prioritized over scripts with no body.
         TO DOs:
-        - If a script imports other scripts, it gets prioritized (TO DO when examples are available)
+        - If a script imports other scripts (or service), it gets prioritized (TO DO when examples are available)
         - If several scripts are available, those at root level are prioritized (TO DO when examples are available)
     :param soft_invocation_info_list JSON list with the different ways to execute a program.
     """

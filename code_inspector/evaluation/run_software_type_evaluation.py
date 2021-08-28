@@ -60,7 +60,9 @@ def main():
     repo_path = "../../../test_repos/"
     benchmark_path = "../../evaluation/software_type/software_type_benchmark.csv"
     benchmark_summary = "../../evaluation/software_type/evaluation_summary.csv"
-    benchmark_summary_part_2= "../../evaluation/software_type/evaluation_summary_part2.csv"
+    benchmark_summary_scripts_precision_recall = \
+        "../../evaluation/software_type/evaluation_summary_scripts_precision_recall.csv"
+    benchmark_summary_scripts_ndcg = "../../evaluation/software_type/evaluation_summary_scripts_ndcg.csv"
 
     benchmark_df = pd.read_csv(benchmark_path)
 
@@ -80,12 +82,14 @@ def main():
 
     repos_with_error = []
     repos_with_error_script = []
+    repos_with_error_script_ndcg = []
     num_repos = 0
     num_entries_script_service = 0
     total_precision_scripts = 0
     total_recall_scripts = 0
+    total_ndcg_scripts = 0
     for dir_name in os.listdir(repo_path):
-        print("######## Processing: " + dir_name + " Num repo:" + str(num_repos))  # repo_path
+        print("######## Processing: " + dir_name + " Repo no. " + str(num_repos))  # repo_path
         cmd = 'code_inspector -i ' + repo_path + dir_name + " -o ../../output_dir/ -si"
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -119,7 +123,8 @@ def main():
                     if type_predicted != type_benchmark:
                         repos_with_error.append(dir_name)
 
-                # Second evaluation (part 1): Precision/recall for scripts and services:
+                # Second evaluation: Precision/recall for scripts and services:
+                # Also: Discounted cumulative gain on the obtained ranking
                 # Do we detect all the scripts that have been annotated (and vice versa)?
                 priority_1 = []
                 priority_2 = []
@@ -135,6 +140,8 @@ def main():
                     num_entries_script_service += 1
                     tp_entry = 0
                     software_invocation_entries = data["software_invocation"]
+                    relevance_for_entry = []
+                    penalization = 0  # to measure if our ranking is too optimistic
                     for entry in software_invocation_entries:
                         try:
                             entry_file = entry["run"].split(dir_name+"/")[-1]
@@ -143,22 +150,59 @@ def main():
                                 entry_file = entry["import"].split(dir_name + "/")[-1]
                             except:
                                 print("Entry does not have import or run keys")
-                        # is the file found in the target list?
-                        # Here we don't care about the order
-                        if entry_file in priority_1 or entry_file in priority_2 or entry_file in priority_3:
+                        # is the file found in the target list? (precision/recall)
+                        # Calculating relevance of the ranking for DCG.
+                        # We calculate relevance by comparing against the annotated ranking.
+                        # This only works if the ranking is sorted in ascending order.
+                        if entry_file in priority_1:
                             tp_entry += 1
+                            if entry["ranking"] != 1:
+                                penalization += 1
+                            relevance_for_entry.append(1)
+                        elif entry_file in priority_2:
+                            tp_entry += 1
+                            if entry["ranking"] != 2:
+                                penalization += 1
+                            relevance_for_entry.append(2)
+                        elif entry_file in priority_3:
+                            tp_entry += 1
+                            if entry["ranking"] != 3:
+                                penalization += 1
+                            relevance_for_entry.append(3)
+                        else:
+                            # If the element is not found, we state we did not find an element
+                            # DCG does not penalize this, but we do prec/recall to compensate.
+                            # Warning: dcg may vary depending on the position where the element is found.
+                            relevance_for_entry.append(0)
+                    relevance_for_entry = invert_scores(relevance_for_entry)
+                    ideal_relevance_for_entry = sorted(relevance_for_entry, reverse=True)
+                    dcg_entry = discounted_cumulative_gain(relevance_for_entry, len(relevance_for_entry))
+                    idcg_entry = discounted_cumulative_gain(ideal_relevance_for_entry, len(ideal_relevance_for_entry))
+                    # Normalized dcg score
+                    if dcg_entry != 0:
+                        ndcg_score_entry = dcg_entry/idcg_entry
+                    else:
+                        # If none of the files are found, the dcg will be zero
+                        ndcg_score_entry = 0
+                    if ndcg_score_entry < 1:
+                        repos_with_error_script_ndcg.append(dir_name +
+                                                            ". ndcg:" + str(ndcg_score_entry) +
+                                                            ". relevance: " +
+                                                            str(relevance_for_entry))
+                    if penalization > 0 and ndcg_score_entry == 1:
+                        repos_with_error_script_ndcg.append(dir_name +
+                                                            ". PENALIZATION:" + str(penalization))
+
                     # software invocation entries contain all the predictions from code_inspector
                     precision_entry = tp_entry / len(software_invocation_entries)
                     # the priority lists contain all annotated scripts
                     recall_entry = tp_entry / (len(priority_1) + len(priority_2) + len(priority_3))
                     if precision_entry < 1 or recall_entry < 1:
-                        repos_with_error_script.append(dir_name + "P:" + str(precision_entry) + ";R:" +
+                        repos_with_error_script.append(dir_name + "P:" + str(precision_entry) + ". R:" +
                                                        str(recall_entry))
                     total_precision_scripts += precision_entry
                     total_recall_scripts += recall_entry
-                    # Second evaluation (part 2): Discounted Cumulative Gain between obtained ranking
-                    # and labeled ranking
-                    # TO DO
+                    total_ndcg_scripts += ndcg_score_entry
                 flag = 1
                 num_repos += 1
 
@@ -174,11 +218,16 @@ def main():
     print("Average precision for scripts: ", average_precision_scripts)
     print("Average recall for scripts: ", average_recall_scripts)
 
+    # Print average ndgc score
+    average_ndcg_score = total_ndcg_scripts / num_entries_script_service
+    print("Average normalized discounted cumulative score for script and service ranking: ", average_ndcg_score)
+
     # Create evaluation_summary (software type evaluation)
     write_header = False
     if not os.path.exists(benchmark_summary):
         write_header = True
 
+    date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     with open(benchmark_summary, 'a') as summary:
         writer = csv.writer(summary, delimiter=',')
         if write_header:
@@ -190,7 +239,6 @@ def main():
                  'precision_script', 'recall_script',
                  'precision_avg', 'recall_avg',
                  'errors'])
-        date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         p_package = get_precision_from_confusion_matrix(SoftwareTypes.Package, confusion_matrix)
         r_package = get_recall_from_confusion_matrix(SoftwareTypes.Package, confusion_matrix)
         p_library = get_precision_from_confusion_matrix(SoftwareTypes.Library, confusion_matrix)
@@ -209,24 +257,37 @@ def main():
                          p_avg, r_avg, repos_with_error
                          ])
 
-        # Write second eval
+        # Write second eval (precision, recall)
         write_header = False
-        if not os.path.exists(benchmark_summary_part_2):
+        if not os.path.exists(benchmark_summary_scripts_precision_recall):
             write_header = True
 
-        with open(benchmark_summary_part_2, 'a') as summary_part_2:
+        with open(benchmark_summary_scripts_precision_recall, 'a') as summary_part_2:
             writer = csv.writer(summary_part_2, delimiter=',')
             if write_header:
                 writer.writerow(
                     ['date', '#repositories',
                      'precision_avg', 'recall_avg',
                      'errors'])
-            date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
             writer.writerow([date, num_entries_script_service,
                              average_precision_scripts,
                              average_recall_scripts,
                              repos_with_error_script])
+
+        # Write normalized discounted cumulative gain eval (ndcg score)
+        write_header = False
+        if not os.path.exists(benchmark_summary_scripts_ndcg):
+            write_header = True
+
+        with open(benchmark_summary_scripts_ndcg, 'a') as summary_part_3:
+            writer = csv.writer(summary_part_3, delimiter=',')
+            if write_header:
+                writer.writerow(
+                    ['date', '#repositories',
+                     'ndcg_avg', 'errors'])
+            writer.writerow([date, num_entries_script_service,
+                             average_ndcg_score,
+                             repos_with_error_script_ndcg])
 
 
 def discounted_cumulative_gain(relevance_list, p):
@@ -255,29 +316,20 @@ def invert_scores(input_ranking):
     [1,1,2,3] --> [3,3,2,1]
     [1,2] --> [2,1]
     [1] --> [1]
-    The ranking is ordered
     :param input_ranking ordered list with the ranking
     """
-    max_value = input_ranking[-1]
+    max_value = max(input_ranking)
     relevance = []
     for i in input_ranking:
-        relevance.append(max_value-i + 1)
+        if i == 0:
+            relevance.append(i)
+        else:
+            relevance.append(max_value-i + 1)
     return relevance
 
 
-def get_relevance_from_benchmark(predicted_ranking, list_1, list_2, list_3):
-    """
-    Given a predicted mapping, extract is relevance against the annotated ranking.
-    The annotated ranking comes in three list of priority
-    """
-    print("TO DO")
-    # for i in predicted ranking. Get ranking value.
-    # If i in list 1 -> 1, if in 2 -> 2, if in 3 -> 3. Append.
-    # From that, calculate dci. Ideal is same but reordering.
-
-
 if __name__ == "__main__":
-    # main()
+    main()
 
     # minitest
     # matrix = [[17, 0, 0, 0],
@@ -288,9 +340,9 @@ if __name__ == "__main__":
     # print(get_precision_from_confusion_matrix(SoftwareTypes.Script, matrix))
 
     # minitest 2 (dcg)
-    rel = [3, 2, 3, 0, 1, 2]
-    ideal = [3, 3, 2, 2, 1, 0]
-    print(discounted_cumulative_gain(rel, len(rel)))
-    print(discounted_cumulative_gain(ideal, len(ideal)))
-    ranking = [1, 1, 2, 3, 3, 3, 4]
-    print(invert_scores(ranking))
+    # rel = [3, 2, 3, 0, 1, 2]
+    # ideal = [3, 3, 2, 2, 1, 0]
+    # print(discounted_cumulative_gain(rel, len(rel)))
+    # print(discounted_cumulative_gain(ideal, len(ideal)))
+    # ranking = [1, 1, 2, 0, 3, 3, 3, 4]
+    # print(invert_scores(ranking))
