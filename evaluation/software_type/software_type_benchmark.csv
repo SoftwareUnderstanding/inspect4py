@@ -75,7 +75,7 @@ oarriaga/paz,DG,library,,,,
 Kamaropoulos/COVID19Py,DG,library,,,,
 aboul3la/Sublist3r,DG,package,,,,
 asciinema/asciinema,DG,package,,,,
-fabric/fabric,DG,library,,,,
+fabric/fabric,DG,package,,,,
 wting/autojump,DG,package,,,,
 darkshredder/nominatim-feedback-reporter,DG,service,backend/run.py,,,
 BakeNecko/DDOS_Python,DG,service,bottle_app/app.py;falcon_app/main.py;django_app/manage.py;fastapi_app/main.py;pyramid_app/app.py,,,order does not matter
