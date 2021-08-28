@@ -1,4 +1,5 @@
 import csv
+import math
 import os
 import subprocess
 import json
@@ -228,8 +229,56 @@ def main():
                              repos_with_error_script])
 
 
+def discounted_cumulative_gain(relevance_list, p):
+    """
+    Method that given a list of relevant documents (in this case the ranking positions),
+    calculates the discounted cumulative gain for the list at position p. In order for this measure to be effective,
+    the final score should be normalized (Dividing the ideal dcg by the dcg). DCG is defined as:
+    dcg_p = sum(from i=1, to p) rel_i/log2(i+1)
+    :param relevance_list list of elements to consider
+    :param p position to which we want to calculate the score
+    """
+    dcg_p = 0
+    i = 1
+    for element in relevance_list:
+        if i <= p:
+            dcg_p += element/math.log2(i+1)
+            i += 1
+        else:
+            break
+    return dcg_p
+
+
+def invert_scores(input_ranking):
+    """
+    Function that given a ranking list, it corrects its relevance in preparation for dcg. For example,
+    [1,1,2,3] --> [3,3,2,1]
+    [1,2] --> [2,1]
+    [1] --> [1]
+    The ranking is ordered
+    :param input_ranking ordered list with the ranking
+    """
+    max_value = input_ranking[-1]
+    relevance = []
+    for i in input_ranking:
+        relevance.append(max_value-i + 1)
+    return relevance
+
+
+def get_relevance_from_benchmark(predicted_ranking, list_1, list_2, list_3):
+    """
+    Given a predicted mapping, extract is relevance against the annotated ranking.
+    The annotated ranking comes in three list of priority
+    """
+    print("TO DO")
+    # for i in predicted ranking. Get ranking value.
+    # If i in list 1 -> 1, if in 2 -> 2, if in 3 -> 3. Append.
+    # From that, calculate dci. Ideal is same but reordering.
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+
     # minitest
     # matrix = [[17, 0, 0, 0],
     #           [5, 28, 0, 1],
@@ -237,3 +286,11 @@ if __name__ == "__main__":
     #           [1, 0, 0, 28]]
     # print_confusion_matrix(matrix)
     # print(get_precision_from_confusion_matrix(SoftwareTypes.Script, matrix))
+
+    # minitest 2 (dcg)
+    rel = [3, 2, 3, 0, 1, 2]
+    ideal = [3, 3, 2, 2, 1, 0]
+    print(discounted_cumulative_gain(rel, len(rel)))
+    print(discounted_cumulative_gain(ideal, len(ideal)))
+    ranking = [1, 1, 2, 3, 3, 3, 4]
+    print(invert_scores(ranking))

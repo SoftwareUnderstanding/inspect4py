@@ -150,14 +150,13 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                 if elem['body']['calls']:
                     body_only_files.append(elem)
 
-
     m_secondary = [0] * len(main_files)
     flag_script_main = 0
 
-    ##this list (of lists) stores the mains that each main import
+    # this list (of lists) stores the mains that each main import
     import_mains = []
    
-    ##this list (of lists) stores the mains that each main is imported by
+    # this list (of lists) stores the mains that each main is imported by
     imported_by=[None]*len(main_files)
 
     # 3. Exploration for main scripts
@@ -176,13 +175,10 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                 imported_by[main_files.index(m_i)]=[]
             imported_by[main_files.index(m_i)].append(main_files[m])
 
-        
-
     for m in range(0, len(main_files)):
         soft_info = {"type": "script", "run": "python " + main_files[m], "has_structure": "main",
-                    "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme, 
-                    "import_mains": import_mains[m], "imported_by": imported_by[m], "secondary": m_secondary[m] }
-
+                     "mentioned_in_readme": os.path.basename(os.path.normpath(main_files[m])) in readme,
+                     "imports": import_mains[m], "imported_by": imported_by[m]}
         software_invocation_info.append(soft_info)
         flag_script_main = 1
 
