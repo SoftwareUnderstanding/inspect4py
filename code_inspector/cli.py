@@ -404,7 +404,7 @@ class CodeInspection:
         if if_main_flag:
             # classifying the type of a main: "test" or "script"
             # or "test" in self.fileInfo["fileNameBase"]:
-            # Note - I'm just comenting the previous or ("test" in self.fileInfo ...)
+            # Note - I'm just commenting the previous or ("test" in self.fileInfo ...)
             # and adding doctest - but more advanced cases could be considered here.
 
             # OPTION 1: searching test dependency string inside the if_main_func
