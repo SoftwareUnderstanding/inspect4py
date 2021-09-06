@@ -191,7 +191,7 @@ def main():
                                                             str(relevance_for_entry))
                     if penalization > 0 and ndcg_score_entry == 1:
                         repos_with_error_script_ndcg.append(dir_name +
-                                                            ". PENALIZATION:" + str(penalization))
+                                                            ". PENALIZATION: " + str(penalization))
 
                     # software invocation entries contain all the predictions from code_inspector
                     precision_entry = tp_entry / len(software_invocation_entries)
