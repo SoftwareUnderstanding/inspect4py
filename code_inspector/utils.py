@@ -303,8 +303,9 @@ def list_functions_classes_from_module(m, path):
 
         type = "internal"
     except:
-        module = __import__(m)
-        functions = dir(module)
+        
+        #module = __import__(m)
+        #functions = dir(module)
         type = "external"
     return functions_classes, type
 

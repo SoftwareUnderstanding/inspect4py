@@ -41,17 +41,21 @@ class CodeInspection:
         self.flag_png = flag_png
         self.out_json_path = out_json_path
         self.tree = self.parser_file()
-        self.fileInfo = self.inspect_file()
-        self.depInfo = self.inspect_dependencies()
-        self.funcsInfo, self.classesInfo = self.inspect_classes_funcs()
-        self.bodyInfo = self.inspect_body()
-        if control_flow:
-            format = "png"
-            self.out_control_flow_path = out_control_flow_path
-            self.controlFlowInfo = self.inspect_controlflow(format)
+        if self.tree != "AST_ERROR":
+            self.fileInfo = self.inspect_file()
+            self.depInfo = self.inspect_dependencies()
+            self.funcsInfo, self.classesInfo = self.inspect_classes_funcs()
+            self.bodyInfo = self.inspect_body()
+            if control_flow:
+                format = "png"
+                self.out_control_flow_path = out_control_flow_path
+                self.controlFlowInfo = self.inspect_controlflow(format)
+            else:
+                 self.controlFlowInfo = {}
+            self.fileJson = self.file_json()
         else:
-            self.controlFlowInfo = {}
-        self.fileJson = self.file_json()
+            self.fileJson ={}
+    
 
     def parser_file(self):
         """ parse_file method parsers a file as an AST tree
@@ -60,7 +64,10 @@ class CodeInspection:
         """
 
         with tokenize.open(self.path) as f:
-            return ast.parse(f.read(), filename=self.path)
+            try:
+                return ast.parse(f.read(), filename=self.path)
+            except:
+                return "AST_ERROR"
 
     def inspect_file(self):
         """
@@ -238,35 +245,36 @@ class CodeInspection:
         for b_as in body_assigns:
             if isinstance(b_as.value, ast.Call):
                 body_name = self._get_func_name(b_as.value.func)
-                body_calls.append(body_name)
+                if body_name:
+                    body_calls.append(body_name)
 
-                # new : check if we have calls in the arguments
-                body_calls = self._get_arguments_calls(b_as.value.args, body_calls)
+                    # new : check if we have calls in the arguments
+                    body_calls = self._get_arguments_calls(b_as.value.args, body_calls)
 
-                for target in b_as.targets:
-                    target_name = self._get_func_name(target)
-                    body_store_vars[target_name] = body_name
+                    for target in b_as.targets:
+                        target_name = self._get_func_name(target)
+                        body_store_vars[target_name] = body_name
 
-                # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                if "." in body_name:
-                     check_body_name=body_name.split(".")[0]
-                else:
-                     check_body_name=body_name
-                if check_body_name in body_store_vars.keys():
-                    var_name= body_store_vars[check_body_name]
-                else:
-                    var_name=""
+                    # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
+                    if "." in body_name:
+                        check_body_name=body_name.split(".")[0]
+                    else:
+                        check_body_name=body_name
+                    if check_body_name in body_store_vars.keys():
+                        var_name= body_store_vars[check_body_name]
+                    else:
+                        var_name=""
 
-                skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name, var_name)
+                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name, var_name)
 
-                # new: dynamic functions
-                if not skip:
-                    dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
-                        b_as.value.args,
-                        body_name, dynamic_func,
-                        remove_calls, dynamic_methods, remove_methods_calls,
-                        self.funcsInfo,
-                        self.classesInfo, body_store_vars)
+                    # new: dynamic functions
+                    if not skip:
+                        dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                            b_as.value.args,
+                            body_name, dynamic_func,
+                            remove_calls, dynamic_methods, remove_methods_calls,
+                            self.funcsInfo,
+                            self.classesInfo, body_store_vars)
 
         for b_ex in body_expr:
             if isinstance(b_ex.value, ast.Call):
@@ -514,7 +522,25 @@ class CodeInspection:
             for f_as in funcs_assigns:
                 if isinstance(f_as.value, ast.Name) and f_as.value.id == "self":
                     for target in f_as.targets:
-                        funcs_store_vars[target.id] = f_as.value.id
+                        if isinstance(target, ast.Name):
+                            funcs_store_vars[target.id] = f_as.value.id
+
+                        #NEW
+                        elif isinstance(target, ast.Attribute):
+                            t_id = target.value.id
+                            attr = target.attr
+                            target = target.value
+
+                            while isinstance(target, ast.Attribute):
+                                attr = attr + "." + target.attr
+                                target = target.value
+
+                            
+                            name=target.id+"."+attr
+                            funcs_store_vars[name]= f_as.value.id
+
+                        else: 
+                            pass
                 elif isinstance(f_as.value, ast.Call):
                     func_name = self._get_func_name(f_as.value.func)
                     for target in f_as.targets:
@@ -561,30 +587,33 @@ class CodeInspection:
             for node in funcs_calls:
                 skip = 0
                 func_name_id = self._get_func_name(node.func)
-                if type == 1:
-                     store_vars = funcs_info[f.name]["store_vars_calls"]
-                else:
-                     store_vars = {}
-                     # store_vars=classesInfo[f.name]["store_vars_calls"]
 
-                if "." in func_name_id:
-                    check_func_name_id=func_name_id.split(".")[0]
-                else:
-                    check_func_name_id=func_name_id
+                # NEW: checking if func_name_id is not NONE
+                if func_name_id:
+                    if type == 1:
+                        store_vars = funcs_info[f.name]["store_vars_calls"]
+                    else:
+                        store_vars = {}
+                        # store_vars=classesInfo[f.name]["store_vars_calls"]
 
-                if check_func_name_id in store_vars.keys():
-                    var_name=store_vars[check_func_name_id]
-                else:
-                    var_name=""
+                    if "." in func_name_id:
+                        check_func_name_id=func_name_id.split(".")[0]
+                    else:
+                        check_func_name_id=func_name_id
 
-                skip= self._skip_dynamic_calls(funcs_info, classes_info, check_func_name_id, func_name_id, var_name)
+                    if check_func_name_id in store_vars.keys():
+                        var_name=store_vars[check_func_name_id]
+                    else:
+                        var_name=""
 
-                if not skip:
-                    dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
-                        node.args, func_name_id, \
-                        dynamic_func, remove_calls, \
-                        dynamic_methods, remove_methods_calls, \
-                        funcs_info, classes_info, store_vars)
+                    skip= self._skip_dynamic_calls(funcs_info, classes_info, check_func_name_id, func_name_id, var_name)
+
+                    if not skip:
+                        dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
+                            node.args, func_name_id, \
+                            dynamic_func, remove_calls, \
+                            dynamic_methods, remove_methods_calls, \
+                            funcs_info, classes_info, store_vars)
 
         # NEW
         # remove the previous call, because the dynamic calls have been already added.
@@ -827,10 +856,11 @@ class CodeInspection:
                 renamed = 1
                 return renamed
             else:
-                extend = classes_info[ext]["extend"]
-                renamed = self._dfs(extend, rest_call_name, renamed, classes_info, renamed_calls)
-                if renamed:
-                    break
+                 pass
+            #    extend = classes_info[ext]["extend"]
+            #    renamed = self._dfs(extend, rest_call_name, renamed, classes_info, renamed_calls)
+            #    if renamed:
+            #        break
         return renamed
 
     def _fill_call_name(self, function_definition_info, classes_info, class_name="", extend=[],
@@ -1198,10 +1228,11 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         out_dir = output_dir + "/" + os.path.basename(subdir)
                         cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
                         code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow)
-                        if out_dir not in dir_info:
-                            dir_info[out_dir] = [code_info.fileJson[0]]
-                        else:
-                            dir_info[out_dir].append(code_info.fileJson[0])
+                        if code_info.fileJson:
+                            if out_dir not in dir_info:
+                                dir_info[out_dir] = [code_info.fileJson[0]]
+                            else:
+                                dir_info[out_dir].append(code_info.fileJson[0])
                     except:
                         print("Error when processing " + f + ": ", sys.exc_info()[0])
                         continue
