@@ -27,3 +27,4 @@ date,#repositories,precision_package,recall_package,precision_library,recall_lib
 28/08/2021 21:42,94,0.952380952,0.909090909,0.931034483,0.964285714,1,0.964285714,0.967741935,0.967741935,0.962789343,0.96027964,"['autojump', 'rtdl', 'HXL-Data-Science-file-formats', 'fabric']"
 28/08/2021 22:29,95,1,0.916666667,0.931034483,1,1,1,0.967741935,0.967741935,0.974694105,0.971102151,"['autojump', 'rtdl', 'HXL-Data-Science-file-formats']"
 06/09/2021 13:23,95,1,0.916666667,0.931034483,1,1,1,0.967741935,0.967741935,0.974694105,0.971102151,"['HXL-Data-Science-file-formats', 'autojump', 'rtdl']"
+07/09/2021 02:10,95,1,0.916666667,0.931034483,1,1,1,0.967741935,0.967741935,0.974694105,0.971102151,"['HXL-Data-Science-file-formats', 'autojump', 'rtdl']"
