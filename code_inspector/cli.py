@@ -245,10 +245,6 @@ class CodeInspection:
         body_expr = [node for node in body_nodes if isinstance(node, ast.Expr)]
         body_store_vars = {}
         body_calls = []
-        dynamic_func = 0
-        remove_calls = []
-        dynamic_methods = 0
-        remove_methods_calls = []
         for b_as in body_assigns:
             if isinstance(b_as.value, ast.Call):
                 body_name = self._get_func_name(b_as.value.func)
@@ -276,10 +272,9 @@ class CodeInspection:
 
                     # new: dynamic functions
                     if not skip:
-                        dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                        self._dynamic_calls(
                             b_as.value.args,
-                            body_name, dynamic_func,
-                            remove_calls, dynamic_methods, remove_methods_calls,
+                            body_name,
                             self.funcsInfo,
                             self.classesInfo, body_store_vars)
 
@@ -307,38 +302,12 @@ class CodeInspection:
 
                     # new: dynamic functions
                     if not skip:
-                        dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, self.funcsInfo = self._dynamic_calls(
+                            self._dynamic_calls(
                             b_ex.value.args,
-                            body_name, dynamic_func,
-                            remove_calls, dynamic_methods, remove_methods_calls,
+                            body_name, 
                             self.funcsInfo,
                             self.classesInfo, body_store_vars)
 
-                # NEW
-        # remove the previous call, because the dynamic calls have been already added.
-        # identifying those because they do not have the fileNameBase in the calls
-        remove_func = 0
-        if dynamic_func > 0:
-            for f_name in remove_calls:
-                for call in self.funcsInfo[f_name]["calls"]:
-                    if ("." not in call) and call and (call not in builtin_function_names) and (call not in __builtins__):
-                        self.funcsInfo[f_name]["calls"].remove(call)
-                        remove_func += 1
-
-            if dynamic_func < remove_func:
-                print("WARNING-1: dynamic_func %s are not the same as remove_func %s" % (dynamic_func, remove_func))
-
-        remove_methods = 0
-        if dynamic_methods > 0:
-            for elem in remove_methods_calls:
-                for call in self.classesInfo[elem[0]]["methods"][elem[1]]["calls"]:
-                    if ("." not in call) and call and (call not in builtin_function_names) and (call not in __builtins__):
-                        self.classesInfo[elem[0]]["methods"][elem[1]]["calls"].remove(call)
-                        remove_methods += 1
-
-            if dynamic_methods < remove_methods:
-                print("WARNING-2: dynamic_methods %s are not the same as remove_methods %s" % (
-                    dynamic_methods, remove_methods))
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
@@ -574,10 +543,6 @@ class CodeInspection:
 
     def _check_dynamic_calls(self, functions_defintions, funcs_info, classes_info, type=1):
         # type 1- from functions; type 2 from classes
-        dynamic_func = 0
-        remove_calls = []
-        dynamic_methods = 0
-        remove_methods_calls = []
         for f in functions_defintions:
             funcs_calls = [node for node in ast.walk(f) if isinstance(node, ast.Call)]
             for node in funcs_calls:
@@ -605,43 +570,20 @@ class CodeInspection:
                     skip= self._skip_dynamic_calls(funcs_info, classes_info, check_func_name_id, func_name_id, var_name)
 
                     if not skip:
-                        dynamic_func, remove_calls, dynamic_methods, remove_methods_calls, funcs_info = self._dynamic_calls(
+                            self._dynamic_calls(
                             node.args, func_name_id, \
-                            dynamic_func, remove_calls, \
-                            dynamic_methods, remove_methods_calls, \
                             funcs_info, classes_info, store_vars)
-
-        # NEW
-        # remove the previous call, because the dynamic calls have been already added.
-        # identifying those because they do not have the fileNameBase in the calls
-        remove_func = 0
-        if dynamic_func > 0:
-            for f_name in remove_calls:
-                for call in funcs_info[f_name]["calls"]:
-                    if ("." not in call) and call and (call not in builtin_function_names) and (call not in __builtins__):
-                        funcs_info[f_name]["calls"].remove(call)
-                        remove_func += 1
-
-            if dynamic_func < remove_func:
-                print("WARNING-3: dynamic_func %s are not the same as remove_func %s" % (dynamic_func, remove_func))
-
-        remove_methods = 0
-        if dynamic_methods > 0:
-            for elem in remove_methods_calls:
-                for call in classes_info[elem[0]]["methods"][elem[1]]["calls"]:
-                    if ("." not in call) and call and (call not in builtin_function_names) and (call not in __builtins__):
-                        classes_info[elem[0]]["methods"][elem[1]]["calls"].remove(call)
-                        remove_methods += 1
-
-            if dynamic_methods < remove_methods:
-                print("WARNING-4: dynamic_methods %s are not the same as remove_methods %s" % (
-                    dynamic_methods, remove_methods))
 
         return funcs_info, classes_info
 
-    def _dynamic_calls(self, f_args, f_name_id, dynamic_funcs, remove_funcs, dynamic_methods, remove_methods_calls,
-                       funcs_info, classes_info, store_vars={}):
+    def _dynamic_calls(self, f_args, f_name_id, funcs_info, classes_info, store_vars={}):
         # new: dynamic call
+        # f_args --> arguments
+        # f_name_id --> name of the funtion which has been called
+
+        # The idea is to check each argument (inside f_args), to check
+        # if it is a function/method
+
 
         if "." in f_name_id:
             f_name = f_name_id.split(".")[0]
@@ -657,9 +599,10 @@ class CodeInspection:
 
         f_arg_cont = 0
         for f_arg in f_args:
+            # We obtain the name of each argument, and we call it call_name
             call_name = self._get_func_name(f_arg)
+            found = 0
             if call_name:
-                found = 0
                 # 1st, I look if the call_name
                 # matches with any of the functions (of the curent module)
                 # , which are stored in funcsInfo
@@ -667,17 +610,21 @@ class CodeInspection:
                     # add the real dynamic call
                     try:
                         funcs_info[f_name]["calls"].append(self.fileInfo["fileNameBase"] + "." + call_name)
-                        dynamic_funcs += 1
-                        remove_funcs.append(f_name)
                         found = 1
+                        argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                        for call in funcs_info[f_name]["calls"]:
+                            if call == argument_name:
+                                funcs_info[f_name]["calls"].remove(call)
                     except:
                         try:
                             if f_name_rest in classes_info[f_name]["methods"]:
                                 classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                     self.fileInfo["fileNameBase"] + "." + call_name)
-                                dynamic_methods += 1
-                                remove_methods_calls.append([f_name, f_name_rest])
                                 found = 1
+                                argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
+                                    if call == argument_name:
+                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                         except:
                             print("Error when processing dependency-1: %s call name: %s" % (f_name, call_name))
 
@@ -696,33 +643,41 @@ class CodeInspection:
                             if dep["from_module"]:
                                 try:
                                     funcs_info[f_name]["calls"].append(dep["from_module"] + "." + call_name)
-                                    dynamic_funcs += 1
-                                    remove_funcs.append(f_name)
                                     found = 1
+                                    argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                    for call in funcs_info[f_name]["calls"]:
+                                        if call == argument_name:
+                                            funcs_info[f_name]["calls"].remove(call)
                                 except:
                                     try:
                                         if f_name_rest in classes_info[f_name]["methods"]:
                                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                 dep["from_module"] + "." + call_name)
-                                            dynamic_methods += 1
-                                            remove_methods_calls.append([f_name, f_name_rest])
                                             found = 1
+                                            argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                            for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
+                                                if call == argument_name:
+                                                    classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                                     except:
                                         print("Error when processing dependency-2: %s call name: %s" % (
                                         f_name, call_name))
                             else:
                                 try:
                                     funcs_info[f_name]["calls"].append(call_name)
-                                    dynamic_funcs += 1
-                                    remove_funcs.append(f_name)
                                     found = 1
+                                    argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                    for call in funcs_info[f_name]["calls"]:
+                                        if call == argument_name:
+                                            funcs_info[f_name]["calls"].remove(call)
                                 except:
                                     try:
                                         if f_name_rest in classes_info[f_name]["methods"]:
                                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(call_name)
-                                            dynamic_methods += 1
-                                            remove_methods_calls.append([f_name, f_name_rest])
                                             found = 1
+                                            argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                            for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
+                                                if call == argument_name:
+                                                    classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                                     except:
                                         print("Error when processing dependency-3: %s call name: %s" % (
                                         f_name, call_name))
@@ -732,34 +687,42 @@ class CodeInspection:
                                 if dep["from_module"]:
                                     try:
                                         funcs_info[f_name]["calls"].append(dep["from_module"] + "." + dep["import"])
-                                        dynamic_funcs += 1
-                                        remove_funcs.append(f_name)
                                         found = 1
+                                        argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                        for call in funcs_info[f_name]["calls"]:
+                                            if call == argument_name:
+                                                funcs_info[f_name]["calls"].remove(call)
                                     except:
                                         try:
                                             if f_name_rest in classes_info[f_name]["methods"]:
                                                 classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                     dep["from_module"] + "." + dep["import"])
-                                                dynamic_methods += 1
-                                                remove_methods_calls.append([f_name, f_name_rest])
                                                 found = 1
+                                                argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                                for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
+                                                    if call == argument_name:
+                                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                                         except:
                                             print("Error when processing dependency-4: %s call name: %s" % (
                                             f_name, call_name))
                                 else:
                                     try:
                                         funcs_info[f_name]["calls"].append(dep["import"] + "." + call_name)
-                                        dynamic_funcs += 1
-                                        remove_funcs.append(f_name)
                                         found = 1
+                                        argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                        for call in funcs_info[f_name]["calls"]:
+                                            if call == argument_name:
+                                                funcs_info[f_name]["calls"].remove(call)
                                     except:
                                         try:
                                             if f_name_rest in classes_info[f_name]["methods"]:
                                                 classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                     dep["import"] + "." + call_name)
-                                                dynamic_methods += 1
-                                                remove_methods_calls.append([f_name, f_name_rest])
                                                 found = 1
+                                                argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                                for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
+                                                    if call == argument_name:
+                                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                                         except:
                                             print("Error when processing dependency-5: %s call_name: %s" % (
                                                 f_name, call_name))
@@ -777,18 +740,25 @@ class CodeInspection:
                                 try:
                                     funcs_info[f_name]["calls"].append(
                                         self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
-                                    dynamic_funcs += 1
-                                    remove_funcs.append(f_name)
-                                    # found = 1
+                                    argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                    for call in funcs_info[f_name]["calls"]:
+                                        if call == argument_name:
+                                            funcs_info[f_name]["calls"].remove(call)
                                 except:
                                     if f_name_rest in classes_info[f_name]["methods"]:
                                         classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                             self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
-                                        dynamic_methods += 1
                                         remove_methods_calls.append([f_name, f_name_rest])
-                                              # found = 1
+                                        found = 1
+                                        argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                        for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
+                                            if call == argument_name:
+                                                classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
+            
+            if found:
+                print("Added in funct/method %s , argument named %s, number of argument %s" %(f_name, call_name, f_arg_cont))
             f_arg_cont += 1
-        return dynamic_funcs, remove_funcs, dynamic_methods, remove_methods_calls, funcs_info
+            
 
     def _get_arguments_calls(self, f_args, list_calls):
         for f_arg in f_args:

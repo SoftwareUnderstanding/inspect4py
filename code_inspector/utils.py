@@ -39,6 +39,22 @@ def print_summary(json_dict):
     print("Total number of functions parsed: ", functions)
 
 
+def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
+    """
+    Method to obtain the directory tree of a repository.
+    The ignored directories and files that were inputted are also ignored.
+    :input_path path of the repo to
+    """
+    ignore_set = ['.git', '__pycache__', '.idea', '.pytest_cache']
+    ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
+    if visual:
+        paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda
+            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(".pyc") else False)
+        for path in paths:
+            print(path.displayable())
+    return get_directory_structure(input_path, ignore_set)
+
+
 def prune_json(json_dict):
     """
     Method that given a JSON object, removes all its empty fields.
@@ -66,22 +82,39 @@ def prune_json(json_dict):
     return final_dict
 
 
-def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
-    """
-    Method to obtain the directory tree of a repository.
-    The ignored directories and files that were inputted are also ignored.
-    :input_path path of the repo to
-    """
-    ignore_set = ['.git', '__pycache__', '.idea', '.pytest_cache']
-    ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
-    if visual:
-        paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda
-            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(
-            ".pyc") else False)
-        for path in paths:
-            print(path.displayable())
-    return get_directory_structure(input_path, ignore_set)
+def extract_requirements(input_path):
+    print("Finding the requirements with the pigar package for %s" % input_path)
+    try:
+        file_name = 'requirements_' + os.path.basename(input_path) + '.txt'
 
+        # Attention: we can modify the output of pigar, if we use echo N.
+        # Answering yes (echo y), we allow searching for PyPI
+        # for the missing modules and filter some unnecessary modules.
+
+        #cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
+        cmd = 'echo n | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
+        # print("cmd: %s" %cmd)
+        proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        req_dict = {}
+        with open(file_name, "r") as file:
+            lines = file.readlines()[1:]
+        file.close()
+        for line in lines:
+            try:
+                if line != "\n":
+                    splitLine = line.split(" == ")
+                    req_dict[splitLine[0]] = splitLine[1].split("\n")[0]
+            except:
+                pass
+        # Note: Pigar requirement file is being deleted
+        # in the future we might want to keep it (just commenting the line bellow)
+        os.system('rm ' + file_name)
+        return req_dict
+
+    except:
+        print("Error finding the requirements in" % input_path)
 
 def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, readme):
     """
@@ -225,39 +258,6 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
 
     return software_invocation_info
 
-
-def extract_requirements(input_path):
-    print("Finding the requirements with the pigar package for %s" % input_path)
-    try:
-        file_name = 'requirements_' + os.path.basename(input_path) + '.txt'
-
-        # Attention: we can modify the output of pigar, if we use echo N.
-        # Answering yes (echo y), we allow searching for PyPI
-        # for the missing modules and filter some unnecessary modules.
-
-        cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
-        # print("cmd: %s" %cmd)
-        proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = proc.communicate()
-        req_dict = {}
-        with open(file_name, "r") as file:
-            lines = file.readlines()[1:]
-        file.close()
-        for line in lines:
-            try:
-                if line != "\n":
-                    splitLine = line.split(" == ")
-                    req_dict[splitLine[0]] = splitLine[1].split("\n")[0]
-            except:
-                pass
-        # Note: Pigar requirement file is being deleted
-        # in the future we might want to keep it (just commenting the line bellow)
-        os.system('rm ' + file_name)
-        return req_dict
-
-    except:
-        print("Error finding the requirements in" % input_path)
 
 
 def generate_output_html(pruned_json, output_file_html):
