@@ -91,7 +91,7 @@ def extract_requirements(input_path):
         # Answering yes (echo y), we allow searching for PyPI
         # for the missing modules and filter some unnecessary modules.
 
-        #cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
+        # cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
         cmd = 'echo n | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
         # print("cmd: %s" %cmd)
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
@@ -115,6 +115,7 @@ def extract_requirements(input_path):
 
     except:
         print("Error finding the requirements in" % input_path)
+
 
 def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, readme):
     """
@@ -156,6 +157,11 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     flag_service_main = 0
     for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
         for elem in dir_info[key]:
+            # TO DO: Determine here if the test is a test.
+            # 1) Imports and uses functions that have asserts. Example: pycg
+            # 2) Uses functions that have asserts. Example: pyLODE.
+            # Looking at framework/main is not enough. Tests can be "non-executable"
+
             if elem["main_info"]["main_flag"]:
                 flag_main_service = 0
                 main_stored = 0
