@@ -10,7 +10,6 @@ from code_inspector import __version__
 from code_inspector.staticfg import builder
 from code_inspector.utils import *
 
-
 """
 Code Inspector
 This class parses a file or files within directory
@@ -52,11 +51,10 @@ class CodeInspection:
                 self.out_control_flow_path = out_control_flow_path
                 self.controlFlowInfo = self.inspect_controlflow(format)
             else:
-                 self.controlFlowInfo = {}
+                self.controlFlowInfo = {}
             self.fileJson = self.file_json()
         else:
-            self.fileJson ={}
-    
+            self.fileJson = {}
 
     def parser_file(self):
         """ parse_file method parsers a file as an AST tree
@@ -178,7 +176,7 @@ class CodeInspection:
                 classes_info[c.name]["doc"][
                     "short_description"] = docstring.short_description if docstring.short_description else {}
                 classes_info[c.name]["doc"]["full"] = ds_c if ds_c else {}
-            except: 
+            except:
                 classes_info[c.name]["doc"] = {}
             # classes_info[c.name]["doc"]["meta"]=docstring.meta if docstring.meta else {}
             try:
@@ -260,15 +258,16 @@ class CodeInspection:
 
                     # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
                     if "." in body_name:
-                        check_body_name=body_name.split(".")[0]
+                        check_body_name = body_name.split(".")[0]
                     else:
-                        check_body_name=body_name
+                        check_body_name = body_name
                     if check_body_name in body_store_vars.keys():
-                        var_name= body_store_vars[check_body_name]
+                        var_name = body_store_vars[check_body_name]
                     else:
-                        var_name=""
+                        var_name = ""
 
-                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name, var_name)
+                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
+                                                    var_name)
 
                     # new: dynamic functions
                     if not skip:
@@ -298,16 +297,16 @@ class CodeInspection:
                     else:
                         var_name = ""
 
-                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name, var_name)
+                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
+                                                    var_name)
 
                     # new: dynamic functions
                     if not skip:
-                            self._dynamic_calls(
+                        self._dynamic_calls(
                             b_ex.value.args,
-                            body_name, 
+                            body_name,
                             self.funcsInfo,
                             self.classesInfo, body_store_vars)
-
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
@@ -480,7 +479,7 @@ class CodeInspection:
                     funcs_info[f.name]["doc"]["raises"][num]["description"] = i.description
                     funcs_info[f.name]["doc"]["raises"][num]["type_name"] = i.type_name
             except:
-                 funcs_info[f.name]["doc"] = {}
+                funcs_info[f.name]["doc"] = {}
 
             funcs_info[f.name]["args"] = [a.arg for a in f.args.args]
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
@@ -558,19 +557,20 @@ class CodeInspection:
                         # store_vars=classesInfo[f.name]["store_vars_calls"]
 
                     if "." in func_name_id:
-                        check_func_name_id=func_name_id.split(".")[0]
+                        check_func_name_id = func_name_id.split(".")[0]
                     else:
-                        check_func_name_id=func_name_id
+                        check_func_name_id = func_name_id
 
                     if check_func_name_id in store_vars.keys():
-                        var_name=store_vars[check_func_name_id]
+                        var_name = store_vars[check_func_name_id]
                     else:
-                        var_name=""
+                        var_name = ""
 
-                    skip= self._skip_dynamic_calls(funcs_info, classes_info, check_func_name_id, func_name_id, var_name)
+                    skip = self._skip_dynamic_calls(funcs_info, classes_info, check_func_name_id, func_name_id,
+                                                    var_name)
 
                     if not skip:
-                            self._dynamic_calls(
+                        self._dynamic_calls(
                             node.args, func_name_id, \
                             funcs_info, classes_info, store_vars)
 
@@ -583,7 +583,6 @@ class CodeInspection:
 
         # The idea is to check each argument (inside f_args), to check
         # if it is a function/method
-
 
         if "." in f_name_id:
             f_name = f_name_id.split(".")[0]
@@ -611,7 +610,7 @@ class CodeInspection:
                     try:
                         funcs_info[f_name]["calls"].append(self.fileInfo["fileNameBase"] + "." + call_name)
                         found = 1
-                        argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                        argument_name = funcs_info[f_name]["args"][f_arg_cont]
                         for call in funcs_info[f_name]["calls"]:
                             if call == argument_name:
                                 funcs_info[f_name]["calls"].remove(call)
@@ -621,7 +620,7 @@ class CodeInspection:
                                 classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                     self.fileInfo["fileNameBase"] + "." + call_name)
                                 found = 1
-                                argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont + 1]
                                 for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
                                     if call == argument_name:
                                         classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
@@ -644,7 +643,7 @@ class CodeInspection:
                                 try:
                                     funcs_info[f_name]["calls"].append(dep["from_module"] + "." + call_name)
                                     found = 1
-                                    argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                    argument_name = funcs_info[f_name]["args"][f_arg_cont]
                                     for call in funcs_info[f_name]["calls"]:
                                         if call == argument_name:
                                             funcs_info[f_name]["calls"].remove(call)
@@ -654,18 +653,19 @@ class CodeInspection:
                                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                 dep["from_module"] + "." + call_name)
                                             found = 1
-                                            argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                            argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][
+                                                f_arg_cont + 1]
                                             for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
                                                 if call == argument_name:
                                                     classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                                     except:
                                         print("Error when processing dependency-2: %s call name: %s" % (
-                                        f_name, call_name))
+                                            f_name, call_name))
                             else:
                                 try:
                                     funcs_info[f_name]["calls"].append(call_name)
                                     found = 1
-                                    argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                    argument_name = funcs_info[f_name]["args"][f_arg_cont]
                                     for call in funcs_info[f_name]["calls"]:
                                         if call == argument_name:
                                             funcs_info[f_name]["calls"].remove(call)
@@ -674,13 +674,14 @@ class CodeInspection:
                                         if f_name_rest in classes_info[f_name]["methods"]:
                                             classes_info[f_name]["methods"][f_name_rest]["calls"].append(call_name)
                                             found = 1
-                                            argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                            argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][
+                                                f_arg_cont + 1]
                                             for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
                                                 if call == argument_name:
                                                     classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
                                     except:
                                         print("Error when processing dependency-3: %s call name: %s" % (
-                                        f_name, call_name))
+                                            f_name, call_name))
 
                         elif dep["alias"]:
                             if dep["alias"] == module_call_name:
@@ -688,7 +689,7 @@ class CodeInspection:
                                     try:
                                         funcs_info[f_name]["calls"].append(dep["from_module"] + "." + dep["import"])
                                         found = 1
-                                        argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                        argument_name = funcs_info[f_name]["args"][f_arg_cont]
                                         for call in funcs_info[f_name]["calls"]:
                                             if call == argument_name:
                                                 funcs_info[f_name]["calls"].remove(call)
@@ -698,18 +699,20 @@ class CodeInspection:
                                                 classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                     dep["from_module"] + "." + dep["import"])
                                                 found = 1
-                                                argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                                argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][
+                                                    f_arg_cont + 1]
                                                 for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
                                                     if call == argument_name:
-                                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
+                                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(
+                                                            call)
                                         except:
                                             print("Error when processing dependency-4: %s call name: %s" % (
-                                            f_name, call_name))
+                                                f_name, call_name))
                                 else:
                                     try:
                                         funcs_info[f_name]["calls"].append(dep["import"] + "." + call_name)
                                         found = 1
-                                        argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                        argument_name = funcs_info[f_name]["args"][f_arg_cont]
                                         for call in funcs_info[f_name]["calls"]:
                                             if call == argument_name:
                                                 funcs_info[f_name]["calls"].remove(call)
@@ -719,10 +722,12 @@ class CodeInspection:
                                                 classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                                     dep["import"] + "." + call_name)
                                                 found = 1
-                                                argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                                argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][
+                                                    f_arg_cont + 1]
                                                 for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
                                                     if call == argument_name:
-                                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
+                                                        classes_info[f_name]["methods"][f_name_rest]["calls"].remove(
+                                                            call)
                                         except:
                                             print("Error when processing dependency-5: %s call_name: %s" % (
                                                 f_name, call_name))
@@ -740,25 +745,28 @@ class CodeInspection:
                                 try:
                                     funcs_info[f_name]["calls"].append(
                                         self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
-                                    argument_name=funcs_info[f_name]["args"][f_arg_cont]
+                                    argument_name = funcs_info[f_name]["args"][f_arg_cont]
                                     for call in funcs_info[f_name]["calls"]:
                                         if call == argument_name:
                                             funcs_info[f_name]["calls"].remove(call)
                                 except:
                                     if f_name_rest in classes_info[f_name]["methods"]:
                                         classes_info[f_name]["methods"][f_name_rest]["calls"].append(
-                                            self.fileInfo["fileNameBase"] + "." + module_call_name + "." + rest_call_name)
-                                        remove_methods_calls.append([f_name, f_name_rest])
+                                            self.fileInfo[
+                                                "fileNameBase"] + "." + module_call_name + "." + rest_call_name)
+                                        # @Rosa: removed this because it is never declared
+                                        # remove_methods_calls.append([f_name, f_name_rest])
                                         found = 1
-                                        argument_name=classes_info[f_name]["methods"][f_name_rest]["args"][f_arg_cont+1]
+                                        argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][
+                                            f_arg_cont + 1]
                                         for call in classes_info[f_name]["methods"][f_name_rest]["calls"]:
                                             if call == argument_name:
                                                 classes_info[f_name]["methods"][f_name_rest]["calls"].remove(call)
-            
+
             if found:
-                print("Added in funct/method %s , argument named %s, number of argument %s" %(f_name, call_name, f_arg_cont))
+                print("Added in funct/method %s , argument named %s, number of argument %s" % (
+                f_name, call_name, f_arg_cont))
             f_arg_cont += 1
-            
 
     def _get_arguments_calls(self, f_args, list_calls):
         for f_arg in f_args:
@@ -766,7 +774,6 @@ class CodeInspection:
                 name = self._get_func_name(f_arg.func)
                 list_calls.append(name)
         return list_calls
-
 
     def _get_func_name(self, func):
         func_name = None
@@ -832,7 +839,7 @@ class CodeInspection:
                 renamed = 1
                 return renamed
             else:
-                 pass
+                pass
             #    extend = classes_info[ext]["extend"]
             #    renamed = self._dfs(extend, rest_call_name, renamed, classes_info, renamed_calls)
             #    if renamed:
@@ -961,7 +968,8 @@ class CodeInspection:
                                                                 break
                                                             else:
                                                                 renamed_calls.append(
-                                                                    self.fileInfo["fileNameBase"] + "." + nested_f + "." +
+                                                                    self.fileInfo[
+                                                                        "fileNameBase"] + "." + nested_f + "." +
                                                                     inter_f + "." + call_name)
                                                                 break
                                                 # otherwise
@@ -974,7 +982,8 @@ class CodeInspection:
                                                         break
                                                     else:
                                                         renamed_calls.append(
-                                                            self.fileInfo["fileNameBase"] + "." + inter_f + "." + call_name)
+                                                            self.fileInfo[
+                                                                "fileNameBase"] + "." + inter_f + "." + call_name)
                                                         break
                                             else:
                                                 pass
@@ -985,8 +994,9 @@ class CodeInspection:
                                             if module_call_name in classes_info and rest_call_name in \
                                                     classes_info[module_call_name]["methods"].keys():
                                                 renamed = 1
-                                                renamed_calls.append(self.fileInfo["fileNameBase"] + "." + module_call_name
-                                                                     + "." + rest_call_name)
+                                                renamed_calls.append(
+                                                    self.fileInfo["fileNameBase"] + "." + module_call_name
+                                                    + "." + rest_call_name)
                                             elif module_call_name in classes_info:
                                                 renamed = self._dfs(classes_info[module_call_name]["extend"],
                                                                     rest_call_name,

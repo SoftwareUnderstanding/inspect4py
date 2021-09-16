@@ -157,10 +157,26 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     flag_service_main = 0
     for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
         for elem in dir_info[key]:
-            # TO DO: Determine here if the test is a test.
-            # 1) Imports and uses functions that have asserts. Example: pycg
+            # TO DO: Determine here if the file is a test.
+            # 1) Imports and uses functions that have asserts/testing frameworks. Example: pycg
             # 2) Uses functions that have asserts. Example: pyLODE.
-            # Looking at framework/main is not enough. Tests can be "non-executable"
+            # Looking at framework/main is not enough. Test files can be "non-executable" (if they don't have a main)?
+
+            # Check if the file is a test. Test files may not be executable (pytest may be run externally)
+            is_test = False
+            for cl in elem["classes"].values():
+                for method in cl["methods"].values():
+                    if any("assert" in call for call in method["calls"]):
+                        is_test = True
+                        break
+            if not is_test:
+                for f in elem["functions"].values():
+                    if "assert" in f["calls"]:
+                        is_test = True
+            # if not is_test:
+                #Check body (TO DO)
+            if is_test:
+                test_files.append(elem["file"]["path"])
 
             if elem["main_info"]["main_flag"]:
                 flag_main_service = 0
@@ -170,7 +186,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                     flag_service, software_invocation_info = service_check(elem, software_invocation_info,
                                                                            server_dependencies, "main", readme)
                 except:
-                    if elem["main_info"]["type"] != "test":
+                    if elem["main_info"]["type"] != "test" and elem["main_info"]["type"] not in test_files:
                         main_files.append(elem["file"]["path"])
                     else:
                         test_files.append(elem["file"]["path"])
@@ -182,11 +198,11 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                 if not flag_service and not main_stored:
                     if elem["main_info"]["type"] != "test":
                         main_files.append(elem["file"]["path"])
-                    else:
-                        test_files.append(elem["file"]["path"])
+                    # else:
+                    #     test_files.append(elem["file"]["path"])
             else:
                 # NEW: Filtering only files with body
-                if elem['body']['calls']:
+                if elem['body']['calls']: # and not in test files.
                     body_only_files.append(elem)
 
     m_secondary = [0] * len(main_files)
@@ -221,7 +237,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         software_invocation_info.append(soft_info)
         flag_script_main = 1
 
-    # tests with main
+    # tests with main. # TO DO: NOW TESTS WITH NO MAIN ARE RECOGNIZED.
     for t in range(0, len(test_files)):
         # Test files do not have help, they are usually run by themselves
         soft_info = {"type": "test", "run": "python " + test_files[t], "has_structure": "main",
@@ -415,9 +431,9 @@ def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
     elif level < level_depth and call!="":
         m_calls_extern = {}
         module_base = call.split(".")[0]
-        moudule_base = module_base + "."
+        module_base = module_base + "."
         m_calls_extern = find_module_calls(module_base, call_list)
-        ## Note: Here is when we increase the level of recursivity
+        # Note: Here is when we increase the level of recursivity
         level += 1
         if m_calls_extern:
             for m_c in m_calls_extern:

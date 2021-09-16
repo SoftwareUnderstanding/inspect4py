@@ -228,6 +228,7 @@ def main():
         write_header = True
 
     date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    print(date)
     with open(benchmark_summary, 'a') as summary:
         writer = csv.writer(summary, delimiter=',')
         if write_header:
