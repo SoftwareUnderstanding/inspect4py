@@ -352,6 +352,55 @@ class CodeInspection:
 
         return dep_info
 
+    def _ast_if_test(self):
+        """
+        Function that returns True if the file is a test
+        """
+        test_def = []
+        for node in ast.iter_child_nodes(self.tree):
+            if isinstance(node, ast.Assert):
+                return True
+            else:
+                # look if the body of the node has asserts
+                try:
+                    for i in node.body:
+                        if isinstance(i, ast.Assert):
+                            return True
+                except:
+                    pass
+
+        # Check if there are any functions with asserts.
+        for f in self.funcsInfo.values():
+            if any("assert" in call for call in f["calls"]):
+                return True
+
+        # Check if any methods of classes are asserts
+        for cl in self.classesInfo.values():
+            for method in cl["methods"].values():
+                if any("assert" in call for call in method["calls"]):
+                    return True
+
+        # OPTION 2: searching the list of potential test in the imports
+        test_dependencies = ('unittest', 'pytest', 'nose', 'nose2', 'doctest', 'testify', 'behave', 'lettuce')
+        for dep in self.depInfo:
+            imports = dep["import"]
+            if isinstance(imports, list):
+                for import_dep in imports:
+                    if import_dep.lower() in test_dependencies:
+                        return True
+            else:
+                if imports.lower() in test_dependencies:
+                    return True
+
+        # OPTION 3 (TO DO)
+        # if the functions or classes imported belong to a test.
+        # For example, there are cases where the final validation (assert) is done through an imported class
+
+        # TO DO: assert should be the last statement of a test. If it then continues with other stuff, then it's
+        # probably not a test. 
+
+        return False
+
     def _ast_if_main(self):
         """
         Method for getting if the file has a if __name__ == "__main__"
@@ -365,7 +414,6 @@ class CodeInspection:
         if_main_flag = 0
         if_main_func = ""
         main_info = {}
-        test_dependencies = ('unittest', 'pytest', 'nose', 'nose2', 'doctest', 'testify', 'behave', 'lettuce')
 
         for node in if_main_definitions:
             try:
@@ -385,29 +433,6 @@ class CodeInspection:
         main_info["main_flag"] = if_main_flag
         main_info["main_function"] = if_main_func
         if if_main_flag:
-            # classifying the type of a main: "test" or "script"
-            # or "test" in self.fileInfo["fileNameBase"]:
-            # Note - I'm just commenting the previous or ("test" in self.fileInfo ...)
-            # and adding doctest - but more advanced cases could be considered here.
-
-            # OPTION 1: searching test dependency string inside the if_main_func
-            # if test dependency in if_main_func:
-            #    main_info["type"] = "test"
-            # else:
-            #    main_info["type"] = "script"
-
-            # OPTION 2: searching the list of potential test in the imports
-            for dep in self.depInfo:
-                imports = dep["import"]
-                if isinstance(imports, list):
-                    for import_dep in imports:
-                        if import_dep.lower() in test_dependencies:
-                            main_info["type"] = "test"
-                            return main_info
-                else:
-                    if imports.lower() in test_dependencies:
-                        main_info["type"] = "test"
-                        return main_info
             main_info["type"] = "script"
         return main_info
 
@@ -428,7 +453,8 @@ class CodeInspection:
             "functions": self.funcsInfo,
             "body": self.bodyInfo["body"],
             "controlflow": self.controlFlowInfo,
-            "main_info": self._ast_if_main()
+            "main_info": self._ast_if_main(),
+            "is_test": self._ast_if_test()
         }
 
         json_file = self.out_json_path + "/" + self.fileInfo["fileNameBase"] + ".json"
@@ -754,8 +780,6 @@ class CodeInspection:
                                         classes_info[f_name]["methods"][f_name_rest]["calls"].append(
                                             self.fileInfo[
                                                 "fileNameBase"] + "." + module_call_name + "." + rest_call_name)
-                                        # @Rosa: removed this because it is never declared
-                                        # remove_methods_calls.append([f_name, f_name_rest])
                                         found = 1
                                         argument_name = classes_info[f_name]["methods"][f_name_rest]["args"][
                                             f_arg_cont + 1]
@@ -1202,7 +1226,11 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
             with open(os.path.join(input_path, "README.md")) as readme_file:
                 readme = readme_file.read()
         except:
-            print("Readme not found at root level")
+            try:
+                with open(os.path.join(input_path, "README.rst")) as readme_file:
+                    readme = readme_file.read()
+            except:
+                print("Readme not found at root level")
         for subdir, dirs, files in os.walk(input_path):
 
             for ignore_d in ignore_dir_pattern:

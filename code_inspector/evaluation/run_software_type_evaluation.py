@@ -197,6 +197,8 @@ def main():
                     precision_entry = tp_entry / len(software_invocation_entries)
                     # the priority lists contain all annotated scripts
                     recall_entry = tp_entry / (len(priority_1) + len(priority_2) + len(priority_3))
+                    if recall_entry > 1:  # To cope for the fact that 2 scripts may have the same name
+                        recall_entry = 1
                     if precision_entry < 1 or recall_entry < 1:
                         repos_with_error_script.append(dir_name + "P:" + str(precision_entry) + ". R:" +
                                                        str(recall_entry))
