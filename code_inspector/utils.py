@@ -150,60 +150,39 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     main_files = []
 
     # new list to store the "mains that have been previously classified as "test".
-    test_files = []
-
+    test_files_main = []
+    test_files_no_main = []
     # new list to store files without mains
     body_only_files = []
     flag_service_main = 0
     for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
         for elem in dir_info[key]:
-            # TO DO: Determine here if the file is a test.
-            # 1) Imports and uses functions that have asserts/testing frameworks. Example: pycg
-            # 2) Uses functions that have asserts. Example: pyLODE.
-            # Looking at framework/main is not enough. Test files can be "non-executable" (if they don't have a main)?
-
-            # Check if the file is a test. Test files may not be executable (pytest may be run externally)
-            is_test = False
-            for cl in elem["classes"].values():
-                for method in cl["methods"].values():
-                    if any("assert" in call for call in method["calls"]):
-                        is_test = True
-                        break
-            if not is_test:
-                for f in elem["functions"].values():
-                    if "assert" in f["calls"]:
-                        is_test = True
-            # if not is_test:
-                #Check body (TO DO)
-            if is_test:
-                test_files.append(elem["file"]["path"])
-
             if elem["main_info"]["main_flag"]:
-                flag_main_service = 0
+                flag_service_main = 0
+                flag_service = 0
                 main_stored = 0
-                try:
-                    # 2. Exploration for services in files with "mains"
-                    flag_service, software_invocation_info = service_check(elem, software_invocation_info,
-                                                                           server_dependencies, "main", readme)
-                except:
-                    if elem["main_info"]["type"] != "test" and elem["main_info"]["type"] not in test_files:
+                if elem["is_test"]:
+                    test_files_main.append(elem["file"]["path"])
+                    main_stored = 1
+                else:
+                    try:
+                        # 2. Exploration for services in files with "mains"
+                        flag_service, software_invocation_info = service_check(elem, software_invocation_info,
+                                                                               server_dependencies, "main", readme)
+                    except:
                         main_files.append(elem["file"]["path"])
-                    else:
-                        test_files.append(elem["file"]["path"])
-                        main_stored = 1
 
                 if flag_service:
                     flag_service_main = 1
 
                 if not flag_service and not main_stored:
-                    if elem["main_info"]["type"] != "test":
-                        main_files.append(elem["file"]["path"])
-                    # else:
-                    #     test_files.append(elem["file"]["path"])
-            else:
-                # NEW: Filtering only files with body
-                if elem['body']['calls']: # and not in test files.
-                    body_only_files.append(elem)
+                    main_files.append(elem["file"]["path"])
+
+            elif elem["is_test"]:
+                test_files_no_main.append(elem["file"]["path"])
+                # Filtering scripts with just body in software invocation
+            elif elem['body']['calls']:
+                body_only_files.append(elem)
 
     m_secondary = [0] * len(main_files)
     flag_script_main = 0
@@ -237,11 +216,17 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
         software_invocation_info.append(soft_info)
         flag_script_main = 1
 
-    # tests with main. # TO DO: NOW TESTS WITH NO MAIN ARE RECOGNIZED.
-    for t in range(0, len(test_files)):
+    # tests with main.
+    for t in range(0, len(test_files_main)):
         # Test files do not have help, they are usually run by themselves
-        soft_info = {"type": "test", "run": "python " + test_files[t], "has_structure": "main",
-                     "mentioned_in_readme": os.path.basename(os.path.normpath(test_files[t])) in readme}
+        soft_info = {"type": "test", "run": "python " + test_files_main[t], "has_structure": "main",
+                     "mentioned_in_readme": os.path.basename(os.path.normpath(test_files_main[t])) in readme}
+        software_invocation_info.append(soft_info)
+    # tests with no main.
+    for t in range(0, len(test_files_no_main)):
+        # Test files do not have help, they are usually run by themselves
+        soft_info = {"type": "test", "run": "python " + test_files_no_main[t], "has_structure": "body",
+                     "mentioned_in_readme": os.path.basename(os.path.normpath(test_files_no_main[t])) in readme}
         software_invocation_info.append(soft_info)
 
     flag_service_body = 0
@@ -260,7 +245,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                          "mentioned_in_readme": elem["file"]["fileNameBase"] + "." + elem["file"][
                              "extension"] in readme}
             software_invocation_info.append(soft_info)
-            flage_script_body = 1
+            flag_script_body = 1
 
     # Only adding this information if we haven't not found libraries, packages, services or scripts with mains
     # or bodies.
