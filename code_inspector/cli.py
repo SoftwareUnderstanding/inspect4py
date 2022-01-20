@@ -397,7 +397,7 @@ class CodeInspection:
         # For example, there are cases where the final validation (assert) is done through an imported class
 
         # TO DO: assert should be the last statement of a test. If it then continues with other stuff, then it's
-        # probably not a test. 
+        # probably not a test.
 
         return False
 
