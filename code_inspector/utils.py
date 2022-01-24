@@ -156,33 +156,34 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     body_only_files = []
     flag_service_main = 0
     for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
-        for elem in dir_info[key]:
-            if elem["main_info"]["main_flag"]:
-                flag_service_main = 0
-                flag_service = 0
-                main_stored = 0
-                if elem["is_test"]:
-                    test_files_main.append(elem["file"]["path"])
-                    main_stored = 1
-                else:
-                    try:
-                        # 2. Exploration for services in files with "mains"
-                        flag_service, software_invocation_info = service_check(elem, software_invocation_info,
+        if key!="requirements":
+            for elem in dir_info[key]:
+                if elem["main_info"]["main_flag"]:
+                    flag_service_main = 0
+                    flag_service = 0
+                    main_stored = 0
+                    if elem["is_test"]:
+                        test_files_main.append(elem["file"]["path"])
+                        main_stored = 1
+                    else:
+                        try:
+                            # 2. Exploration for services in files with "mains"
+                            flag_service, software_invocation_info = service_check(elem, software_invocation_info,
                                                                                server_dependencies, "main", readme)
-                    except:
+                        except:
+                            main_files.append(elem["file"]["path"])
+
+                    if flag_service:
+                        flag_service_main = 1
+
+                    if not flag_service and not main_stored:
                         main_files.append(elem["file"]["path"])
 
-                if flag_service:
-                    flag_service_main = 1
-
-                if not flag_service and not main_stored:
-                    main_files.append(elem["file"]["path"])
-
-            elif elem["is_test"]:
-                test_files_no_main.append(elem["file"]["path"])
-                # Filtering scripts with just body in software invocation
-            elif elem['body']['calls']:
-                body_only_files.append(elem)
+                elif elem["is_test"]:
+                    test_files_no_main.append(elem["file"]["path"])
+                    # Filtering scripts with just body in software invocation
+                elif elem['body']['calls']:
+                    body_only_files.append(elem)
 
     m_secondary = [0] * len(main_files)
     flag_script_main = 0
