@@ -6,9 +6,9 @@ import click
 from cdmcfparser import getControlFlowFromFile
 from docstring_parser import parse as doc_parse
 
-from code_inspector import __version__
-from code_inspector.staticfg import builder
-from code_inspector.utils import *
+from inspect4py import __version__
+from inspect4py.staticfg import builder
+from inspect4py.utils import *
 
 """
 Code Inspector

@@ -3,7 +3,7 @@ FROM python:3.7
 
 RUN apt update &&\
     apt install -y git &&\
-    apt install -y graphviz 
+    apt install -y graphviz
 
 RUN pip install --upgrade pip
 RUN pip install graphviz
@@ -19,10 +19,7 @@ ENV HOME /home/code_user
 
 WORKDIR ${HOME}
 
-COPY ./code_inspector.py ${HOME}/.
+COPY ./inspect4py.py ${HOME}/.
 COPY ./code_visualization.py ${HOME}/.
 RUN mkdir ${HOME}/staticfg
 ADD ./staticfg ${HOME}/staticfg/.
-
-
-

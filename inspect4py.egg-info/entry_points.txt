@@ -1,0 +1,3 @@
+[console_scripts]
+inspect4py = inspect4py.cli:main
+

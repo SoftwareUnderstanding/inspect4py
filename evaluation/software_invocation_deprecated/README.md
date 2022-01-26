@@ -1,5 +1,7 @@
 # Experiments and tests for determining the main command of a script/repo
 
+# This folder is deprectated. See ../software_type for the newest evaluation results
+
 This folder is for recording the experiments, discussions and test related to this research problem:
 
 Given a software component:
