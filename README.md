@@ -8,14 +8,16 @@ Library to allow users inspect a software project folder (i.e., a directory and 
 
 Given a folder with code, `inspect4py` will:
 
-- Extract all imported modules and how each module is imported as, and classify them between internal or external.
-- Extract all functions in the code
-- Extract all classes in the code
-- For each class, extract all its methods.
-- For each method or function, extract its documentation, including parameters, and accepted values, and call list.
-- Record the control flow of each file.
-- Extract the hierarchy of directories and files, and performs a simple file classification
-- Extract the requirements
+- Extract all imported modules and how each module is imported as (i.e., whether they are internal or external).
+- Extract all functions in the code, including their documentation, parameters, accepted values, and call list.
+- Extract all classes in the code, with all their methods and respective documentation
+- Extract the control flow of each file.
+- Extract the hierarchy of directories and files.
+- Extract the requirements used in the software project.
+- Classify which files are tests
+- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, code_inspector will 
+- Return a ranking of the different ways in which a a software component can be run, ordered by relevance.
+
 
 All metadata is extracted as a JSON file.
 
