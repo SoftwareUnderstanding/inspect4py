@@ -15,34 +15,37 @@ Given a folder with code, `inspect4py` will:
 - Extract the hierarchy of directories and files.
 - Extract the requirements used in the software project.
 - Classify which files are tests
-- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, `inspect4py` will 
+- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, `inspect4py` will return `Library` as its main type)
 - Return a ranking of the different ways in which a a software component can be run, ordered by relevance.
 
 
 All metadata is extracted as a JSON file.
 
 
-Inspect4py currently works **only for Python projects**.
+Inspect4py currently works **only for Python 3 projects**.
 
-## Dependencies:
+## Background:
 
-It uses [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
+`inspect4py` uses [ASTs](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
 the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating
 a tree of objects (per file) whose classes all inherit from [ast.AST](https://docs.python.org/3/library/ast.html#ast.AST).
 
-inspect4py parsers each of the input file(s) as an ast tree, and walks across them, extracting
-the relevant information, storing it as a JSON file.  Furthermore, it also captures the control
-flow of each input file(s), by using another two libraries:
+`inspect4py` parses each of the input file(s) as an AST tree, extracting the relevant information and storing it as a JSON file.  Furthermore, it also captures the control flow of each input file(s), by using another two libraries:
 
--[cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
+- [cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
 
--[staticfg](inspect4py/staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), but given a bug in the package's source code, we forked it, and fixed it in our [repository](inspect4py/staticfg)  
+- [staticfg](inspect4py/staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), which has been fixed it in our [repository](inspect4py/staticfg)  
 
-For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
+We also use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
 
-It also usese [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (-r) has to be indicated when we run the inspect4py.  
+Finally, we reuse [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (`-r`) has to be indicated when running inspect4py.  
 
 ## Install
+
+### Python version
+We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 3.7**.
+
+**Support in Python 3.9**: We have detected that `cdmcfparser` has issues in Python 3.9+. Therefore **the `-cf` command is not guaranteed in Python 3.9**. All other commands have been tested successfully in Python 3.9+.
 
 ### Installation from code
 
@@ -56,64 +59,97 @@ Then, prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder an
 
 `pip install -e .`
 
-### Dependencies: 
-  - cdmcfparser==2.3.2
-  - docstring_parser==0.7
-  - astor
-  - graphviz
-  - Click
-  - setuptools == 54.2.0
-  - json2html
+You are done!
+
+### Package dependencies: 
+``` 
+cdmcfparser
+docstring_parser==0.7
+astor
+graphviz
+click
+pigar
+setuptools==54.2.0
+json2html
+configparser
+```
+
+If you want to run the evaluations, do not forget to add `pandas` to the previous set.
 
 ### Installation through Docker
 
-First, you will need to have [Docker](https://docs.docker.com/get-started/) installed.
+You need to have [Docker](https://docs.docker.com/get-started/) installed.
 
-Next, clone this repository:
+Next, clone the `inspect4py` repository:
 
 ```
 git clone https://github.com/SoftwareUnderstanding/inspect4py/
 ```
 
-Generate a Docker image for inspect4py:
+Generate a Docker image for `inspect4py`:
 
 ```
 docker build --tag inspect4py:1.0 .
 ```
 
-Run inspect4py (you will have to copy the target data inside the image for analysis):
+Run the `inspect4py` image:
 
 ```
-docker run -it --rm --entrypoint "/bin/bash" inspect4py:1.0
+docker run -it --rm inspect4py:1.0 /bin/bash
 ```
 
-And then run `inspect4py` following the commands outlined in the sections below
+Now you can run `inspect4py`:
+```
+root@e04792563e6a:/# inspect4py --help
+```
 
+For more information about `inspect4py` execution options, please see the section below (Execution).
 
+Note that when running `inspect4py` with Docker, you will need to need to provide a path to the target repository to analyze. You can do this by:
+
+1. Cloning the target repository. For example:
+
+```
+docker run -it --rm inspect4py:1.0 /bin/bash
+# Docker image starts
+root@e04792563e6a:/# git clone https://github.com/repo/id
+root@e04792563e6a:/# inspect4py -i id 
+```
+2. Creating a [volume](https://docs.docker.com/storage/volumes/). For example, for mounting the $PWD folder: 
+
+```
+docker run -it -v -v $PWD:/out --rm inspect4py:1.0 /bin/bash
+# Docker image starts
+root@e04792563e6a:/# inspect4py -i /out/path/to/repo
+```
+
+<!--
 Other useful commands when using Docker:
 ```
 docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
-docker run -it --entrypoint "/bin/bash" inspect4py:1.0
 docker image rm -f inspect4py:1.0
 ```
+-->
 
 ## Execution
 
 The tool can be executed to inspect a file, or all the files of a given directory (and its subdirectories).
 For example, it can be used to inspect all the python files of a given GitHub repository (that has been previously cloned locally).
 
-The tool by default stores the results in the "OutputDir" directory, but users can specify their own directory name by using -o or --output flags.
+The tool by default stores the results in the `OutputDir` directory, but users can specify their own directory name by using `-o` or `--output` flags.
 
-And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use -f or --fig.  
+And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use `-f` or `--fig`.  
 
+<!--
 ```
 inspect4py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
 ```
+-->
 
+For clarity, we have added a `help` command to explain each input parameter:
 
-For clarity, we have added the help option to explain each input parameters
-
-```inspect4py --help
+```
+inspect4py --help
 
 Usage: inspect4py [OPTIONS]
 
@@ -148,18 +184,7 @@ Options:
                                   invocation commands to run and test the
                                   target repository.
   --help                          Show this message and exit.
-
 ```
-
-## Evaluation
-
-Simply cd into the right directory and run it. You can do so with the following commands
-
-```
-cd src/main_command_evaluation
-python3 run_directory_type_evaluation.py
-```
-
 
 ## Documentation
 
