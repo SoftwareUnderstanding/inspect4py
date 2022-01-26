@@ -15,53 +15,51 @@ Given a folder with code, `inspect4py` will:
 - Extract the hierarchy of directories and files.
 - Extract the requirements used in the software project.
 - Classify which files are tests
-- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, `inspect4py` will 
+- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, `inspect4py` will return `Library` as its main type)
 - Return a ranking of the different ways in which a a software component can be run, ordered by relevance.
 
 
 All metadata is extracted as a JSON file.
 
 
-Inspect4py currently works **only for Python projects**.
+Inspect4py currently works **only for Python 3 projects**.
 
-## Dependencies:
+## Background:
 
-It uses [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
+`inspect4py` uses [ASTs](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
 the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating
 a tree of objects (per file) whose classes all inherit from [ast.AST](https://docs.python.org/3/library/ast.html#ast.AST).
 
-inspect4py parsers each of the input file(s) as an ast tree, and walks across them, extracting
-the relevant information, storing it as a JSON file.  Furthermore, it also captures the control
-flow of each input file(s), by using another two libraries:
+`inspect4py` parses each of the input file(s) as an AST tree, extracting the relevant information and storing it as a JSON file.  Furthermore, it also captures the control flow of each input file(s), by using another two libraries:
 
--[cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
+- [cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
 
--[staticfg](inspect4py/staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), but given a bug in the package's source code, we forked it, and fixed it in our [repository](inspect4py/staticfg)  
+- [staticfg](inspect4py/staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), which has been fixed it in our [repository](inspect4py/staticfg)  
 
-For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
+We also use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
 
-It also usese [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (-r) has to be indicated when we run the inspect4py.  
+Finally, we reuse [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (`-r`) has to be indicated when running inspect4py.  
 
 ## Install
 
+### Python version
+We have tested `inspect4py` in Python 3.7+. **Our recommended version is 3.7**.
+
+**Support in Python 3.9**: We have detected that `cdmcfparser` presents problems in Python 3.9+. Therefore **the `-cf` command is not guaranteed in Python 3.9**. All the other commands have been tested successfully.
+
 ### Installation from code
 
-First, make sure you have graphviz installed:
-
-```
-sudo apt-get install graphviz
-```
-
-Then, prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder and install the package as follows:
+Prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder and install the package as follows:
 
 `pip install -e .`
 
-### Dependencies: 
+You are done!
+
+### Package dependencies: 
   - cdmcfparser==2.3.2
   - docstring_parser==0.7
   - astor
-  - graphviz
-  - Click
+  - click
   - setuptools == 54.2.0
   - json2html
 
@@ -84,10 +82,10 @@ docker build --tag inspect4py:1.0 .
 Run inspect4py (you will have to copy the target data inside the image for analysis):
 
 ```
-docker run -it --rm --entrypoint "/bin/bash" inspect4py:1.0
+docker run -it --rm inspect4py:1.0 /bin/bash
 ```
 
-And then run `inspect4py` following the commands outlined in the sections below
+And then run `inspect4py` following the commands outlined in the section below.
 
 
 Other useful commands when using Docker:
