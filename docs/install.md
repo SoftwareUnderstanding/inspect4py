@@ -1,9 +1,9 @@
 ## Dependencies:
 
-code_inpsector uses [abstract syntax trees (ASTs)](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
+inspect4py uses [abstract syntax trees (ASTs)](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
 the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating a tree of objects (per file) whose classes all inherit from [ast.AST](https://docs.python.org/3/library/ast.html#ast.AST).
 
-code_inspector parses each of the input file(s) as an ast tree, and walks across them, extracting
+inspect4py parses each of the input file(s) as an ast tree, and walks across them, extracting
 the relevant information, storing it as a JSON file.  Furthermore, it also captures the control
 flow of each input file(s), by using another two libraries:
 
@@ -16,7 +16,7 @@ flow of each input file(s), by using another two libraries:
 
 For parsing the docstrings, we use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
 
-It also usese [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (-r) has to be indicated when we run the code_inspector.  
+It also usese [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (-r) has to be indicated when we run inspect4py.  
 
 ## Install
 
@@ -32,14 +32,20 @@ Then, prepare a virtual Python3 enviroment and install the required packages.
 
 `pip install -r requirements.txt`
 
-- Dependencies: 
-  - cdmcfparser==2.3.2
-  - docstring_parser==0.7
-  - astor
-  - graphviz
-  - Click
-  - setuptools == 54.2.0
-  - json2html
+Dependencies:
+``` 
+cdmcfparser
+docstring_parser==0.7
+astor
+graphviz
+click
+pigar
+setuptools==54.2.0
+json2html
+configparser
+```
+
+If you want to run the evaluations, do not forget to add `pandas` to the previous set
 
 ### Installation through Docker
 
@@ -48,28 +54,28 @@ First, you will need to have [Docker](https://docs.docker.com/get-started/) inst
 Next, clone this repository:
 
 ```
-git clone https://github.com/rosafilgueira/code_inspector/
+git clone https://github.com/SoftwareUnderstanding/inspect4py/
 ```
 
-Generate a Docker image for code_inspector:
+Generate a Docker image for inspect4py:
 
 ```
-docker build --tag inspector:1.0 .
+docker build --tag inspect4py:1.0 .
 ```
 
-Run code_inspector (you will have to copy the target data inside the image for analysis):
+Run inspect4py (you will have to copy the target data inside the image for analysis):
 
 ```
-docker run -it --rm --entrypoint "/bin/bash" inspector:1.0
+docker run -it --rm --entrypoint "/bin/bash" inspect4py:1.0
 ```
 
-And then run `code_inspector` following the commands outlined in the sections below
+And then run `inspect4py` following the commands outlined in the sections below
 
 
 Other useful commands when using Docker:
 
 ```
 docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
-docker run -it --entrypoint "/bin/bash" inspector:1.0
-docker image rm -f inspector:1.0
+docker run -it --entrypoint "/bin/bash" inspect4py:1.0
+docker image rm -f inspect4py:1.0
 ```
