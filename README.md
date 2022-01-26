@@ -1,6 +1,6 @@
-# inspect4py
+# inspect4py [![DOI](https://zenodo.org/badge/349160905.svg)](https://zenodo.org/badge/latestdoi/349160905)
 
-<img src="docs/images/logo.png" alt="logo" width="200"/>
+<img src="docs/images/logo.png" alt="logo" width="200"/> 
 
 Library to allow users inspect a software project folder (i.e., a directory and its subdirectories) and extract all the most relevant information, such as class, method and parameter documentation, classes (and their methods), functions, etc.
 
