@@ -30,8 +30,8 @@ Then, prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder an
 
 You are done!
 
-### Package dependencies: 
-``` 
+### Package dependencies:
+```
 cdmcfparser
 docstring_parser==0.7
 astor
@@ -82,11 +82,12 @@ Note that when running `inspect4py` with Docker, you will need to need to provid
 docker run -it --rm inspect4py:1.0 /bin/bash
 # Docker image starts
 root@e04792563e6a:/# git clone https://github.com/repo/id
-root@e04792563e6a:/# inspect4py -i id 
+root@e04792563e6a:/# inspect4py -i id
 ```
-2. Creating a [volume](https://docs.docker.com/storage/volumes/). For example, for mounting the $PWD folder: 
+2. Creating a [volume](https://docs.docker.com/storage/volumes/). For example, for mounting the $PWD folder:
 
 ```
 docker run -it -v -v $PWD:/out --rm inspect4py:1.0 /bin/bash
 # Docker image starts
 root@e04792563e6a:/# inspect4py -i /out/path/to/repo
+```
