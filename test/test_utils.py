@@ -1,5 +1,5 @@
 import unittest
-from code_inspector.utils import *
+from inspect4py.utils import *
 
 
 class Test(unittest.TestCase):

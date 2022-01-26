@@ -5,8 +5,8 @@ from pathlib import Path
 
 from json2html import *
 
-from code_inspector.parse_setup_files import inspect_setup
-from code_inspector.structure_tree import DisplayablePath, get_directory_structure
+from inspect4py.parse_setup_files import inspect_setup
+from inspect4py.structure_tree import DisplayablePath, get_directory_structure
 
 
 def print_summary(json_dict):

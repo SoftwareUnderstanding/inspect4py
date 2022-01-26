@@ -1,7 +1,7 @@
 import unittest
 import shutil
-from code_inspector.cli import *
-from code_inspector import cli, utils
+from inspect4py.cli import *
+from inspect4py import cli, utils
 
 
 class Test(unittest.TestCase):

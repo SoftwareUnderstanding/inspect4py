@@ -2,7 +2,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages  # type: ignore
 
-from code_inspector import __version__
+from inspect4py import __version__
 
 
 def read(fname):
@@ -23,10 +23,10 @@ with open('requirements.txt', 'r') as f:
 packages = find_packages()
 
 setup(
-    name='code_inspector',
+    name='inspect4py',
     version=__version__,
     packages=packages,
-    url='https://github.com/SoftwareUnderstanding/code_inspector',
+    url='https://github.com/SoftwareUnderstanding/inspect4py',
     license='Apache2.0',
     author='Rosa Filgueira and Daniel Garijo',
     description='Package for performing static code analysis on Python projects',
@@ -37,7 +37,7 @@ setup(
     dependency_links=dependency_links,
     entry_points={
         'console_scripts': [
-            'code_inspector = code_inspector.cli:main',
+            'inspect4py = inspect4py.cli:main',
         ],
     }
 )
