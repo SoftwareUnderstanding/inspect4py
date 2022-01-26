@@ -64,7 +64,7 @@ repos_with_error_entity = []
 
 for dir_name in os.listdir(repo_path):
     print("######## Processing: " + dir_name) # repo_path
-    cmd = 'code_inspector -i ' + repo_path + dir_name + " -o ../../output_dir/ -si"
+    cmd = 'inspect4py -i ' + repo_path + dir_name + " -o ../../output_dir/ -si"
     proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
