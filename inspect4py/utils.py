@@ -91,8 +91,8 @@ def extract_requirements(input_path):
         # Answering yes (echo y), we allow searching for PyPI
         # for the missing modules and filter some unnecessary modules.
 
-        # cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
-        cmd = 'echo n | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
+        cmd = 'echo y | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
+        # cmd = 'echo n | pigar -P ' + input_path + ' --without-referenced-comments -p ' + file_name
         # print("cmd: %s" %cmd)
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)

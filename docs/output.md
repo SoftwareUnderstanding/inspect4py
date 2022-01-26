@@ -1,14 +1,15 @@
-* Results are stored by default inside the **OutputDir** directory, which is created automatically, if it is does not exits. Users have also the possibility to indicate their own directory name. 
+`inspect4py` results are stored by default inside an `OutputDir` directory, which is created automatically if it is does not exits. Users have also the possibility to indicate their own directory name. 
 
-* If the input is a **file**, the tool will create automatically two subdirectories inside **OuptuDir**:
-	- **JsonFiles** directory: with a json file (with the name of the file + ".json") of the information extracted
-	- **ControlFlow** directory: with one or two (depending on the FLAG_PNG) Control Flow files will be created
+If the input is a **file**, the tool will automatically create two subdirectories inside `OuptuDir`:
 
-* If the input is a **directory**, the tool will create the previous directories (**JsonFiles** and **ControlFlow**) but per **directory** and its **subdirectories** instead, under **OutputDir**, storing all the information extracted per file found in each directory and/or subdirectory. The **OutputDir** directory will have the same subdirectory structure as the input directory given by the user. Furthermore, in order to facilitate the inspection of all the features extracted for a given directory (and its subdirectories), we have aggreagated all the previous json information in a **single json file** stored at **OutputDir/DirectoryInfo.json**.In other words, **OutputDir/DirectoryInfo.json**, represents all the features extracted of all files found in a given directory (and its subdirectories). 
+- **JsonFiles** directory: with a JSON file (with the name of the file + ".json") of the information extracted
+- **ControlFlow** directory: containing one or two control flow files depending on the execution options.
 
-### JSON FILE
+If the input is a **directory**, inspect4py will create the **JsonFiles** and **ControlFlow** directories for each **directory** in the original repository, under `OutputDir`. These folders store all the information extracted per file. The `OutputDir` directory will have the same subdirectory structure as the input directory given by the user. In order to ease the inspection of all the features extracted for a given directory (and its subdirectories) we have aggregated all generated json information in a **single JSON file** stored at `OutputDir/DirectoryInfo.json`.In other words, `OutputDir/DirectoryInfo.json`, represents all the features extracted of all files found in a given directory (and its subdirectories). 
 
-* File features:
+## JSON file format
+
+### File features:
 ```
 - file: 
 	- path: <file_name>.py
@@ -20,7 +21,7 @@
                - full
 
 ```
-* Dependencies features: 
+### Dependency features: 
 ```
 - dependencies: (list of dependencies)
 	-dep_<0>:
@@ -34,7 +35,7 @@
 	-dep_<1>:
                	- ...
 ```
-* Classes features:
+### Class features:
 ```
 - classes: (list of classes)
 	-<class_name>:
@@ -84,8 +85,7 @@
 		- ...				
 ```
    
-
-* Function features:
+### Function features:
 
 ```
 - functions: (list of functions found within the class):
@@ -123,24 +123,62 @@
 	-<function_name>:
                 - ...
 ```
-* ControlFlow features:
+### ControlFlow features:
 ```
 - controlflow:
 	- cfg: Path of the cfg as a txt
 	- png: Path of the cfg as a PNG
-
+```
+### Test information:
+```
+"tests": [
+    {
+      "type": "test",
+      "run": "python path_to_test/test.py",
+      "has_structure": "main", # (if the test has a main function)
+      "mentioned_in_readme": false # (if the test is not mentioned 
+	  								the main README file)
+    },
+    
+  ],
+```
+### Software invocation:
+```
+"software_invocation": [
+    {
+      "run": [
+        "somef"
+      ],
+      "type": "package", # Types include package, library, service,	
+	  					   and script
+      "installation": "pip install somef",
+      "ranking": 1 # Relevance sorted in ascending order
+    },
+    {
+      "type": "script",
+      "run": "python path_to_script/script.py",
+      "has_structure": "main",
+      "mentioned_in_readme": false,
+      "ranking": 2
+    },
+  ],
+```
+### Software type:
+```
+"software_type": "package"
 ```
 ## Example
 
-The easiest example is to run `code_inspector` against itself:
+The easiest example is to run `inspect4py` against itself:
 
-  `python code_inspector.py -i code_inspector.py -f`
+  `inspect4py -i path_to_github_repo/inspect4py -f`
 
 
 Results of this run include a JSON file and a control flow file
 
-If no output directory is specified, `code_inspector` will place the documentation in **OuptuDir**, including a JSON File and a control flow file for each code file found in the analyzed directory.
+If no output directory is specified, `inspect4py` will place the documentation in **OuptuDir**, including a JSON File and a control flow file for each code file found in the analyzed directory.
 
+<!--
 ## Visualizing results
 
 We include visualization tools to explore the results in an easy manner. Below we show some visualizations of the results for `code_inspector` code:
@@ -157,3 +195,5 @@ python code_visualization.py OutputDir/JsonFiles/<FILE>.json
 ### Example 2: visualizing code_inspector.py
 
 ![visualization_code_inspector](images/visual_code_inspector.png)
+
+-->

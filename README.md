@@ -15,7 +15,7 @@ Given a folder with code, `inspect4py` will:
 - Extract the hierarchy of directories and files.
 - Extract the requirements used in the software project.
 - Classify which files are tests
-- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, code_inspector will 
+- Classify the main type of software project (script, package, library or service). Only one type is returned as main type (e.g., if a library has the option to be deployed as a service, `inspect4py` will 
 - Return a ranking of the different ways in which a a software component can be run, ordered by relevance.
 
 
