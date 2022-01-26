@@ -38,14 +38,8 @@ Annotated benchmark, curated by hand.
 - main_file_paths_3: files that are less relevant for running the tool.
 - comments: Comments/discussion that occurred during annotation.
 
-### evaluation_summary.csv:
-- date: Date when the experiment was carried out.
-- #repositories: Number of valid repositories analyzed.
-- precision_avg: Average precision.
-- recall_avg: Average recall.
-- errors: Repositories where errors occurred (for debugging)
-
-### evaluation_summary_scripts_precision_recall.csv:
+### evaluation_summary.csv
+File with precision/recall metrics for each category type:
 - date: Date when the experiment was carried out
 - #repositories: Number of valid repositories analyzed.
 - precision_package: Average precision for the package category
@@ -61,7 +55,17 @@ Annotated benchmark, curated by hand.
 - errors: Repositories where errors occurred (for debugging)
 
 ### evaluation_summary_scripts_ndcg.csv
+File with the estimation of the ranking results, using normalized discounted cumultative gain
 - date: Date when the experiment was carried out
 - #repositories: Number of valid repositories analyzed.
 - ndcg_avg: Normalized discounted cumulaltive gain (ranking evaluation)
 - errors: Repositories where errors occurred (for debugging)
+
+### evaluation_summary_scripts_precision_recall.csv:
+File with the precision and recall of all the scripts considered "relevant" in the annotation corpus. **Note: this is ongoing work**.
+- date: Date when the experiment was carried out.
+- #repositories: Number of valid repositories analyzed.
+- precision_avg: Average precision.
+- recall_avg: Average recall.
+- errors: Repositories where errors occurred (for debugging)
+

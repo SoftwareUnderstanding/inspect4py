@@ -297,17 +297,18 @@ class Test(unittest.TestCase):
 #         m.document(destination=output_html_file)
 #         assert "balance between £1,000 and £1,000,000 GBP" in open(output_html_file).read()
 
-def crop_transform68(rimg, landmark, image_size, src):
-    
-    assert landmark.shape[0] == 68 or landmark.shape[0] == 5
-    assert landmark.shape[1] == 2
-    tform = trans.SimilarityTransform()
+# def crop_transform68(rimg, landmark, image_size, src):
+#
+#     assert landmark.shape[0] == 68 or landmark.shape[0] == 5
+#     assert landmark.shape[1] == 2
+#     tform = trans.SimilarityTransform()
+#
+#     tform.estimate(landmark, src)
+#     M = tform.params[0:2, :]
+#     img = cv2.warpAffine(
+#         rimg, M, (image_size[1], image_size[0]), borderValue=0.0)
+#     return img
 
-    tform.estimate(landmark, src)
-    M = tform.params[0:2, :]
-    img = cv2.warpAffine(
-        rimg, M, (image_size[1], image_size[0]), borderValue=0.0)
-    return img
 
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                      call_list, control_flow, directory_tree, software_invocation):
