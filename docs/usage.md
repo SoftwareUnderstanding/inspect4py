@@ -1,18 +1,16 @@
-Inspect4py can be executed to inspect a file, or all the files of a given directory (and its subdirectories).
+`inspect4py` can be executed to inspect a file, or all the files of a given directory (and its subdirectories).
+
 For example, it can be used to inspect all the python files of a given GitHub repository (that has been previously cloned locally).
 
-The tool by default stores the results in the "OutputDir" directory, but users can specify their own directory name by using `-o` or `--output` flags.
+`inspect4py` stores by default the results in an `OutputDir` directory, but users can specify their own directory name by using `-o` or `--output` flags.
 
-And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use `-f` or `--fig`.  
+The framework also allows specifying if control flow figures will be generated or not. By default they will not be generated. To indicate the generation of control flow figures, the `-f` or `--fig` option should be used.  
+
+
+For clarity, we have added a `help` command to explain each input parameter:
 
 ```
-inspect4py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
-```
-
-
-For clarity, we have added the help option to explain each input parameters
-
-```inspect4py --help
+inspect4py --help
 
 Usage: inspect4py [OPTIONS]
 
@@ -39,13 +37,12 @@ Options:
                                   output directory.
   -cl, --call_list                generates the call list in a separate html
                                   file.
-  -cf, --control_flow             generates the call graph for each file in a
-                                  different directory.
+  -cf, --control_flow             generates the call graph for each file in
+                                  the target repository.
   -dt, --directory_tree           captures the file directory tree from the
                                   root path of the target repository.
-  -si, --software_invocation      generates which are the software
-                                  invocation commands to run and test the
-                                  target repository.
+  -si, --software_invocation      generates which are the software invocation
+                                  commands to run and test the target
+                                  repository.
   --help                          Show this message and exit.
-
 ```
