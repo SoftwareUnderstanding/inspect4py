@@ -30,7 +30,7 @@ setup(
     license='BSD-3-Clause',
     author='Rosa Filgueira and Daniel Garijo',
     author_email='daniel.garijo@upm.es',
-    description='Static code analysis package Python repositories',
+    description='Static code analysis package for Python repositories',
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     url='https://github.com/SoftwareUnderstanding/inspect4py',
