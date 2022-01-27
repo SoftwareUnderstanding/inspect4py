@@ -29,6 +29,9 @@ We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 
 
 **Support in Python 3.9**: We have detected that `cdmcfparser` has issues in Python 3.9+. Therefore **the `-cf` command is not guaranteed in Python 3.9**. All other commands have been tested successfully in Python 3.9+.
 
+### Operative System
+We have tested `inspect4py` in Unix and MacOs.
+
 ### Installation from pypi
 `inspect4py` is [available in pypi!](https://pypi.org/project/inspect4py/) Just install it like a regular package:
 
