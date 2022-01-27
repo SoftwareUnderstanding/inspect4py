@@ -33,7 +33,6 @@ setup(
     description='Static code analysis package for Python repositories',
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    url='https://github.com/SoftwareUnderstanding/inspect4py',
     include_package_data=True,
     install_requires=install_requires,
     dependency_links=dependency_links,
