@@ -27,14 +27,21 @@ setup(
     version=__version__,
     packages=packages,
     url='https://github.com/SoftwareUnderstanding/inspect4py',
-    license='Apache2.0',
+    license='BSD-3-Clause',
     author='Rosa Filgueira and Daniel Garijo',
-    description='Package for performing static code analysis on Python projects',
+    author_email='daniel.garijo@upm.es',
+    description='Static code analysis package Python repositories',
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
+    url='https://github.com/SoftwareUnderstanding/inspect4py',
     include_package_data=True,
     install_requires=install_requires,
     dependency_links=dependency_links,
+    python_requires=">=3.6",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python",
+    ],
     entry_points={
         'console_scripts': [
             'inspect4py = inspect4py.cli:main',
