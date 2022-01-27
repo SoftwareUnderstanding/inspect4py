@@ -15,4 +15,4 @@ OutputDir/
 output_dir/
 defoe/*
 env_*
-code_inspector.egg-info/*
+inspect4py.egg-info/*
