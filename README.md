@@ -1,6 +1,6 @@
 # inspect4py [![DOI](https://zenodo.org/badge/349160905.svg)](https://zenodo.org/badge/latestdoi/349160905)
 
-<img src="docs/images/logo.png" alt="logo" width="200"/> 
+<img src="docs/images/logo.png" alt="logo" width="200"/>
 
 Library to allow users inspect a software project folder (i.e., a directory and its subdirectories) and extract all the most relevant information, such as class, method and parameter documentation, classes (and their methods), functions, etc.
 
@@ -42,27 +42,42 @@ Finally, we reuse [Pigar](https://github.com/damnever/pigar) for generating auto
 
 ## Install
 
-### Python version
-We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 3.7**.
+### Preliminaries
 
-**Support in Python 3.9**: We have detected that `cdmcfparser` has issues in Python 3.9+. Therefore **the `-cf` command is not guaranteed in Python 3.9**. All other commands have been tested successfully in Python 3.9+.
-
-### Installation from code
-
-First, make sure you have graphviz installed:
+Make sure you have graphviz installed:
 
 ```
 sudo apt-get install graphviz
 ```
 
-Then, prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder and install the package as follows:
+### Python version
+We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 3.7**.
 
-`pip install -e .`
+**Support in Python 3.9**: We have detected that `cdmcfparser` has issues in Python 3.9+. Therefore **the `-cf` command is not guaranteed in Python 3.9**. All other commands have been tested successfully in Python 3.9+.
+
+### Installation from pypi
+`inspect4py` is [available in pypi!](https://pypi.org/project/inspect4py/) Just install it like a regular package:
+
+```
+pip install inspect4py
+```
 
 You are done!
 
-### Package dependencies: 
-``` 
+### Installation from code
+
+Prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder and install the package as follows:
+
+```
+git clone https://github.com/SoftwareUnderstanding/inspect4py
+cd inspect4py
+pip install -e .
+```
+
+You are done!
+
+### Package dependencies:
+```
 cdmcfparser
 docstring_parser==0.7
 astor
@@ -113,9 +128,9 @@ Note that when running `inspect4py` with Docker, you will need to need to provid
 docker run -it --rm inspect4py:1.0 /bin/bash
 # Docker image starts
 root@e04792563e6a:/# git clone https://github.com/repo/id
-root@e04792563e6a:/# inspect4py -i id 
+root@e04792563e6a:/# inspect4py -i id
 ```
-2. Creating a [volume](https://docs.docker.com/storage/volumes/). For example, for mounting the $PWD folder: 
+2. Creating a [volume](https://docs.docker.com/storage/volumes/). For example, for mounting the $PWD folder:
 
 ```
 docker run -it -v -v $PWD:/out --rm inspect4py:1.0 /bin/bash
