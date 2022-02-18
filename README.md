@@ -1,4 +1,5 @@
-# inspect4py [![DOI](https://zenodo.org/badge/349160905.svg)](https://zenodo.org/badge/latestdoi/349160905)
+# inspect4py 
+[![PyPI](https://badge.fury.io/py/inspect4py.svg)](https://badge.fury.io/py/inspect4py) [![DOI](https://zenodo.org/badge/349160905.svg)](https://zenodo.org/badge/latestdoi/349160905)
 
 <img src="docs/images/logo.png" alt="logo" width="200"/>
 
