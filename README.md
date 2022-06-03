@@ -68,7 +68,7 @@ pip install inspect4py
 
 You are done!
 
-If you receive an error similar to:
+**Note**: If you receive an error similar to:
 ```
       error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
       [end of output]
