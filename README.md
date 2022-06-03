@@ -68,6 +68,19 @@ pip install inspect4py
 
 You are done!
 
+If you receive an error similar to:
+```
+      error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  × Encountered error while trying to install package.
+╰─> cdmcfparser
+
+error: legacy-install-failure
+```
+The try to update the python-dev utilities: `sudo apt-get install python3.X-dev` (where X is your python version)
+
 ### Installation from code
 
 Prepare a virtual Python3 enviroment, `cd` into the `inspect4py` folder and install the package as follows:
