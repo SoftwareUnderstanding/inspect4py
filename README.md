@@ -215,6 +215,8 @@ Options:
   -si, --software_invocation      generates which are the software
                                   invocation commands to run and test the
                                   target repository.
+  -ast, -—abstract_syntax_tree    generates the abstract syntax tree for each
+                                  function in json format.
   --help                          Show this message and exit.
 ```
 

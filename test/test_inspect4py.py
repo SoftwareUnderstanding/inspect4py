@@ -12,8 +12,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['Rectangle'] == dictionary['Rectangle'])
@@ -31,8 +32,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['body'] == dictionary['body'])
@@ -45,8 +47,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -63,8 +66,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -80,8 +84,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -94,8 +99,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['body'] == dictionary['body'])
@@ -108,8 +114,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['body'] == dictionary['body'])
@@ -121,8 +128,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -134,8 +142,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -147,8 +156,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -160,8 +170,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -173,8 +184,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -187,8 +199,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -201,8 +214,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -215,8 +229,9 @@ class Test(unittest.TestCase):
         output_dir = "./output_dir"
         control_flow = False
         fig = False
+        abstract_syntax_tree = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -232,8 +247,9 @@ class Test(unittest.TestCase):
         control_flow = False
         directory_tree = False
         software_invocation = True
+        abstract_syntax_tree = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "service"
@@ -249,8 +265,9 @@ class Test(unittest.TestCase):
         control_flow = False
         directory_tree = False
         software_invocation = True
+        abstract_syntax_tree = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "package"
@@ -266,8 +283,9 @@ class Test(unittest.TestCase):
         control_flow = False
         directory_tree = False
         software_invocation = True
+        abstract_syntax_tree = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "library"
@@ -283,8 +301,9 @@ class Test(unittest.TestCase):
         control_flow = False
         directory_tree = False
         software_invocation = True
+        abstract_syntax_tree = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "script"
@@ -311,7 +330,7 @@ class Test(unittest.TestCase):
 
 
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                     call_list, control_flow, directory_tree, software_invocation):
+                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree):
     dir_info = {}
     # retrieve readme text at the root level (if any)
     readme = ""
@@ -333,7 +352,7 @@ def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_fil
                     path = os.path.join(subdir, f)
                     out_dir = output_dir + "/" + os.path.basename(subdir)
                     cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
-                    code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow)
+                    code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
                     if out_dir not in dir_info:
                         dir_info[out_dir] = [code_info.fileJson[0]]
                     else:

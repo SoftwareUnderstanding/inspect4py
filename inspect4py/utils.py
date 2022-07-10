@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from json2html import *
+from bigcode_astgen.ast_generator import ASTGenerator
 
 from inspect4py.parse_setup_files import inspect_setup
 from inspect4py.structure_tree import DisplayablePath, get_directory_structure
@@ -68,6 +69,9 @@ def prune_json(json_dict):
         return json_dict
     else:
         for a, b in json_dict.items():
+            if a == "ast":
+                final_dict[a] = b # Avoid pruning AST fields
+                continue
             if b or isinstance(b, bool):
                 if isinstance(b, dict):
                     aux_dict = prune_json(b)
@@ -577,3 +581,12 @@ def rank_software_invocation(soft_invocation_info_list):
             previous_score = current_score
         entry["ranking"] = position
     return soft_invocation_info_list
+
+def ast_to_json(ast_obj):
+    """
+    Function to convert the AST object into JSON format.
+    :param ast_obj: AST object
+    """
+    ast_generator = ASTGenerator("")
+    ast_generator.tree = ast_obj
+    return ast_generator.generate_ast()

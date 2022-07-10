@@ -27,7 +27,7 @@ builtin_function_names = [name for name, obj in vars(builtins).items()
 
 
 class CodeInspection:
-    def __init__(self, path, out_control_flow_path, out_json_path, flag_png, control_flow):
+    def __init__(self, path, out_control_flow_path, out_json_path, flag_png, control_flow, abstract_syntax_tree):
         """ init method initializes the Code_Inspection object
         :param self self: represent the instance of the class
         :param str path: the file to inspect
@@ -35,11 +35,13 @@ class CodeInspection:
         :param str out_json_path: the output directory to store the json file with features extracted from the ast tree.
         :param int flag_png: flag to indicate to generate or not control flow figures
         :param bool control_flow: boolean to indicate to generate the control flow
+        :param bool abstract_syntax_tree: boolean to indicate to generate each function's ast in json format
         """
 
         self.path = path
         self.flag_png = flag_png
         self.out_json_path = out_json_path
+        self.abstract_syntax_tree = abstract_syntax_tree
         self.tree = self.parser_file()
         if self.tree != "AST_ERROR":
             self.fileInfo = self.inspect_file()
@@ -558,6 +560,10 @@ class CodeInspection:
                     if n_f in funcs_info[f.name]["functions"][n_f_2]["functions"]:
                         funcs_info[f.name]["functions"].pop(n_f)
                         break
+            
+            # add ast in json format
+            if self.abstract_syntax_tree:
+                funcs_info[f.name]["ast"] = ast_to_json(f)
 
         return funcs_info
 
@@ -1196,15 +1202,17 @@ def create_output_dirs(output_dir, control_flow):
               help="captures the file directory tree from the root path of the target repository.")
 @click.option('-si', '--software_invocation', type=bool, is_flag=True,
               help="generates which are the software invocation commands to run and test the target repository.")
+@click.option('-ast', '--abstract_syntax_tree', type=bool, is_flag=True,
+              help="generates abstract syntax tree of each function in json format.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
-         control_flow, directory_tree, software_invocation):
+         control_flow, directory_tree, software_invocation, abstract_syntax_tree):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
     if os.path.isfile(input_path):
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
 
         # Generate the call list of a file
         call_list_data = call_list_file(code_info)
@@ -1247,7 +1255,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         path = os.path.join(subdir, f)
                         out_dir = output_dir + "/" + os.path.basename(subdir)
                         cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
-                        code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow)
+                        code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree)
                         if code_info.fileJson:
                             if out_dir not in dir_info:
                                 dir_info[out_dir] = [code_info.fileJson[0]]
