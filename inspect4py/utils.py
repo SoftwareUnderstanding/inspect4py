@@ -590,3 +590,10 @@ def ast_to_json(ast_obj):
     ast_generator = ASTGenerator("")
     ast_generator.tree = ast_obj
     return ast_generator.generate_ast()
+
+def ast_to_source_code(ast_obj):
+    """
+    Function to convert the AST object into source code.
+    :param ast_obj: AST object
+    """
+    return ast.unparse(ast_obj)
