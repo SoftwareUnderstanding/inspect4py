@@ -1,5 +1,5 @@
 # inspect4py 
-[![PyPI](https://badge.fury.io/py/inspect4py.svg)](https://badge.fury.io/py/inspect4py) [![DOI](https://zenodo.org/badge/349160905.svg)](https://zenodo.org/badge/latestdoi/349160905)
+[![PyPI](https://badge.fury.io/py/inspect4py.svg)](https://badge.fury.io/py/inspect4py) [![DOI](https://zenodo.org/badge/349160905.svg)](https://zenodo.org/badge/latestdoi/349160905) [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 <img src="docs/images/logo.png" alt="logo" width="200"/>
 
@@ -67,6 +67,19 @@ pip install inspect4py
 ```
 
 You are done!
+
+**Note**: If you receive an error similar to:
+```
+      error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  × Encountered error while trying to install package.
+╰─> cdmcfparser
+
+error: legacy-install-failure
+```
+Then try to update the python-dev utilities: `sudo apt-get install python3.X-dev` (where X is your python version)
 
 ### Installation from code
 
