@@ -347,6 +347,152 @@ class Test(unittest.TestCase):
 #         rimg, M, (image_size[1], image_size[0]), borderValue=0.0)
 #     return img
 
+    def test_ast_function(self):
+        input_path = "./test_files/test_basic/test_basic_function.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        fig = False
+        abstract_syntax_tree = True
+        source_code = False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
+        shutil.rmtree(output_dir)
+
+        expected_ast = [
+            {"id": 0, "type": "FunctionDef", "value": "foo", "children": [1, 6, 14]},
+            {"id": 1, "type": "arguments", "children": [2, 5]},
+            {"id": 2, "type": "args", "children": [3, 4]},
+            {"id": 3, "type": "arg", "value": "arg1"},
+            {"id": 4, "type": "arg", "value": "arg2"},
+            {"id": 5, "type": "defaults"},
+            {"id": 6, "type": "body", "children": [7, 12]},
+            {"id": 7, "type": "Expr", "children": [8]},
+            {"id": 8, "type": "Call", "children": [9, 10, 11]},
+            {"id": 9, "type": "NameLoad", "value": "print"},
+            {"id": 10, "type": "Constant", "value": "Hello %s"},
+            {"id": 11, "type": "NameLoad", "value": "arg1"},
+            {"id": 12, "type": "Return", "children": [13]},
+            {"id": 13, "type": "NameLoad", "value": "arg2"},
+            {"id": 14, "type": "decorator_list"},
+        ]
+        actual_ast = code_info.fileJson[0]["functions"]["foo"]["ast"]
+        assert expected_ast == actual_ast
+
+    def test_ast_method(self):
+        input_path = "./test_files/test_basic/test_basic_method.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        fig = False
+        abstract_syntax_tree = True
+        source_code = False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
+        shutil.rmtree(output_dir)
+
+        expected_ast = [
+            {'id': 0, 'type': 'FunctionDef', 'value': '__init__', 'children': [1, 6, 20]},
+            {'id': 1, 'type': 'arguments', 'children': [2, 5]},
+            {'id': 2, 'type': 'args', 'children': [3, 4]},
+            {'id': 3, 'type': 'arg', 'value': 'self'},
+            {'id': 4, 'type': 'arg', 'value': 'arg'},
+            {'id': 5, 'type': 'defaults'},
+            {'id': 6, 'type': 'body', 'children': [7, 12]},
+            {'id': 7, 'type': 'Assign', 'children': [8, 11]},
+            {'id': 8, 'type': 'AttributeStore', 'children': [9, 10]},
+            {'id': 9, 'type': 'NameLoad', 'value': 'self'},
+            {'id': 10, 'type': 'attr', 'value': 'arg'},
+            {'id': 11, 'type': 'NameLoad', 'value': 'arg'},
+            {'id': 12, 'type': 'Expr', 'children': [13]},
+            {'id': 13, 'type': 'Call', 'children': [14, 15]},
+            {'id': 14, 'type': 'NameLoad', 'value': 'print'},
+            {'id': 15, 'type': 'BinOpMod', 'children': [16, 17]},
+            {'id': 16, 'type': 'Constant', 'value': 'Hello %s'},
+            {'id': 17, 'type': 'AttributeLoad', 'children': [18, 19]},
+            {'id': 18, 'type': 'NameLoad', 'value': 'self'},
+            {'id': 19, 'type': 'attr', 'value': 'arg'},
+            {'id': 20, 'type': 'decorator_list'},
+        ]
+        actual_ast = code_info.fileJson[0]["classes"]["Foo"]["methods"]["__init__"]["ast"]
+        assert expected_ast == actual_ast
+
+    def test_ast_body(self):
+        input_path = "./test_files/test_basic/test_basic_body.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        fig = False
+        abstract_syntax_tree = True
+        source_code = False
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
+        shutil.rmtree(output_dir)
+
+        expected_ast = [
+            [
+                {"id": 0, "type": "Expr", "children": [1]},
+                {"id": 1, "type": "Call", "children": [2, 3]},
+                {"id": 2, "type": "NameLoad", "value": "print"},
+                {"id": 3, "type": "Constant", "value": "Hello world"},
+            ],
+            [
+                {"id": 0, "type": "Assign", "children": [1, 2]},
+                {"id": 1, "type": "NameStore", "value": "var"},
+                {"id": 2, "type": "Constant", "value": "1"},
+            ],
+            [
+                {"id": 0, "type": "Expr", "children": [1]},
+                {"id": 1, "type": "Call", "children": [2, 3]},
+                {"id": 2, "type": "NameLoad", "value": "print"},
+                {"id": 3, "type": "NameLoad", "value": "var"},
+            ],
+        ]        
+        actual_ast = code_info.fileJson[0]["body"]["ast"]
+        assert expected_ast == actual_ast
+
+    def test_source_code_function(self):
+        input_path = "./test_files/test_basic/test_basic_function.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        fig = False
+        abstract_syntax_tree = False
+        source_code = True
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
+        shutil.rmtree(output_dir)
+
+        expected_code = "def foo(arg1, arg2):\n    print('Hello %s', arg1)\n    return arg2" # Single double quote sensitive
+        actual_code = code_info.fileJson[0]["functions"]["foo"]["source_code"]
+        assert expected_code == actual_code
+
+
+    def test_source_code_method(self):
+        input_path = "./test_files/test_basic/test_basic_method.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        fig = False
+        abstract_syntax_tree = False
+        source_code = True
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
+        shutil.rmtree(output_dir)
+
+        expected_code = "def __init__(self, arg):\n    self.arg = arg\n    print('Hello %s' % self.arg)"
+        actual_code = code_info.fileJson[0]["classes"]["Foo"]["methods"]["__init__"]["source_code"]
+        assert expected_code == actual_code
+
+    def test_source_code_body(self):
+        input_path = "./test_files/test_basic/test_basic_body.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        fig = False
+        abstract_syntax_tree = False
+        source_code = True
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
+        shutil.rmtree(output_dir)
+
+        expected_code = ["print('Hello world')", "var = 1", "print(var)"]
+        actual_code = code_info.fileJson[0]["body"]["source_code"]
+        assert expected_code == actual_code
 
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                      call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code):

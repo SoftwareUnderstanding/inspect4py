@@ -69,7 +69,7 @@ def prune_json(json_dict):
         return json_dict
     else:
         for a, b in json_dict.items():
-            if a == "ast":
+            if a == "ast" and b:
                 final_dict[a] = b # Avoid pruning AST fields
                 continue
             if b or isinstance(b, bool):
@@ -330,11 +330,30 @@ def type_module(m, i, path):
         file_module = abs_repo_path + "/" + m + "/" + i + ".py"
     else:
         file_module = abs_repo_path + "/" + i + ".py"
+
     file_module_path = Path(file_module)
     if file_module_path.is_file():
         return "internal"
     else:
-        return "external"
+        if m:
+           m = m.replace(".", "/")
+           file_module = abs_repo_path + "/" + m + ".py"
+           file_module_path = Path(file_module)
+           if file_module_path.is_file():
+               return "internal"
+           else:
+               file_module = abs_repo_path + "/" + m + "/main.py"
+               file_module_path = Path(file_module)
+               if file_module_path.is_file():
+                   return "internal"
+               else:
+                   return "external"
+        else:
+            dir_module = abs_repo_path + "/" + i
+            if os.path.exists(dir_module):
+                   return "internal"
+            else:
+                return "external"
 
 
 def extract_call_functions(funcs_info, body=0):
