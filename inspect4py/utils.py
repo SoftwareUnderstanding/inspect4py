@@ -498,7 +498,8 @@ def extract_relations(file_name, m_calls, main_files, call_list):
                 level = 0
                 flag_found = extract_data(base, m_calls[m_c], file, m_imports, flag_found, call_list, orig_base, level)
                 if flag_found:
-                    return m_imports
+                    #return m_imports
+                    break
 
     return m_imports
 

@@ -272,6 +272,26 @@ class Test(unittest.TestCase):
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "library"
 
+
+    def test_multiple_mains(self):
+        input_path = "./test_files/test_multiple_mains"
+        output_dir = "./output_dir"
+        fig = False
+        ignore_dir_pattern = [".", "__pycache__"]
+        ignore_file_pattern = [".", "__pycache__"]
+        requirements = False
+        call_list = False
+        control_flow = False
+        directory_tree = False
+        software_invocation = True
+        dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
+                                    call_list, control_flow, directory_tree, software_invocation)
+        imports = dir_info['software_invocation']
+        shutil.rmtree(output_dir)
+        assert len(imports[0]["imports"]) == 2
+
+
+
     def test_script(self):
         input_path = "./test_files/BoostingMonocularDepth"
         output_dir = "./output_dir"
