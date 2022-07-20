@@ -1323,3 +1323,4 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
 
 if __name__ == "__main__":
     main()
+
