@@ -264,8 +264,9 @@ class Test(unittest.TestCase):
         software_invocation = True
         abstract_syntax_tree = False
         source_code = False
+        license_detection = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "service"
@@ -283,8 +284,9 @@ class Test(unittest.TestCase):
         software_invocation = True
         abstract_syntax_tree = False
         source_code = False
+        license_detection = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "package"
@@ -302,8 +304,9 @@ class Test(unittest.TestCase):
         software_invocation = True
         abstract_syntax_tree = False
         source_code = False
+        license_detection = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "library"
@@ -320,8 +323,11 @@ class Test(unittest.TestCase):
         control_flow = False
         directory_tree = False
         software_invocation = True
+        abstract_syntax_tree = False
+        source_code = False
+        license_detection = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
         imports = dir_info['software_invocation']
         shutil.rmtree(output_dir)
         assert len(imports[0]["imports"]) == 2
@@ -341,8 +347,9 @@ class Test(unittest.TestCase):
         software_invocation = True
         abstract_syntax_tree = False
         source_code = False
+        license_detection = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "script"
@@ -514,8 +521,33 @@ class Test(unittest.TestCase):
         actual_code = code_info.fileJson[0]["body"]["source_code"]
         assert expected_code == actual_code
 
+    def test_license_detection(self):
+        input_paths = ["./test_files/Chowlk", "./test_files/pylops", "./test_files/somef"]
+        output_dir = "./output_dir"
+        fig = False
+        ignore_dir_pattern = [".", "__pycache__"]
+        ignore_file_pattern = [".", "__pycache__"]
+        requirements = False
+        call_list = False
+        control_flow = False
+        directory_tree = False
+        software_invocation = False
+        abstract_syntax_tree = False
+        source_code = False
+        license_detection = True
+
+        expected_liceses = ['Apache-2.0', 'LGPL-3.0', 'MIT']
+        first_rank_licenses = []
+        for input_path in input_paths:
+            dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+            first_rank_licenses.append(next(iter(dir_info["detected_license"][0])))
+            shutil.rmtree(output_dir)
+        
+        assert first_rank_licenses == expected_liceses
+
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code):
+                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection):
     dir_info = {}
     # retrieve readme text at the root level (if any)
     readme = ""
@@ -580,6 +612,10 @@ def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_fil
 
             # Extract the first for software type.
             dir_info["software_type"] = rank_software_invocation(soft_invocation_info_list)
+    if license_detection:
+            licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../inspect4py/licenses")
+            rank_list = detect_license(input_path, licenses_path)
+            dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
     return dir_info
 
 

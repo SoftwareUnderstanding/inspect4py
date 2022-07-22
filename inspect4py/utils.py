@@ -1,5 +1,6 @@
 import ast
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -617,3 +618,72 @@ def ast_to_source_code(ast_obj):
     :param ast_obj: AST object
     """
     return ast.unparse(ast_obj)
+
+
+# Copied and modified from
+# https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Dice%27s_coefficient#Python
+def dice_coefficient(a, b):
+    """dice coefficient 2nt/(na + nb)."""
+    if not len(a) or not len(b):
+        return 0.0
+    if len(a) == 1:
+        a = a + u"."
+    if len(b) == 1:
+        b = b + u"."
+
+    a_bigrams = {a[i : i + 2] for i in range(len(a) - 1)}
+    b_bigrams = {b[i : i + 2] for i in range(len(b) - 1)}
+
+    overlap = len(a_bigrams & b_bigrams)
+    dice_coeff = overlap * 2.0 / (len(a_bigrams) + len(b_bigrams))
+    return dice_coeff
+
+
+def detect_license(input_path, licenses_path, threshold=0.9):
+    """
+    Function to detect the license of a file.
+    :param input_path: Path of the repository to be analyzed.
+    :param licenses_path: Path to the folder containing license templates.
+    """
+    license_filenames = [
+        "LICENSE",
+        "LICENSE.txt",
+        "LICENSE.md",
+        "LICENSE.rst",
+        "COPYING",
+        "COPYING.txt",
+        "COPYING.md",
+        "COPYING.rst",
+    ]
+    license_file = None
+    for filename in os.listdir(input_path):
+        if filename in license_filenames:
+            license_file = os.path.join(input_path, filename)
+            break
+    if license_file is None:
+        return "No license file detected"
+
+    with open(license_file, "r") as f:
+        license_text = f.read()
+
+    # Regex pattern for preprocessing license templates and extract spdx id
+    pattern = re.compile(
+        "(---\n.*(spdx-id: )(?P<id>.+?)\n.*---\n)(?P<template>.*)", re.DOTALL
+    )
+    rank_list = []
+    for licen in os.listdir(licenses_path):
+        with open(os.path.join(licenses_path, licen), "r") as f:
+            parser = pattern.search(f.read())
+            if parser is None:
+                continue
+            spdx_id = parser.group("id")
+            license_template = parser.group("template")
+
+        dice_coeff = dice_coefficient(license_text.strip(), license_template.strip())
+        if dice_coeff > threshold:
+            rank_list.append((spdx_id, dice_coeff))
+
+    if rank_list:
+        return sorted(rank_list, key=lambda t: t[1], reverse=True)
+
+    return "License not recognised"

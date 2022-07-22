@@ -1213,8 +1213,10 @@ def create_output_dirs(output_dir, control_flow):
               help="generates abstract syntax tree in json format.")
 @click.option('-sc', '--source_code', type=bool, is_flag=True,
               help="generates the source code of each ast node.")
+@click.option('-ld', '--license_detection', type=bool, is_flag=True,
+              help="detects the license of the target repository.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
-         control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code):
+         control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -1311,6 +1313,10 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                     dir_info["software_type"] = soft_invocation_info_list[0]["type"]
                 else:
                     dir_info["software_type"] = "not found"
+        if license_detection:
+            licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "licenses")
+            rank_list = detect_license(input_path, licenses_path)
+            dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
