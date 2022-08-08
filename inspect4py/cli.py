@@ -46,6 +46,7 @@ class CodeInspection:
         self.source_code = source_code
         self.tree = self.parser_file()
         if self.tree != "AST_ERROR":
+            self.nodes = self.walk()
             self.fileInfo = self.inspect_file()
             self.depInfo = self.inspect_dependencies()
             self.funcsInfo, self.classesInfo = self.inspect_classes_funcs()
@@ -71,6 +72,28 @@ class CodeInspection:
                 return ast.parse(f.read(), filename=self.path)
             except:
                 return "AST_ERROR"
+    
+    def walk(self):
+        """
+        recursivly traverses through self.tree and return all resultant nodes
+        """
+        stack = [self.tree]
+        res = []
+        while stack:
+            node = stack.pop()
+            res.append(node)
+            # Stop traversing further when we meet function or class definitions
+            if isinstance(node, ast.FunctionDef) or isinstance(node, ast.ClassDef):
+                continue
+
+            child_nodes = []
+            for child in ast.iter_child_nodes(node):
+                child.parent = node # Add parent reference to each child node
+                child_nodes.append(child)
+            
+            # Maintain ast node order when traversing
+            stack.extend(reversed(child_nodes))
+        return res[1:] # The first node is self.tree, ignore it
 
     def inspect_file(self):
         """
@@ -149,7 +172,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all functions information extracted
         """
 
-        functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
+        functions_definitions = [node for node in self.nodes if isinstance(node, ast.FunctionDef)]
         function_definition_info = self._f_definitions(functions_definitions)
         # improving the list of calls
         functions_info = self._fill_call_name(function_definition_info, classes_info)
@@ -170,7 +193,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all classes information extracted
         """
 
-        classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
+        classes_definitions = [node for node in self.nodes if isinstance(node, ast.ClassDef)]
         classes_info = {}
         for c in classes_definitions:
             classes_info[c.name] = {}
@@ -232,96 +255,56 @@ class CodeInspection:
             classes_info[c]["methods"] = self._fill_call_name(classes_info[c]["methods"], classes_info, c,
                                                               classes_info[c]["extend"], type=2,
                                                               additional_info=funcs_info)
-        classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
+        classes_definitions = [node for node in self.nodes if isinstance(node, ast.ClassDef)]
 
         funcs_info, classes_info = self._check_dynamic_calls(classes_definitions, funcs_info, classes_info, type=2)
         return funcs_info, classes_info
 
     def inspect_body(self):
-        body_nodes = []
+        call_nodes = [node for node in self.nodes if isinstance(node, ast.Call)]
         body_info = {"body": {}}
-        for node in self.tree.body:
-            if not isinstance(node, ast.ClassDef) and not isinstance(node, ast.FunctionDef) and not isinstance(node,
-                                                                                                               ast.Import) and not isinstance(
-                node, ast.ImportFrom):
-                body_nodes.append(node)
-
-        body_assigns = [node for node in body_nodes if isinstance(node, ast.Assign)]
-        body_expr = [node for node in body_nodes if isinstance(node, ast.Expr)]
         body_store_vars = {}
         body_calls = []
-        for b_as in body_assigns:
-            if isinstance(b_as.value, ast.Call):
-                body_name = self._get_func_name(b_as.value.func)
-                if body_name:
-                    body_calls.append(body_name)
+        for node in call_nodes:
+            body_name = self._get_func_name(node.func)
+            if not body_name:
+                continue
+            body_calls.append(body_name)
 
-                    # new : check if we have calls in the arguments
-                    body_calls = self._get_arguments_calls(b_as.value.args, body_calls)
+            if isinstance(node.parent, ast.Assign):
+                for target in node.parent.targets:
+                    target_name = self._get_func_name(target)
+                    body_store_vars[target_name] = body_name
 
-                    for target in b_as.targets:
-                        target_name = self._get_func_name(target)
-                        body_store_vars[target_name] = body_name
+            # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
+            if "." in body_name:
+                check_body_name = body_name.split(".")[0]
+            else:
+                check_body_name = body_name
+            if check_body_name in body_store_vars.keys():
+                var_name = body_store_vars[check_body_name]
+            else:
+                var_name = ""
 
-                    # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                    if "." in body_name:
-                        check_body_name = body_name.split(".")[0]
-                    else:
-                        check_body_name = body_name
-                    if check_body_name in body_store_vars.keys():
-                        var_name = body_store_vars[check_body_name]
-                    else:
-                        var_name = ""
+            skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
+                                            var_name)
 
-                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
-                                                    var_name)
+            # new: dynamic functions
+            if not skip:
+                self._dynamic_calls(
+                    node.args,
+                    body_name,
+                    self.funcsInfo,
+                    self.classesInfo, body_store_vars)
 
-                    # new: dynamic functions
-                    if not skip:
-                        self._dynamic_calls(
-                            b_as.value.args,
-                            body_name,
-                            self.funcsInfo,
-                            self.classesInfo, body_store_vars)
-
-        for b_ex in body_expr:
-            if isinstance(b_ex.value, ast.Call):
-                body_name = self._get_func_name(b_ex.value.func)
-                if body_name:
-                    body_calls.append(body_name)
-
-                    # new: check if we have calls in the arguments of the function
-                    body_calls = self._get_arguments_calls(b_ex.value.args, body_calls)
-
-                    # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                    if "." in body_name:
-                        check_body_name = body_name.split(".")[0]
-                    else:
-                        check_body_name = body_name
-
-                    if check_body_name in body_store_vars.keys():
-                        var_name = body_store_vars[check_body_name]
-                    else:
-                        var_name = ""
-
-                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
-                                                    var_name)
-
-                    # new: dynamic functions
-                    if not skip:
-                        self._dynamic_calls(
-                            b_ex.value.args,
-                            body_name,
-                            self.funcsInfo,
-                            self.classesInfo, body_store_vars)
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
         body_info = self._fill_call_name(body_info, self.classesInfo, type=1, additional_info=self.funcsInfo)
         if self.abstract_syntax_tree:
-            body_info["body"]["ast"] = [ast_to_json(node) for node in body_nodes]
+            body_info["body"]["ast"] = [ast_to_json(node) for node in call_nodes]
         if self.source_code:
-            body_info["body"]["source_code"] = [ast_to_source_code(node) for node in body_nodes]
+            body_info["body"]["source_code"] = [ast_to_source_code(node) for node in call_nodes]
         return body_info
 
     def inspect_dependencies(self):
@@ -807,13 +790,6 @@ class CodeInspection:
                 print("Added in funct/method %s , argument named %s, number of argument %s" % (
                 f_name, call_name, f_arg_cont))
             f_arg_cont += 1
-
-    def _get_arguments_calls(self, f_args, list_calls):
-        for f_arg in f_args:
-            if isinstance(f_arg, ast.Call):
-                name = self._get_func_name(f_arg.func)
-                list_calls.append(name)
-        return list_calls
 
     def _get_func_name(self, func):
         func_name = None
