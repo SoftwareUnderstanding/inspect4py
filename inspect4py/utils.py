@@ -387,8 +387,10 @@ def call_list_file(code_info):
     call_list = {}
     call_list["functions"] = extract_call_functions(code_info.funcsInfo)
     call_list["body"] = extract_call_functions(code_info.bodyInfo, body=1)
+    # TODO: call_list["classes"] = {}
     for class_n in code_info.classesInfo:
         call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
+        # TODO: call_list["classes"][class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
     return call_list
 
 
@@ -398,9 +400,12 @@ def call_list_dir(dir_info):
         call_list[dir] = {}
         for file_info in dir_info[dir]:
             file_path = file_info["file"]["path"]
-            call_list[dir][file_path] = extract_call_functions(file_info["functions"])
+            call_list[dir][file_path] = {}
+            call_list[dir][file_path]["functions"] = extract_call_functions(file_info["functions"])
+            call_list[dir][file_path]["body"] = extract_call_functions(file_info, body=1)
+            call_list[dir][file_path]["classes"] = {}
             for class_n in file_info["classes"]:
-                call_list[dir][file_path][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
+                call_list[dir][file_path]["classes"][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
     return call_list
 
 
@@ -687,3 +692,50 @@ def detect_license(input_path, licenses_path, threshold=0.9):
         return sorted(rank_list, key=lambda t: t[1], reverse=True)
 
     return "License not recognised"
+
+def pycg_call_list(call_list: dict, root_dir: str):
+    """
+    Function to turn call list into pycg format
+    :param call_list: original call list dictionary
+    """
+    call_graph = {}
+    func_names = set()
+    def transform_funcs(func_list: dict, name_stack: list, call_graph: dict, func_names: set):
+        """
+        Extracts all parent-children relations to call_graph while recording all
+        function names appeared in func_names
+        """
+        for func_name, func_info in func_list.items():
+            name_stack.append(func_name)
+
+            current_name = ".".join(name_stack)
+            call_graph[current_name] = func_info["local"]
+            func_names.update(func_info["local"])
+
+            if func_info.get("nested") is not None:
+                transform_funcs(func_info["nested"], name_stack, call_graph, func_names)
+
+            name_stack.pop()
+
+    for dir_name, dir_info in call_list.items():
+        for file_name, file_info in dir_info.items():
+            pruned_filename = os.path.splitext(file_name.replace(root_dir, '').replace('/', '.'))[0] # TODO: change to a more robust way
+            func_names.add(pruned_filename) # We also want to record each file name
+
+            # extract body calls
+            if file_info.get("body") is not None:
+                transform_funcs({pruned_filename: file_info["body"]}, [], call_graph, func_names)
+
+            # extract calls inside function definitions
+            if file_info.get("functions") is not None:
+                transform_funcs(file_info["functions"], [pruned_filename], call_graph, func_names)
+
+            # extract calls inside class method definitions
+            if file_info.get("classes") is not None:
+                for class_name, methods in file_info["classes"].items():
+                    transform_funcs(methods, [pruned_filename, class_name], call_graph, func_names)
+
+    res = dict.fromkeys(func_names, [])
+    res.update(call_graph)
+
+    return res
