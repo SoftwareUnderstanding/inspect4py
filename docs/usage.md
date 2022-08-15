@@ -46,5 +46,6 @@ Options:
                                   repository.
   -ast, -—abstract_syntax_tree    generates abstract syntax tree in json format.
   -sc, --source_code              generates source code of each ast node.
+  -ld, --license_detection        detects the license of the target repository.
   --help                          Show this message and exit.
 ```

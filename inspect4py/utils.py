@@ -648,6 +648,8 @@ def detect_license(input_path, licenses_path, threshold=0.9):
     Function to detect the license of a file.
     :param input_path: Path of the repository to be analyzed.
     :param licenses_path: Path to the folder containing license templates.
+    :param threshold: Threshold to consider a license as detected, 
+           a float number between 0 and 1.
     """
     license_filenames = [
         "LICENSE",
