@@ -501,7 +501,16 @@ class CodeInspection:
             except:
                 funcs_info[f.name]["doc"] = {}
 
-            funcs_info[f.name]["args"] = [a.arg for a in f.args.args]
+            funcs_info[f.name]["args"] = []
+            funcs_info[f.name]["annotated_arg_types"] = {}
+            for a in f.args.args:
+                funcs_info[f.name]["args"].append(a.arg)
+
+                if a.annotation is not None:
+                    funcs_info[f.name]["annotated_arg_types"][a.arg] = ast.unparse(a.annotation)
+            if f.returns is not None:
+                funcs_info[f.name]["annotated_return_type"] = ast.unparse(f.returns)
+
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
             funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
