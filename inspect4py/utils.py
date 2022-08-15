@@ -387,10 +387,9 @@ def call_list_file(code_info):
     call_list = {}
     call_list["functions"] = extract_call_functions(code_info.funcsInfo)
     call_list["body"] = extract_call_functions(code_info.bodyInfo, body=1)
-    # TODO: call_list["classes"] = {}
+    call_list["classes"] = {}
     for class_n in code_info.classesInfo:
-        call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
-        # TODO: call_list["classes"][class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
+        call_list["classes"][class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
     return call_list
 
 
