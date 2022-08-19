@@ -1,9 +1,11 @@
 import ast
 import os
+import re
 import subprocess
 from pathlib import Path
 
 from json2html import *
+from bigcode_astgen.ast_generator import ASTGenerator
 
 from inspect4py.parse_setup_files import inspect_setup
 from inspect4py.structure_tree import DisplayablePath, get_directory_structure
@@ -68,6 +70,9 @@ def prune_json(json_dict):
         return json_dict
     else:
         for a, b in json_dict.items():
+            if a == "ast" and b:
+                final_dict[a] = b # Avoid pruning AST fields
+                continue
             if b or isinstance(b, bool):
                 if isinstance(b, dict):
                     aux_dict = prune_json(b)
@@ -382,8 +387,9 @@ def call_list_file(code_info):
     call_list = {}
     call_list["functions"] = extract_call_functions(code_info.funcsInfo)
     call_list["body"] = extract_call_functions(code_info.bodyInfo, body=1)
+    call_list["classes"] = {}
     for class_n in code_info.classesInfo:
-        call_list[class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
+        call_list["classes"][class_n] = extract_call_methods(code_info.classesInfo[class_n]["methods"])
     return call_list
 
 
@@ -393,9 +399,12 @@ def call_list_dir(dir_info):
         call_list[dir] = {}
         for file_info in dir_info[dir]:
             file_path = file_info["file"]["path"]
-            call_list[dir][file_path] = extract_call_functions(file_info["functions"])
+            call_list[dir][file_path] = {}
+            call_list[dir][file_path]["functions"] = extract_call_functions(file_info["functions"])
+            call_list[dir][file_path]["body"] = extract_call_functions(file_info, body=1)
+            call_list[dir][file_path]["classes"] = {}
             for class_n in file_info["classes"]:
-                call_list[dir][file_path][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
+                call_list[dir][file_path]["classes"][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
     return call_list
 
 
@@ -597,3 +606,137 @@ def rank_software_invocation(soft_invocation_info_list):
             previous_score = current_score
         entry["ranking"] = position
     return soft_invocation_info_list
+
+def ast_to_json(ast_obj):
+    """
+    Function to convert the AST object into JSON format.
+    :param ast_obj: AST object
+    """
+    ast_generator = ASTGenerator("")
+    ast_generator.tree = ast_obj
+    return ast_generator.generate_ast()
+
+def ast_to_source_code(ast_obj):
+    """
+    Function to convert the AST object into source code.
+    :param ast_obj: AST object
+    """
+    return ast.unparse(ast_obj)
+
+
+# Copied and modified from
+# https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Dice%27s_coefficient#Python
+def dice_coefficient(a, b):
+    """dice coefficient 2nt/(na + nb)."""
+    if not len(a) or not len(b):
+        return 0.0
+    if len(a) == 1:
+        a = a + u"."
+    if len(b) == 1:
+        b = b + u"."
+
+    a_bigrams = {a[i : i + 2] for i in range(len(a) - 1)}
+    b_bigrams = {b[i : i + 2] for i in range(len(b) - 1)}
+
+    overlap = len(a_bigrams & b_bigrams)
+    dice_coeff = overlap * 2.0 / (len(a_bigrams) + len(b_bigrams))
+    return dice_coeff
+
+
+def detect_license(input_path, licenses_path, threshold=0.9):
+    """
+    Function to detect the license of a file.
+    :param input_path: Path of the repository to be analyzed.
+    :param licenses_path: Path to the folder containing license templates.
+    :param threshold: Threshold to consider a license as detected, 
+           a float number between 0 and 1.
+    """
+    license_filenames = [
+        "LICENSE",
+        "LICENSE.txt",
+        "LICENSE.md",
+        "LICENSE.rst",
+        "COPYING",
+        "COPYING.txt",
+        "COPYING.md",
+        "COPYING.rst",
+    ]
+    license_file = None
+    for filename in os.listdir(input_path):
+        if filename in license_filenames:
+            license_file = os.path.join(input_path, filename)
+            break
+    if license_file is None:
+        return "No license file detected"
+
+    with open(license_file, "r") as f:
+        license_text = f.read()
+
+    # Regex pattern for preprocessing license templates and extract spdx id
+    pattern = re.compile(
+        "(---\n.*(spdx-id: )(?P<id>.+?)\n.*---\n)(?P<template>.*)", re.DOTALL
+    )
+    rank_list = []
+    for licen in os.listdir(licenses_path):
+        with open(os.path.join(licenses_path, licen), "r") as f:
+            parser = pattern.search(f.read())
+            if parser is None:
+                continue
+            spdx_id = parser.group("id")
+            license_template = parser.group("template")
+
+        dice_coeff = dice_coefficient(license_text.strip(), license_template.strip())
+        if dice_coeff > threshold:
+            rank_list.append((spdx_id, dice_coeff))
+
+    if rank_list:
+        return sorted(rank_list, key=lambda t: t[1], reverse=True)
+
+    return "License not recognised"
+
+def pycg_call_list(call_list: dict, root_dir: str):
+    """
+    Function to turn call list into pycg format
+    :param call_list: original call list dictionary
+    """
+    call_graph = {}
+    func_names = set()
+    def transform_funcs(func_list: dict, name_stack: list, call_graph: dict, func_names: set):
+        """
+        Extracts all parent-children relations to call_graph while recording all
+        function names appeared in func_names
+        """
+        for func_name, func_info in func_list.items():
+            name_stack.append(func_name)
+
+            current_name = ".".join(name_stack)
+            call_graph[current_name] = func_info["local"]
+            func_names.update(func_info["local"])
+
+            if func_info.get("nested") is not None:
+                transform_funcs(func_info["nested"], name_stack, call_graph, func_names)
+
+            name_stack.pop()
+
+    for dir_name, dir_info in call_list.items():
+        for file_name, file_info in dir_info.items():
+            pruned_filename = os.path.splitext(file_name.replace(root_dir, '').replace('/', '.'))[0] # TODO: change to a more robust way
+            func_names.add(pruned_filename) # We also want to record each file name
+
+            # extract body calls
+            if file_info.get("body") is not None:
+                transform_funcs({pruned_filename: file_info["body"]}, [], call_graph, func_names)
+
+            # extract calls inside function definitions
+            if file_info.get("functions") is not None:
+                transform_funcs(file_info["functions"], [pruned_filename], call_graph, func_names)
+
+            # extract calls inside class method definitions
+            if file_info.get("classes") is not None:
+                for class_name, methods in file_info["classes"].items():
+                    transform_funcs(methods, [pruned_filename, class_name], call_graph, func_names)
+
+    res = dict.fromkeys(func_names, [])
+    res.update(call_graph)
+
+    return res

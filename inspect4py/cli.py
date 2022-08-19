@@ -27,7 +27,7 @@ builtin_function_names = [name for name, obj in vars(builtins).items()
 
 
 class CodeInspection:
-    def __init__(self, path, out_control_flow_path, out_json_path, flag_png, control_flow):
+    def __init__(self, path, out_control_flow_path, out_json_path, flag_png, control_flow, abstract_syntax_tree, source_code):
         """ init method initializes the Code_Inspection object
         :param self self: represent the instance of the class
         :param str path: the file to inspect
@@ -35,13 +35,18 @@ class CodeInspection:
         :param str out_json_path: the output directory to store the json file with features extracted from the ast tree.
         :param int flag_png: flag to indicate to generate or not control flow figures
         :param bool control_flow: boolean to indicate to generate the control flow
+        :param bool abstract_syntax_tree: boolean to indicate to generate ast in json format
+        :param bool source_code: boolean to indicate to generate source code of each ast node.
         """
 
         self.path = path
         self.flag_png = flag_png
         self.out_json_path = out_json_path
+        self.abstract_syntax_tree = abstract_syntax_tree
+        self.source_code = source_code
         self.tree = self.parser_file()
         if self.tree != "AST_ERROR":
+            self.nodes = self.walk()
             self.fileInfo = self.inspect_file()
             self.depInfo = self.inspect_dependencies()
             self.funcsInfo, self.classesInfo = self.inspect_classes_funcs()
@@ -67,6 +72,28 @@ class CodeInspection:
                 return ast.parse(f.read(), filename=self.path)
             except:
                 return "AST_ERROR"
+    
+    def walk(self):
+        """
+        recursivly traverses through self.tree and return all resultant nodes
+        """
+        stack = [self.tree]
+        res = []
+        while stack:
+            node = stack.pop()
+            res.append(node)
+            # Stop traversing further when we meet function or class definitions
+            if isinstance(node, ast.FunctionDef) or isinstance(node, ast.ClassDef):
+                continue
+
+            child_nodes = []
+            for child in ast.iter_child_nodes(node):
+                child.parent = node # Add parent reference to each child node
+                child_nodes.append(child)
+            
+            # Maintain ast node order when traversing
+            stack.extend(reversed(child_nodes))
+        return res[1:] # The first node is self.tree, ignore it
 
     def inspect_file(self):
         """
@@ -145,7 +172,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all functions information extracted
         """
 
-        functions_definitions = [node for node in self.tree.body if isinstance(node, ast.FunctionDef)]
+        functions_definitions = [node for node in self.nodes if isinstance(node, ast.FunctionDef)]
         function_definition_info = self._f_definitions(functions_definitions)
         # improving the list of calls
         functions_info = self._fill_call_name(function_definition_info, classes_info)
@@ -166,7 +193,7 @@ class CodeInspection:
         :return dictionary: a dictionary with the all classes information extracted
         """
 
-        classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
+        classes_definitions = [node for node in self.nodes if isinstance(node, ast.ClassDef)]
         classes_info = {}
         for c in classes_definitions:
             classes_info[c.name] = {}
@@ -228,92 +255,56 @@ class CodeInspection:
             classes_info[c]["methods"] = self._fill_call_name(classes_info[c]["methods"], classes_info, c,
                                                               classes_info[c]["extend"], type=2,
                                                               additional_info=funcs_info)
-        classes_definitions = [node for node in self.tree.body if isinstance(node, ast.ClassDef)]
+        classes_definitions = [node for node in self.nodes if isinstance(node, ast.ClassDef)]
 
         funcs_info, classes_info = self._check_dynamic_calls(classes_definitions, funcs_info, classes_info, type=2)
         return funcs_info, classes_info
 
     def inspect_body(self):
-        body_nodes = []
+        call_nodes = [node for node in self.nodes if isinstance(node, ast.Call)]
         body_info = {"body": {}}
-        for node in self.tree.body:
-            if not isinstance(node, ast.ClassDef) and not isinstance(node, ast.FunctionDef) and not isinstance(node,
-                                                                                                               ast.Import) and not isinstance(
-                node, ast.ImportFrom):
-                body_nodes.append(node)
-
-        body_assigns = [node for node in body_nodes if isinstance(node, ast.Assign)]
-        body_expr = [node for node in body_nodes if isinstance(node, ast.Expr)]
         body_store_vars = {}
         body_calls = []
-        for b_as in body_assigns:
-            if isinstance(b_as.value, ast.Call):
-                body_name = self._get_func_name(b_as.value.func)
-                if body_name:
-                    body_calls.append(body_name)
+        for node in call_nodes:
+            body_name = self._get_func_name(node.func)
+            if not body_name:
+                continue
+            body_calls.append(body_name)
 
-                    # new : check if we have calls in the arguments
-                    body_calls = self._get_arguments_calls(b_as.value.args, body_calls)
+            if isinstance(node.parent, ast.Assign):
+                for target in node.parent.targets:
+                    target_name = self._get_func_name(target)
+                    body_store_vars[target_name] = body_name
 
-                    for target in b_as.targets:
-                        target_name = self._get_func_name(target)
-                        body_store_vars[target_name] = body_name
+            # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
+            if "." in body_name:
+                check_body_name = body_name.split(".")[0]
+            else:
+                check_body_name = body_name
+            if check_body_name in body_store_vars.keys():
+                var_name = body_store_vars[check_body_name]
+            else:
+                var_name = ""
 
-                    # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                    if "." in body_name:
-                        check_body_name = body_name.split(".")[0]
-                    else:
-                        check_body_name = body_name
-                    if check_body_name in body_store_vars.keys():
-                        var_name = body_store_vars[check_body_name]
-                    else:
-                        var_name = ""
+            skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
+                                            var_name)
 
-                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
-                                                    var_name)
+            # new: dynamic functions
+            if not skip:
+                self._dynamic_calls(
+                    node.args,
+                    body_name,
+                    self.funcsInfo,
+                    self.classesInfo, body_store_vars)
 
-                    # new: dynamic functions
-                    if not skip:
-                        self._dynamic_calls(
-                            b_as.value.args,
-                            body_name,
-                            self.funcsInfo,
-                            self.classesInfo, body_store_vars)
-
-        for b_ex in body_expr:
-            if isinstance(b_ex.value, ast.Call):
-                body_name = self._get_func_name(b_ex.value.func)
-                if body_name:
-                    body_calls.append(body_name)
-
-                    # new: check if we have calls in the arguments of the function
-                    body_calls = self._get_arguments_calls(b_ex.value.args, body_calls)
-
-                    # skipping looking dynamic calls into imported moudules/libraries and built-in-functions
-                    if "." in body_name:
-                        check_body_name = body_name.split(".")[0]
-                    else:
-                        check_body_name = body_name
-
-                    if check_body_name in body_store_vars.keys():
-                        var_name = body_store_vars[check_body_name]
-                    else:
-                        var_name = ""
-
-                    skip = self._skip_dynamic_calls(self.funcsInfo, self.classesInfo, check_body_name, body_name,
-                                                    var_name)
-
-                    # new: dynamic functions
-                    if not skip:
-                        self._dynamic_calls(
-                            b_ex.value.args,
-                            body_name,
-                            self.funcsInfo,
-                            self.classesInfo, body_store_vars)
 
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
         body_info = self._fill_call_name(body_info, self.classesInfo, type=1, additional_info=self.funcsInfo)
+        if self.abstract_syntax_tree:
+            body_info["body"]["ast"] = [ast_to_json(node) for node in call_nodes]
+        if self.source_code:
+            body_info["body"]["source_code"] = [ast_to_source_code(node) for node in call_nodes]
         return body_info
 
     def inspect_dependencies(self):
@@ -510,7 +501,16 @@ class CodeInspection:
             except:
                 funcs_info[f.name]["doc"] = {}
 
-            funcs_info[f.name]["args"] = [a.arg for a in f.args.args]
+            funcs_info[f.name]["args"] = []
+            funcs_info[f.name]["annotated_arg_types"] = {}
+            for a in f.args.args:
+                funcs_info[f.name]["args"].append(a.arg)
+
+                if a.annotation is not None:
+                    funcs_info[f.name]["annotated_arg_types"][a.arg] = ast.unparse(a.annotation)
+            if f.returns is not None:
+                funcs_info[f.name]["annotated_return_type"] = ast.unparse(f.returns)
+
             rs = [node for node in ast.walk(f) if isinstance(node, (ast.Return,))]
             funcs_info[f.name]["returns"] = [self._get_ids(r.value) for r in rs]
             funcs_info[f.name]["min_max_lineno"] = self._compute_interval(f)
@@ -558,6 +558,11 @@ class CodeInspection:
                     if n_f in funcs_info[f.name]["functions"][n_f_2]["functions"]:
                         funcs_info[f.name]["functions"].pop(n_f)
                         break
+            
+            if self.abstract_syntax_tree:
+                funcs_info[f.name]["ast"] = ast_to_json(f)
+            if self.source_code:
+                funcs_info[f.name]["source_code"] = ast_to_source_code(f)
 
         return funcs_info
 
@@ -794,13 +799,6 @@ class CodeInspection:
                 print("Added in funct/method %s , argument named %s, number of argument %s" % (
                 f_name, call_name, f_arg_cont))
             f_arg_cont += 1
-
-    def _get_arguments_calls(self, f_args, list_calls):
-        for f_arg in f_args:
-            if isinstance(f_arg, ast.Call):
-                name = self._get_func_name(f_arg.func)
-                list_calls.append(name)
-        return list_calls
 
     def _get_func_name(self, func):
         func_name = None
@@ -1196,15 +1194,21 @@ def create_output_dirs(output_dir, control_flow):
               help="captures the file directory tree from the root path of the target repository.")
 @click.option('-si', '--software_invocation', type=bool, is_flag=True,
               help="generates which are the software invocation commands to run and test the target repository.")
+@click.option('-ast', '--abstract_syntax_tree', type=bool, is_flag=True,
+              help="generates abstract syntax tree in json format.")
+@click.option('-sc', '--source_code', type=bool, is_flag=True,
+              help="generates the source code of each ast node.")
+@click.option('-ld', '--license_detection', type=bool, is_flag=True,
+              help="detects the license of the target repository.")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
-         control_flow, directory_tree, software_invocation):
+         control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
     if os.path.isfile(input_path):
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
 
         # Generate the call list of a file
         call_list_data = call_list_file(code_info)
@@ -1247,7 +1251,7 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                         path = os.path.join(subdir, f)
                         out_dir = output_dir + "/" + os.path.basename(subdir)
                         cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
-                        code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow)
+                        code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
                         if code_info.fileJson:
                             if out_dir not in dir_info:
                                 dir_info[out_dir] = [code_info.fileJson[0]]
@@ -1294,6 +1298,10 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                     dir_info["software_type"] = soft_invocation_info_list[0]["type"]
                 else:
                     dir_info["software_type"] = "not found"
+        if license_detection:
+            licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "licenses")
+            rank_list = detect_license(input_path, licenses_path)
+            dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
