@@ -1299,9 +1299,12 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                 else:
                     dir_info["software_type"] = "not found"
         if license_detection:
-            licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "licenses")
-            rank_list = detect_license(input_path, licenses_path)
-            dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
+            try:
+                licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "licenses")
+                rank_list = detect_license(input_path, licenses_path)
+                dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
+            except:
+                pass
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:
