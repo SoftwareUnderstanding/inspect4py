@@ -4,6 +4,7 @@ from setuptools import find_packages  # type: ignore
 
 
 def read(fname):
+    print("installing inspect4py")
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
