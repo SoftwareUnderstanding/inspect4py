@@ -7,7 +7,7 @@ Usage:
 python3 pycg_convert.py <input_path>
 ```
     
-where `<input_path>` could be the path to the repository directory or the path to
+where `<input_path>` is the path to a repository directory or the path to
 a script.
 
 This will create an directory `output_dir` including `pycg_call_graph.json` that have the pycg format call list, along with other temporary json files.
