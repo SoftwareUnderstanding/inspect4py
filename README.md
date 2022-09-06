@@ -41,6 +41,23 @@ We also use [docstring_parser](https://pypi.org/project/docstring-parser/), whic
 
 Finally, we reuse [Pigar](https://github.com/damnever/pigar) for generating automatically the requirements of a given repository. This is an optional funcionality. In order to activate the argument (`-r`) has to be indicated when running inspect4py.  
 
+## Cite inspect4py
+Please cite our MSR 2022 demo paper:
+```
+@inproceedings{FilgueiraG22,
+  author    = {Rosa Filgueira and
+               Daniel Garijo},
+  title     = {Inspect4py: {A} Knowledge Extraction Framework for Python Code Repositories},
+  booktitle = {{IEEE/ACM} 19th International Conference on Mining Software Repositories,
+               {MSR} 2022, Pittsburgh, PA, USA, May 23-24, 2022},
+  pages     = {232--236},
+  publisher = {{IEEE}},
+  year      = {2022},
+  url       = {https://dgarijo.com/papers/inspect4py_MSR2022.pdf},
+  doi       = {10.1145/3524842.3528497}
+}
+```
+
 ## Install
 
 ### Preliminaries
