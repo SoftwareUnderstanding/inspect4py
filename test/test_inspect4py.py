@@ -1,5 +1,6 @@
 import unittest
 import shutil
+import requests
 from inspect4py.cli import *
 from inspect4py import cli, utils
 
@@ -268,8 +269,11 @@ class Test(unittest.TestCase):
         abstract_syntax_tree = False
         source_code = False
         license_detection = False
+        readme = False
+        metadata = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+                                    source_code, license_detection, readme, metadata)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "service"
@@ -288,8 +292,11 @@ class Test(unittest.TestCase):
         abstract_syntax_tree = False
         source_code = False
         license_detection = False
+        readme = False
+        metadata = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+                                    source_code, license_detection, readme, metadata)        
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "package"
@@ -308,8 +315,11 @@ class Test(unittest.TestCase):
         abstract_syntax_tree = False
         source_code = False
         license_detection = False
+        readme = False
+        metadata = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+                                    source_code, license_detection, readme, metadata)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "library"
@@ -329,8 +339,11 @@ class Test(unittest.TestCase):
         abstract_syntax_tree = False
         source_code = False
         license_detection = False
+        readme = False
+        metadata = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree,
+                                    source_code, license_detection, readme, metadata)
         imports = dir_info['software_invocation']
         shutil.rmtree(output_dir)
         assert len(imports[0]["imports"]) == 2
@@ -351,8 +364,11 @@ class Test(unittest.TestCase):
         abstract_syntax_tree = False
         source_code = False
         license_detection = False
+        readme = False
+        metadata = False
         dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree,
+                                    source_code, license_detection, readme, metadata)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "script"
@@ -531,19 +547,93 @@ class Test(unittest.TestCase):
         abstract_syntax_tree = False
         source_code = False
         license_detection = True
+        readme = False
+        metadata = False
 
         expected_liceses = ['Apache-2.0', 'LGPL-3.0', 'MIT']
         first_rank_licenses = []
         for input_path in input_paths:
             dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection)
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+                                    source_code, license_detection, readme, metadata)
             first_rank_licenses.append(next(iter(dir_info["detected_license"][0])))
             shutil.rmtree(output_dir)
         
         assert first_rank_licenses == expected_liceses
 
+
+    def test_readme(self):
+        input_path = "./test_files/test_readme"
+        output_dir = "./output_dir"
+        fig = False
+        ignore_dir_pattern = [".", "__pycache__"]
+        ignore_file_pattern = [".", "__pycache__"]
+        requirements = False
+        call_list = False
+        control_flow = False
+        directory_tree = False
+        software_invocation = False
+        abstract_syntax_tree = False
+        source_code = False
+        license_detection = False
+        readme = True
+        metadata = False
+
+        dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+                                    source_code, license_detection, readme, metadata)
+
+        root_dir = Path(input_path)
+        expected_readme_files = {
+            f"{root_dir}/README.md": "README.md in root dir\n",
+            f"{root_dir}/subdir/README.txt": "README.txt in subdir\n",
+            f"{root_dir}/subdir/subsubdir/README.rst": "README.rst in subsubdir\n"
+        }
+        actual_readme_files = dir_info["readme_files"]
+        print(actual_readme_files)
+        assert expected_readme_files == actual_readme_files        
+
+
+    def test_metadata(self):
+        """ 
+        Need to execute under test/test_files/: 
+        `git clone https://github.com/githubtraining/hellogitworld.git`
+        to pass this test, as getting metadata requires the local repository
+        to have a .git folder.
+        """
+        input_path = "./test_files/hellogitworld"
+        output_dir = "./output_dir"
+        fig = False
+        ignore_dir_pattern = [".", "__pycache__"]
+        ignore_file_pattern = [".", "__pycache__"]
+        requirements = False
+        call_list = False
+        control_flow = False
+        directory_tree = False
+        software_invocation = False
+        abstract_syntax_tree = False
+        source_code = False
+        license_detection = False
+        readme = False
+        metadata = True
+
+        dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
+                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+                                    source_code, license_detection, readme, metadata)
+        try:
+            response = requests.get("https://api.github.com/repos/githubtraining/hellogitworld")
+            expected_metadata = response.json()
+        except requests.RequestException as e:
+            print(f"Error sending requests to Github API: {e}")
+            raise e
+
+        actual_metadata = dir_info["metadata"]
+        assert expected_metadata == actual_metadata        
+
+
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection):
+                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree,
+                     source_code, license_detection, readme, metadata):
     dir_info = {}
     # retrieve readme text at the root level (if any)
     readme = ""
@@ -612,6 +702,10 @@ def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_fil
             licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../inspect4py/licenses")
             rank_list = detect_license(input_path, licenses_path)
             dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
+    if readme:
+        dir_info["readme_files"] = extract_readme(input_path)
+    if metadata:
+        dir_info["metadata"] = get_github_metadata(input_path)
     return dir_info
 
 
