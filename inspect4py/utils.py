@@ -1,6 +1,8 @@
 import ast
 import os
 import re
+import git
+import requests
 import subprocess
 from pathlib import Path
 
@@ -693,3 +695,49 @@ def detect_license(input_path, licenses_path, threshold=0.9):
         return sorted(rank_list, key=lambda t: t[1], reverse=True)
 
     return "License not recognised"
+
+
+def extract_readme(input_path: str) -> dict:
+    """
+    Function to extract content of all readme file under the input directory.
+    :param input_path: Path of the repository to be analyzed.
+    """
+    readme_files = {}
+    for file in Path(input_path).rglob("README.*"):
+        try:
+            with open(file, 'r') as f:
+                readme_files[str(file)] = f.read()
+        except Exception as e:
+            print(f"Error when opening {file}: {e}")
+
+    return readme_files
+
+
+def get_github_metadata(input_path: str) -> dict:
+    """
+    Function to extract metadata from the remote repository using Github api.
+    It requires connectivity to the Github API and the local target repository 
+    to have .git folder and a remote repository on Github.
+
+    :param input_path: Path of the repository to be analyzed.
+    """
+    github_metadata = {}
+    try:
+        repo = git.Repo(input_path)
+        remote_url = repo.remotes.origin.url
+
+        # Extract owner and repo name from remote url
+        api_param = re.search(r".+github.com[:/](?P<param>.+).git", remote_url).group("param")
+
+        # Call Github API to get the metadata
+        api_url = f"https://api.github.com/repos/{api_param}"
+        response = requests.get(api_url)
+        github_metadata = response.json()
+    except git.InvalidGitRepositoryError as e:
+        print(f"{input_path}.git not found or not valid: {e}")
+    except git.NoSuchPathError as e:
+        print(f"{input_path} does not exist: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error when accessing {api_url}: {e}")
+
+    return github_metadata

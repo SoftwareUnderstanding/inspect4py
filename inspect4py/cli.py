@@ -1200,8 +1200,13 @@ def create_output_dirs(output_dir, control_flow):
               help="generates the source code of each ast node.")
 @click.option('-ld', '--license_detection', type=bool, is_flag=True,
               help="detects the license of the target repository.")
+@click.option('-rm', '--readme', type=bool, is_flag=True,
+              help="extract all readme files in the target repository.")
+@click.option('-md', '--metadata', type=bool, is_flag=True, 
+              help="extract metadata of the target repository using Github API. (requires repository to have the .git folder)")
 def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
-         control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection):
+         control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection, readme,
+         metadata):
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
@@ -1305,6 +1310,10 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                 dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
             except:
                 pass
+        if readme:
+            dir_info["readme_files"] = extract_readme(input_path)
+        if metadata:
+            dir_info["metadata"] = get_github_metadata(input_path)
         json_file = output_dir + "/directory_info.json"
         pruned_json = prune_json(dir_info)
         with open(json_file, 'w') as outfile:

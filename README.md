@@ -235,6 +235,9 @@ Options:
   -ast, -—abstract_syntax_tree    generates abstract syntax tree in json format.
   -sc, --source_code              generates source code of each ast node.
   -ld, --license_detection        detects the license of the target repository.
+  -rm, --readme                   extract all readme files in the target repository.
+  -md, --metadata                 extract metadata of the target repository using
+                                  Github API.
   --help                          Show this message and exit.
 ```
 
