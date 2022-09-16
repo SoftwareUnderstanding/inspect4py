@@ -1254,7 +1254,8 @@ def main(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, r
                 if ".py" in f and not f.endswith(".pyc"):
                     try:
                         path = os.path.join(subdir, f)
-                        out_dir = output_dir + "/" + os.path.basename(subdir) # TODO: This could create path like /parent//child
+                        relative_path = Path(subdir).relative_to(Path(input_path).parent)
+                        out_dir = str(Path(output_dir) / relative_path)
                         cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
                         code_info = CodeInspection(path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
                         if code_info.fileJson:
