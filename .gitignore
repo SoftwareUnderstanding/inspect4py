@@ -16,3 +16,4 @@ output_dir/
 defoe/*
 env_*
 inspect4py.egg-info/*
+test/test_files/hellogitworld
