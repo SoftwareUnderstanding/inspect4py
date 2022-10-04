@@ -115,7 +115,7 @@ class Test(unittest.TestCase):
 
     def test_call_list_argument_call(self):
         dictionary = {'functions': {'func_1': {'local': ['print', 'argument_call.func_2']}},
-                      'body': {'local': ['print', 'argument_call.func_1', 'argument_call.MyClass.func_a']},
+                      'body': {'local': ['print', 'argument_call.func_1', 'argument_call.MyClass.func_a', 'argument_call.MyClass']},
                       'classes': {'MyClass': {'func_a': {'local': ['print', 'argument_call.MyClass.func_b']}}}}
         input_path = "./test_files/test_dynamic/argument_call.py"
         output_dir = "./output_dir"
@@ -626,8 +626,8 @@ class Test(unittest.TestCase):
         except requests.RequestException as e:
             print(f"Error sending requests to Github API: {e}")
             raise e
-
         actual_metadata = dir_info["metadata"]
+        print("ROSA ACTUAL_METADATA:%s, EXPECTED_METADATA %s" %(dir_info, expected_metadata))
         assert expected_metadata == actual_metadata        
 
 
@@ -706,6 +706,7 @@ def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_fil
     if readme:
         dir_info["readme_files"] = extract_readme(input_path)
     if metadata:
+        print("ENTRO!!")
         dir_info["metadata"] = get_github_metadata(input_path)
     return dir_info
 
