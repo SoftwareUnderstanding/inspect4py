@@ -1057,9 +1057,7 @@ class CodeInspection:
         :param ast.node elt: AST node
         :return list: list of identifiers
         """
-        # old code --> if isinstance(elt, (ast.List,)) or isinstance(elt, (ast.Tuple,)):
         if isinstance(elt, (ast.Tuple,)):
-            # old code --> [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
             # For tuple or list get id of each item if item is a Name
             rd=[]
             for x in elt.elts:
