@@ -1057,6 +1057,8 @@ class CodeInspection:
         :param ast.node elt: AST node
         :return list: list of identifiers
         """
+        ## Modification of the function
+        ## to catch the source code, in case if what we return is not a variable.
         if isinstance(elt, (ast.Tuple,)):
             # For tuple or list get id of each item if item is a Name
             rd=[]
