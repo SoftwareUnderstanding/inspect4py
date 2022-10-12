@@ -42,7 +42,7 @@ def foo9(arg1, arg2):
 def foo10(arg1, arg2):
     return 5
 
-def foo10(arg1, arg2):
+def foo11(arg1, arg2):
     a=3
     b=[0,1,2]
     return a,b
