@@ -1059,9 +1059,16 @@ class CodeInspection:
         """
         if isinstance(elt, (ast.List,)) or isinstance(elt, (ast.Tuple,)):
             # For tuple or list get id of each item if item is a Name
-            return [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
-        if isinstance(elt, (ast.Name,)):
-            return [elt.id]
+            rd= [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
+            if len(rd) == 0:
+                return ast.unparse(elt)
+            else:
+                return rd
+        elif isinstance(elt, (ast.Name,)):
+            return elt.id
+
+        else:
+            return ast.unparse(elt)
 
     def _compute_interval(self, node):
         """_compute_interval extract the lines (min and max)
