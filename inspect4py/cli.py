@@ -1057,11 +1057,26 @@ class CodeInspection:
         :param ast.node elt: AST node
         :return list: list of identifiers
         """
-        if isinstance(elt, (ast.List,)) or isinstance(elt, (ast.Tuple,)):
+        #print("--- DEBUG!!! %s" %ast.unparse(elt))
+        # old code --> if isinstance(elt, (ast.List,)) or isinstance(elt, (ast.Tuple,)):
+        if isinstance(elt, (ast.Tuple,)):
+            # old code --> [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
             # For tuple or list get id of each item if item is a Name
-            return [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
-        if isinstance(elt, (ast.Name,)):
-            return [elt.id]
+            rd=[]
+            for x in elt.elts:
+                if isinstance(x, (ast.Name,)):
+                    rd.append(x.id)
+                else:
+                    rd.append(ast.unparse(x))
+            if len(rd) == 0:
+                return ast.unparse(elt)
+            else:
+                return rd
+        elif isinstance(elt, (ast.Name,)):
+            return elt.id
+
+        else:
+            return ast.unparse(elt)
 
     def _compute_interval(self, node):
         """_compute_interval extract the lines (min and max)
