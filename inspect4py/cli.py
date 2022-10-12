@@ -1057,7 +1057,6 @@ class CodeInspection:
         :param ast.node elt: AST node
         :return list: list of identifiers
         """
-        #print("--- DEBUG!!! %s" %ast.unparse(elt))
         # old code --> if isinstance(elt, (ast.List,)) or isinstance(elt, (ast.Tuple,)):
         if isinstance(elt, (ast.Tuple,)):
             # old code --> [x.id for x in elt.elts if isinstance(x, (ast.Name,))]
