@@ -25,3 +25,19 @@ def foo5(arg1, arg2):
 
 def foo6(arg1, arg2):
     return [0,2,3]
+
+def foo7(arg1, arg2):
+    a=3
+    b=4
+    return a,b
+
+def foo8(arg1, arg2):
+    a=3
+    return a,5
+
+def foo9(arg1, arg2):
+    a=3
+    return a,[0,1,2]
+
+def foo10(arg1, arg2):
+    return 5
