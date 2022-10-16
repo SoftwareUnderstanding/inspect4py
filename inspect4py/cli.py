@@ -47,6 +47,7 @@ class CodeInspection:
         self.tree = self.parser_file()
         if self.tree != "AST_ERROR":
             self.nodes = self.walk()
+            self.class_init=self.find_classDef()
             self.fileInfo = self.inspect_file()
             self.depInfo = self.inspect_dependencies()
             self.funcsInfo, self.classesInfo = self.inspect_classes_funcs()
@@ -60,6 +61,13 @@ class CodeInspection:
             self.fileJson = self.file_json()
         else:
             self.fileJson = {}
+
+    def find_classDef(self):
+        classDef_nodes = [node for node in self.nodes if isinstance(node, ast.ClassDef)]
+        class_init=[]
+        for node in classDef_nodes:
+            class_init.append(node.name)
+        return class_init
 
     def parser_file(self):
         """ parse_file method parsers a file as an AST tree
@@ -297,10 +305,19 @@ class CodeInspection:
                     self.funcsInfo,
                     self.classesInfo, body_store_vars)
 
-
+        ### finding the index of init class ###
+        index_remove=find_index_init(self.depInfo, body_calls, self.class_init)
+        #######
         body_info["body"]["calls"] = body_calls
         body_info["body"]["store_vars_calls"] = body_store_vars
         body_info = self._fill_call_name(body_info, self.classesInfo, type=1, additional_info=self.funcsInfo)
+
+        #### removing Class init from the calls  #####
+        body_info["body"]["calls"]= update_list_calls(body_info["body"], index_remove)
+        ###############
+
+         
+
         if self.abstract_syntax_tree:
             body_info["body"]["ast"] = [ast_to_json(node) for node in call_nodes]
         if self.source_code:
@@ -328,12 +345,20 @@ class CodeInspection:
                 continue
             for n in node.names:
                 if "*" in n.name:
-                    functions_classes, type = list_functions_classes_from_module(module, self.path)
-                    for f in functions_classes:
+                    functions, classes, type = list_functions_classes_from_module(module, self.path)
+                    for f in functions:
                         current_dep = {"from_module": module,
                                        "import": f,
                                        "alias": n.asname,
-                                       "type": type}
+                                       "type": type,
+                                        "type_element": "function"}
+                        dep_info.append(current_dep)
+                    for f in classes:
+                        current_dep = {"from_module": module,
+                                       "import": f,
+                                       "alias": n.asname,
+                                       "type": type, 
+                                        "type_element": "class"}
                         dep_info.append(current_dep)
                 else:
                     import_name = n.name.split('.')[0]
@@ -341,7 +366,8 @@ class CodeInspection:
                     current_dep = {"from_module": module,
                                    "import": import_name,
                                    "alias": n.asname,
-                                   "type": type}
+                                   "type": type,
+                                    "type_element": "module"}
                     dep_info.append(current_dep)
 
         return dep_info
@@ -522,6 +548,9 @@ class CodeInspection:
             # func_name_id = list(dict.fromkeys(func_name_id))
 
             func_name_id = [f_x for f_x in func_name_id if f_x is not None]
+
+            ### finding the index of init class ###
+            index_remove=find_index_init(self.depInfo, func_name_id, self.class_init)
             funcs_info[f.name]["calls"] = func_name_id
 
             funcs_assigns = [node for node in ast.walk(f) if isinstance(node, ast.Assign)]
@@ -544,6 +573,7 @@ class CodeInspection:
             for nested in nested_definitions:
                 if f.name == nested.name:
                     nested_definitions.remove(nested)
+            funcs_info[f.name]["calls"]= update_list_calls(funcs_info[f.name], index_remove)
 
             funcs_info[f.name]["functions"] = self._f_definitions(nested_definitions)
 
