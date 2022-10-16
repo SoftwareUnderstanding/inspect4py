@@ -15,9 +15,11 @@ class MyClass_E:
 
 def funct_D():
     print("Function D")
+    a=MyClass_A()
+    MyClass_E()
     funct_A()
 
-a1=MyClass_A()
+MyClass_A()
 b1=MyClass_B()
 d= MyClass_D()
 funct_A()

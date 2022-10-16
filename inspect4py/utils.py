@@ -5,6 +5,7 @@ import git
 import requests
 import subprocess
 from pathlib import Path
+import collections
 
 from json2html import *
 from bigcode_astgen.ast_generator import ASTGenerator
@@ -301,7 +302,8 @@ def parse_module(filename):
 
 
 def list_functions_classes_from_module(m, path):
-    functions_classes = []
+    classes = []
+    functions = []
 
     try:
         # to open a module inside a directory
@@ -311,10 +313,10 @@ def list_functions_classes_from_module(m, path):
         file_module = abs_repo_path + "/" + m + ".py"
         tree = parse_module(file_module)
         for func in top_level_functions(tree.body):
-            functions_classes.append(func.name)
+            functions.append(func.name)
 
         for cl in top_level_classes(tree.body):
-            functions_classes.append(cl.name)
+            classes.append(cl.name)
 
         type = "internal"
     except:
@@ -322,7 +324,7 @@ def list_functions_classes_from_module(m, path):
         #module = __import__(m)
         #functions = dir(module)
         type = "external"
-    return functions_classes, type
+    return functions, classes, type
 
 
 def type_module(m, i, path):
@@ -741,3 +743,30 @@ def get_github_metadata(input_path: str) -> dict:
         print(f"Error when accessing {api_url}: {e}")
 
     return github_metadata
+
+
+def find_index_init(depInfo, calls, class_init):
+    index_remove=[]
+    for dep in depInfo:
+        if dep["type_element"] == "class":
+            if dep["import"] in calls:
+                index_remove.append(calls.index(dep["import"]))
+            elif dep["alias"] in calls:
+                index_remove.append(calls.index(dep["alias"]))
+    for i in class_init:
+        if i in calls:
+            index_remove.append(calls.index(i))
+    return index_remove
+
+def update_list_calls(info, index_remove):
+    updated_calls=[]
+    for i in range(0, len(info["calls"])):
+        if i in index_remove:
+            continue
+        updated_calls.append(info["calls"][i])
+    ### These lines are for removing duplicate calls 
+    res = []
+    for i in updated_calls :
+        if i not in res:
+            res.append(i)
+    return res
