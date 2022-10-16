@@ -59,13 +59,13 @@ class Test(unittest.TestCase):
         assert (call_list_data == dictionary)
 
     def test_call_list_super_nested(self):
-        dictionary = {'functions': {
-            'func_d': {'local': ['super_nested_call.func_d.func_e'], 'nested': {'func_e': {'local': ['print']}}},
-            'main': {'local': ['super_nested_call.MyClass.func_a',
-                               'super_nested_call.func_d']}}, 'body': {'local': ['super_nested_call.main']}, 'classes': {'MyClass': {
-            'func_a': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b'], 'nested': {
-                'func_b': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b.func_c'],
-                           'nested': {'func_c': {'local': ['print']}}}}}}}}
+        dictionary = {'functions': {'func_d': {'local': ['super_nested_call.func_d.func_e'], 
+                      'nested': {'func_e': {'local': ['print']}}}, 
+                      'main': {'local': ['super_nested_call.MyClass.func_a', 'super_nested_call.func_d']}},
+                      'body': {'local': ['super_nested_call.main']},
+                      'classes': {'MyClass': {'func_a': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b'], 
+                      'nested': {'func_b': {'local': ['print', 'super_nested_call.MyClass.func_a.func_b.func_c'], 
+                      'nested': {'func_c': {'local': ['print']}}}}}}}}
         input_path = "./test_files/test_inheritance/super_nested_call.py"
         output_dir = "./output_dir"
         control_flow = False
@@ -74,14 +74,13 @@ class Test(unittest.TestCase):
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
-        
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
 
     def test_call_list_import(self):
         dictionary = {'functions': {'funct_D': {'local': ['print', 'test_functions.funct_A']}}, 'body': {
-            'local': ['test_functions.funct_A', 'test_import.funct_D', 'test_import.funct_D']}, 
+            'local': ['test_functions.funct_A', 'test_import.funct_D']}, 
              'classes': {'MyClass_D': {'__init__': {'local': ['print', 'test_functions.funct_C', 'test_import.funct_D']}}, 
              'MyClass_E': {'__init__': {'local': ['print']}}}}
         input_path = "./test_files/test_inheritance/test_import.py"
@@ -98,8 +97,7 @@ class Test(unittest.TestCase):
 
     def test_call_list_external_module(self):
         dictionary = {'body': {
-            'local': ['random.seed', 'print', 'random.random', 'random.random', 'random.random', 'random.seed', 'print',
-                      'random.random', 'random.random', 'random.random']}}
+            'local': ['random.seed', 'print', 'random.random']}}
         input_path = "./test_files/test_random.py"
         output_dir = "./output_dir"
         control_flow = False
@@ -238,8 +236,6 @@ class Test(unittest.TestCase):
         code_info = CodeInspection(input_path, cf_dir, json_dir, fig, control_flow, abstract_syntax_tree, source_code)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
-        print(call_list_data)
-        print(dictionary)
         assert (call_list_data == dictionary)
 
     def test_call_list_dynamic_class_import(self):

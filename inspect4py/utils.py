@@ -5,6 +5,7 @@ import git
 import requests
 import subprocess
 from pathlib import Path
+import collections
 
 from json2html import *
 from bigcode_astgen.ast_generator import ASTGenerator
@@ -763,4 +764,9 @@ def update_list_calls(info, index_remove):
         if i in index_remove:
             continue
         updated_calls.append(info["calls"][i])
-    return updated_calls
+    ### These lines are for removing duplicate calls 
+    res = []
+    for i in updated_calls :
+        if i not in res:
+            res.append(i)
+    return res
