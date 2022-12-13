@@ -1,5 +1,5 @@
 repository,annotator,label,main_file_paths_1,main_file_paths_2,main_file_paths_3,comments
-rosafilgueira/code_inspector,DG;RF,package,,,,
+SoftwareUnderstanding/inspect4py,DG;RF,package,,,,
 KnowledgeCaptureAndDiscovery/somef,DG;RF,package,,,,
 usc-isi-i2/kgtk,DG;RF,package,,,,
 LinkedEarth/Pyleoclim_util,DG;RF,library,,,,
