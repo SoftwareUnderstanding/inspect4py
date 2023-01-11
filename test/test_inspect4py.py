@@ -344,7 +344,11 @@ class Test(unittest.TestCase):
                                     source_code, license_detection, readme, metadata)
         imports = dir_info['software_invocation']
         shutil.rmtree(output_dir)
-        assert len(imports[0]["imports"]) == 2
+        for i in imports:
+            if "test.py" in i['run']:
+                 num_imports = len (i['imports'])
+            break
+        assert num_imports == 2
 
 
 
