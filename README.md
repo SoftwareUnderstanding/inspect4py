@@ -82,7 +82,6 @@ pip install inspect4py
 
 You are done!
 
-```
 Then try to update the python-dev utilities: `sudo apt-get install python3.X-dev` (where X is your python version)
 
 ### Installation from code
