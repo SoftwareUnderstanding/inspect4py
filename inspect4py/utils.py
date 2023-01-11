@@ -164,7 +164,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     body_only_files = []
     flag_service_main = 0
     for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
-        if key!="requirements":
+        if key!="requirements" and key!="directory_tree": # Note: We need to filter out directory_tree
             for elem in dir_info[key]:
                 if elem["main_info"]["main_flag"]:
                     flag_service_main = 0
