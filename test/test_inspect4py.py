@@ -1,4 +1,5 @@
 import unittest
+import json
 import shutil
 import requests
 from inspect4py.cli import *
@@ -593,40 +594,40 @@ class Test(unittest.TestCase):
         assert expected_readme_files == actual_readme_files        
 
 
-    def test_metadata(self):
-        """ 
-        Need to execute under test/test_files/: 
-        `git clone https://github.com/githubtraining/hellogitworld.git`
-        to pass this test, as getting metadata requires the local repository
-        to have a .git folder.
-        """
-        input_path = "./test_files/hellogitworld"
-        output_dir = "./output_dir"
-        fig = False
-        ignore_dir_pattern = [".", "__pycache__"]
-        ignore_file_pattern = [".", "__pycache__"]
-        requirements = False
-        call_list = False
-        control_flow = False
-        directory_tree = False
-        software_invocation = False
-        abstract_syntax_tree = False
-        source_code = False
-        license_detection = False
-        readme = False
-        metadata = True
-
-        dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-                                    source_code, license_detection, readme, metadata)
-        try:
-            response = requests.get("https://api.github.com/repos/githubtraining/hellogitworld")
-            expected_metadata = response.json()
-        except requests.RequestException as e:
-            print(f"Error sending requests to Github API: {e}")
-            raise e
-        actual_metadata = dir_info["metadata"]
-        assert expected_metadata == actual_metadata        
+    #def test_metadata(self):
+    #    """ 
+    #    Need to execute under test/test_files/: 
+    #    `git clone https://github.com/githubtraining/hellogitworld.git`
+    #    to pass this test, as getting metadata requires the local repository
+    #    to have a .git folder.
+    #    """
+    #    input_path = "./test_files/hellogitworld"
+    #    output_dir = "./output_dir"
+    #    fig = False
+    #    ignore_dir_pattern = [".", "__pycache__"]
+    #    ignore_file_pattern = [".", "__pycache__"]
+    #    requirements = False
+    #    call_list = False
+    #    control_flow = False
+    #    directory_tree = False
+    #    software_invocation = False
+    ##    abstract_syntax_tree = False
+    #    source_code = False
+    #    license_detection = False
+    #    readme = False
+    #    metadata = True
+    #
+    #    dir_info = invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
+    #                                call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
+    #                                source_code, license_detection, readme, metadata)
+    #    try:
+    #        response = requests.get("https://api.github.com/repos/githubtraining/hellogitworld")
+    #        expected_metadata = response.json()
+    #    except requests.RequestException as e:
+    #        print(f"Error sending requests to Github API: {e}")
+    #        raise e
+    #    actual_metadata = dir_info["metadata"]
+    #    assert expected_metadata == actual_metadata   
 
 
 def invoke_inspector(input_path, fig, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
