@@ -33,8 +33,6 @@ a tree of objects (per file) whose classes all inherit from [ast.AST](https://do
 
 `inspect4py` parses each of the input file(s) as an AST tree, extracting the relevant information and storing it as a JSON file.  Furthermore, it also captures the control flow of each input file(s), by using another two libraries:
 
-- [cdmcfparser](https://pypi.org/project/cdmcfparser/): The module provided functions can takes a file with a python code or a character buffer, parse it and provide back a hierarchical representation of the code in terms of fragments. Each fragment describes a portion of the input: a start point (line, column and absolute position) plus an end point (line, column and absolute position).
-
 - [staticfg](inspect4py/staticfg): StatiCFG is a package that can be used to produce control flow graphs (CFGs) for Python 3 programs. The CFGs it generates can be easily visualised with graphviz and used for static analysis. We have a flag in the code (FLAG_PNG) to indicate if we want to generate this type of control flow graphs or not. **Note**: The original code of this package can be found [here](https://github.com/coetaur0/staticfg), which has been fixed it in our [repository](inspect4py/staticfg)  
 
 We also use [docstring_parser](https://pypi.org/project/docstring-parser/), which has support for  ReST, Google, and Numpydoc-style docstrings. Some (basic) tests done using this library can be found at [here](./test_docstring_parser/).
@@ -69,9 +67,8 @@ sudo apt-get install graphviz
 ```
 
 ### Python version
-We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 3.7**.
+We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 3.9**.
 
-**Support in Python 3.9**: We have detected that `cdmcfparser` has issues in Python 3.9+. Therefore **the `-cf` command is not guaranteed in Python 3.9**. All other commands have been tested successfully in Python 3.9+.
 
 ### Operative System
 We have tested `inspect4py` in Unix and MacOs.
@@ -85,16 +82,6 @@ pip install inspect4py
 
 You are done!
 
-**Note**: If you receive an error similar to:
-```
-      error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
-      [end of output]
-  
-  note: This error originates from a subprocess, and is likely not a problem with pip.
-  × Encountered error while trying to install package.
-╰─> cdmcfparser
-
-error: legacy-install-failure
 ```
 Then try to update the python-dev utilities: `sudo apt-get install python3.X-dev` (where X is your python version)
 
@@ -112,7 +99,6 @@ You are done!
 
 ### Package dependencies:
 ```
-cdmcfparser
 docstring_parser==0.7
 astor
 graphviz
@@ -187,11 +173,10 @@ For example, it can be used to inspect all the python files of a given GitHub re
 
 The tool by default stores the results in the `OutputDir` directory, but users can specify their own directory name by using `-o` or `--output` flags.
 
-And the tools allows users to specify if control flow figures will be generated or not. By default they wont be generated. To indicate the generation of control flow figures, users should use `-f` or `--fig`.  
 
 <!--
 ```
-inspect4py --input_path <FILE.py | DIRECTORY> [--fig , --output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
+inspect4py --input_path <FILE.py | DIRECTORY> [--output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
 ```
 -->
 
@@ -206,7 +191,6 @@ Options:
   --version                       Show the version and exit.
   -i, --input_path TEXT           input path of the file or directory to
                                   inspect.  [required]
-  -f, --fig                       activate the control_flow figure generator.
   -o, --output_dir TEXT           output directory path to store results. If
                                   the directory does not exist, the tool will
                                   create it.
