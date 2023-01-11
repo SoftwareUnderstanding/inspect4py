@@ -653,13 +653,16 @@ def dice_coefficient(a, b):
     return dice_coeff
 
 
-def detect_license(input_path, licenses_path, threshold=0.9):
-    """
-    Function to detect the license of a file.
-    :param input_path: Path of the repository to be analyzed.
-    :param licenses_path: Path to the folder containing license templates.
-    :param threshold: Threshold to consider a license as detected, 
-           a float number between 0 and 1.
+def extract_license(input_path):
+    """Extracts the license of the repository.
+    Args:
+        input_path (str): Path of the repository to be analyzed.
+
+    Returns:
+        Optional[str]: The license text
+
+    Raises:
+        Exception: If a license file is not found.
     """
     license_filenames = [
         "LICENSE",
@@ -671,21 +674,39 @@ def detect_license(input_path, licenses_path, threshold=0.9):
         "COPYING.md",
         "COPYING.rst",
     ]
+
     license_file = None
     for filename in os.listdir(input_path):
         if filename in license_filenames:
             license_file = os.path.join(input_path, filename)
             break
+
     if license_file is None:
-        return "No license file detected"
+        raise Exception("License file not found.")
 
     with open(license_file, "r") as f:
         license_text = f.read()
 
+    return license_text
+
+
+def detect_license(license_text, licenses_path, threshold=0.9):
+    """
+    Function to detect the license type from extracted text.
+
+    Args:
+        license_text (str): The extracted license text.
+        licenses_path (str): Path of the folder containing license templates.
+        threshold (float): Threshold to consider a license as detected. A float between 0 and 1.
+
+    Returns:
+        Ranked list of license types and their percentage match to the supplied license_text.
+    """
     # Regex pattern for preprocessing license templates and extract spdx id
     pattern = re.compile(
         "(---\n.*(spdx-id: )(?P<id>.+?)\n.*---\n)(?P<template>.*)", re.DOTALL
     )
+
     rank_list = []
     for licen in os.listdir(licenses_path):
         with open(os.path.join(licenses_path, licen), "r") as f:
@@ -699,11 +720,7 @@ def detect_license(input_path, licenses_path, threshold=0.9):
         if dice_coeff > threshold:
             rank_list.append((spdx_id, dice_coeff))
 
-    if rank_list:
-        return sorted(rank_list, key=lambda t: t[1], reverse=True)
-
-    return "License not recognised"
-
+    return sorted(rank_list, key=lambda t: t[1], reverse=True)
 
 def extract_readme(input_path: str) -> dict:
     """
