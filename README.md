@@ -157,13 +157,11 @@ docker run -it -v -v $PWD:/out --rm inspect4py:1.0 /bin/bash
 root@e04792563e6a:/# inspect4py -i /out/path/to/repo
 ```
 
-<!--
 Other useful commands when using Docker:
 ```
 docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
 docker image rm -f inspect4py:1.0
 ```
--->
 
 ## Execution
 
@@ -173,17 +171,16 @@ For example, it can be used to inspect all the python files of a given GitHub re
 The tool by default stores the results in the `OutputDir` directory, but users can specify their own directory name by using `-o` or `--output` flags.
 
 
-<!--
 ```
 inspect4py --input_path <FILE.py | DIRECTORY> [--output_dir "OutputDir", --ignore_dir_pattern "__", ignore_file_pattern "__" --requirements --html_output]
 ```
--->
 
 For clarity, we have added a `help` command to explain each input parameter:
 
 ```
 inspect4py --help
 
+```
 Usage: inspect4py [OPTIONS]
 
 Options:
