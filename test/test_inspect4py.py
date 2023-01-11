@@ -347,7 +347,7 @@ class Test(unittest.TestCase):
         for i in imports:
             if "test.py" in i['run']:
                  num_imports = len (i['imports'])
-            break
+                 break
         assert num_imports == 2
 
 
