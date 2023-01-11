@@ -1,3 +1,4 @@
+import sys
 import ast
 import os
 import re
@@ -99,9 +100,14 @@ def extract_requirements(input_path):
         # Answering yes (echo y), we allow searching for PyPI
         # for the missing modules and filter some unnecessary modules.
 
-        cmd = 'echo y | pigar -P ' + input_path + ' -p ' + file_name
-        # cmd = 'echo n | pigar -P ' + input_path + ' -p ' + file_name
-        print("cmd: %s" %cmd)
+
+        #print(sys.version_info)   
+        if sys.version_info[0] <=3 and sys.version_info[1]<=9:
+            cmd = 'echo y | pigar -P ' + input_path + ' -p ' + file_name
+        else:
+            cmd = ' pigar generate ' + input_path + ' -f ' + file_name + ' --question-answer yes --auto-select'
+       
+        #print("-----> cmd: %s" %cmd)
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
