@@ -180,7 +180,7 @@ For clarity, we have added a `help` command to explain each input parameter:
 ```
 inspect4py --help
 
-```
+
 Usage: inspect4py [OPTIONS]
 
 Options:
@@ -224,6 +224,9 @@ Options:
 ## Documentation
 
 For additional documentation and examples, please have a look at our [online documentation](https://inspect4py.readthedocs.io/en/latest/)
+
+## Contribution guidelines
+Contributions to address any of the current issues are welcome. In order to push your contribution, just **push your pull request to the development branch (`dev`)**. The master branch has only the code associated to the latest release. 
 
 ## Acknowledgements
 
