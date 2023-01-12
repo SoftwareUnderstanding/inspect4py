@@ -535,10 +535,11 @@ class Test(unittest.TestCase):
         actual_code = code_info.fileJson[0]["body"]["source_code"]
         assert expected_code == actual_code
 
+
     def test_license_detection(self):
         input_paths = ["./test_files/Chowlk", "./test_files/pylops", "./test_files/somef"]
         output_dir = "./output_dir"
-        
+        fig = False
         ignore_dir_pattern = [".", "__pycache__"]
         ignore_file_pattern = [".", "__pycache__"]
         requirements = False
@@ -555,13 +556,41 @@ class Test(unittest.TestCase):
         expected_liceses = ['Apache-2.0', 'LGPL-3.0', 'MIT']
         first_rank_licenses = []
         for input_path in input_paths:
-            dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                                    call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-                                    source_code, license_detection, readme, metadata)
-            first_rank_licenses.append(next(iter(dir_info["detected_license"][0])))
+            dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern,
+                                        ignore_file_pattern, requirements,
+                                        call_list, control_flow, directory_tree,
+                                        software_invocation, abstract_syntax_tree,
+                                        source_code, license_detection, readme, metadata)
+            first_rank_licenses.append(next(iter(dir_info["license"]["detected_type"][0])))
             shutil.rmtree(output_dir)
-        
+
         assert first_rank_licenses == expected_liceses
+
+    def test_license_text_extraction(self):
+        license_text = "A random license."
+        input_path = "./test_files/test_license_extraction"
+        output_dir = "./output_dir"
+        fig = False
+        ignore_dir_pattern = [".", "__pycache__"]
+        ignore_file_pattern = [".", "__pycache__"]
+        requirements = False
+        call_list = False
+        control_flow = False
+        directory_tree = False
+        software_invocation = False
+        abstract_syntax_tree = False
+        source_code = False
+        license_detection = True
+        readme = False
+        metadata = False
+
+        dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern,
+                                    ignore_file_pattern, requirements,
+                                    call_list, control_flow, directory_tree, software_invocation,
+                                    abstract_syntax_tree,
+                                    source_code, license_detection, readme, metadata)
+
+        assert dir_info["license"]["extracted_text"] == license_text
 
 
     def test_readme(self):
@@ -701,9 +730,13 @@ def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pat
             # Extract the first for software type.
             dir_info["software_type"] = rank_software_invocation(soft_invocation_info_list)
     if license_detection:
-            licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../inspect4py/licenses")
-            rank_list = detect_license(input_path, licenses_path)
-            dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
+        licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     "../inspect4py/licenses")
+        license_text = extract_license(input_path)
+        rank_list = detect_license(license_text, licenses_path)
+        dir_info["license"] = {}
+        dir_info["license"]["detected_type"] = [{k: f"{v:.1%}"} for k, v in rank_list]
+        dir_info["license"]["extracted_text"] = license_text
     if readme:
         dir_info["readme_files"] = extract_readme(input_path)
     if metadata:

@@ -1334,10 +1334,13 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
         if license_detection:
             try:
                 licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "licenses")
-                rank_list = detect_license(input_path, licenses_path)
-                dir_info["detected_license"] = [{k: f"{v:.1%}"} for k, v in rank_list]
-            except:
-                pass
+                license_text = extract_license(input_path)
+                rank_list = detect_license(license_text, licenses_path)
+                dir_info["license"] = {}
+                dir_info["license"]["detected_type"] = [{k: f"{v:.1%}"} for k, v in rank_list]
+                dir_info["license"]["extracted_text"] = license_text
+            except Exception as e:
+                print("Error when detecting license: %s", str(e))
         if readme:
             dir_info["readme_files"] = extract_readme(input_path)
         if metadata:
