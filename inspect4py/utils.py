@@ -737,7 +737,6 @@ def extract_readme(input_path: str, output_dir: str) -> dict:
         except Exception as e:
             print(f"Error when opening {file}: {e}")
 
-    print(readme_files.keys())
     return readme_files
 
 def get_github_metadata(input_path: str) -> dict:
