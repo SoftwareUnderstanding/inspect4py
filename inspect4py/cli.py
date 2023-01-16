@@ -1278,6 +1278,7 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
                 files[:] = [f for f in files if not f.startswith(ignore_f)]
             # print(files)
             for f in files:
+                print(f)
                 if ".py" in f and not f.endswith(".pyc"):
                     try:
                         path = os.path.join(subdir, f)
