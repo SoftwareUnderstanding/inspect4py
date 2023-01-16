@@ -1343,7 +1343,7 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
             except Exception as e:
                 print("Error when detecting license: %s", str(e))
         if readme:
-            dir_info["readme_files"] = extract_readme(input_path)
+            dir_info["readme_files"] = extract_readme(input_path, output_dir)
         if metadata:
             dir_info["metadata"] = get_github_metadata(input_path)
         json_file = output_dir + "/directory_info.json"

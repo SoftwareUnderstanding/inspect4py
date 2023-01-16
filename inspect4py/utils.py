@@ -722,22 +722,23 @@ def detect_license(license_text, licenses_path, threshold=0.9):
 
     return sorted(rank_list, key=lambda t: t[1], reverse=True)
 
-def extract_readme(input_path: str) -> dict:
+def extract_readme(input_path: str, output_dir: str) -> dict:
     """
     Function to extract content of all readme file under the input directory.
     :param input_path: Path of the repository to be analyzed.
+    :param output_dir: The output directory. Used to generate the correct path of the README file.
     """
     readme_files = {}
     for file in Path(input_path).rglob("README.*"):
-        relative_path = Path(file).relative_to(Path(input_path).parent)
+        relative_path = os.path.join(output_dir, Path(file).relative_to(Path(input_path).parent))
         try:
             with open(file, 'r') as f:
                 readme_files[str(relative_path)] = f.read()
         except Exception as e:
             print(f"Error when opening {file}: {e}")
 
+    print(readme_files.keys())
     return readme_files
-
 
 def get_github_metadata(input_path: str) -> dict:
     """
