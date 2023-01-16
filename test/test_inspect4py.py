@@ -614,14 +614,12 @@ class Test(unittest.TestCase):
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
                                     source_code, license_detection, readme, metadata)
 
-        root_dir = Path(input_path)
         expected_readme_files = {
-            f"{root_dir}/README.md": "README.md in root dir\n",
-            f"{root_dir}/subdir/README.txt": "README.txt in subdir\n",
-            f"{root_dir}/subdir/subsubdir/README.rst": "README.rst in subsubdir\n"
+            "test_readme/README.md": "README.md in root dir\n",
+            "test_readme/subdir/README.txt": "README.txt in subdir\n",
+            "test_readme/subdir/subsubdir/README.rst": "README.rst in subsubdir\n"
         }
         actual_readme_files = dir_info["readme_files"]
-        print(actual_readme_files)
         assert expected_readme_files == actual_readme_files        
 
 
