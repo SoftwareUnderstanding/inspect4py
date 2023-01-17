@@ -1276,7 +1276,6 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
                 dirs[:] = [d for d in dirs if not d.startswith(ignore_d)]
             for ignore_f in ignore_file_pattern:
                 files[:] = [f for f in files if not f.startswith(ignore_f)]
-            # print(files)
             for f in files:
                 if ".py" in f and not f.endswith(".pyc"):
                     try:
@@ -1342,7 +1341,7 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
             except Exception as e:
                 print("Error when detecting license: %s", str(e))
         if readme:
-            dir_info["readme_files"] = extract_readme(input_path)
+            dir_info["readme_files"] = extract_readme(input_path, output_dir)
         if metadata:
             dir_info["metadata"] = get_github_metadata(input_path)
         json_file = output_dir + "/directory_info.json"

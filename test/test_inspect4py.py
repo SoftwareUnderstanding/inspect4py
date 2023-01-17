@@ -614,14 +614,12 @@ class Test(unittest.TestCase):
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
                                     source_code, license_detection, readme, metadata)
 
-        root_dir = Path(input_path)
         expected_readme_files = {
-            f"{root_dir}/README.md": "README.md in root dir\n",
-            f"{root_dir}/subdir/README.txt": "README.txt in subdir\n",
-            f"{root_dir}/subdir/subsubdir/README.rst": "README.rst in subsubdir\n"
+            f"{output_dir}/test_readme/README.md": "README.md in root dir\n",
+            f"{output_dir}/test_readme/subdir/README.txt": "README.txt in subdir\n",
+            f"{output_dir}/test_readme/subdir/subsubdir/README.rst": "README.rst in subsubdir\n"
         }
         actual_readme_files = dir_info["readme_files"]
-        print(actual_readme_files)
         assert expected_readme_files == actual_readme_files        
 
 
@@ -738,7 +736,7 @@ def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pat
         dir_info["license"]["detected_type"] = [{k: f"{v:.1%}"} for k, v in rank_list]
         dir_info["license"]["extracted_text"] = license_text
     if readme:
-        dir_info["readme_files"] = extract_readme(input_path)
+        dir_info["readme_files"] = extract_readme(input_path, output_dir)
     if metadata:
         dir_info["metadata"] = get_github_metadata(input_path)
     return dir_info
