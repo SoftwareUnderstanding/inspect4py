@@ -118,13 +118,18 @@ def extract_requirements(input_path):
         for line in lines:
             try:
                 if line != "\n":
-                    splitLine = line.split(" == ")
+                    if " == " in line: 
+                        splitLine = line.split(" == ")
+                    else:
+                        splitLine = line.split("==")
                     req_dict[splitLine[0]] = splitLine[1].split("\n")[0]
             except:
                 pass
+
         # Note: Pigar requirement file is being deleted
         # in the future we might want to keep it (just commenting the line bellow)
-        os.system('rm ' + file_name)
+        #os.system('rm ' + file_name)
+        #print("Exracted requirements :%s" %req_dict)
         return req_dict
 
     except:
