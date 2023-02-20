@@ -1,13 +1,16 @@
+import ast
 import json
 import tokenize
 import types
 import builtins
 import click
 from docstring_parser import parse as doc_parse
+from tree_sitter import Language, Parser
 
 from inspect4py import __version__
 from inspect4py.staticfg import builder
 from inspect4py.utils import *
+# from utils import *
 
 """
 Code Inspector
@@ -26,7 +29,7 @@ builtin_function_names = [name for name, obj in vars(builtins).items()
 
 
 class CodeInspection:
-    def __init__(self, path, out_control_flow_path, out_json_path, control_flow, abstract_syntax_tree, source_code):
+    def __init__(self, path, out_control_flow_path, out_json_path, control_flow, abstract_syntax_tree, source_code, data_flow, parser):
         """ init method initializes the Code_Inspection object
         :param self self: represent the instance of the class
         :param str path: the file to inspect
@@ -41,6 +44,8 @@ class CodeInspection:
         self.out_json_path = out_json_path
         self.abstract_syntax_tree = abstract_syntax_tree
         self.source_code = source_code
+        self.data_flow = data_flow
+        self.parser = parser
         self.tree = self.parser_file()
         if self.tree != "AST_ERROR":
             self.nodes = self.walk()
@@ -57,6 +62,7 @@ class CodeInspection:
             self.fileJson = self.file_json()
         else:
             self.fileJson = {}
+
 
     def find_classDef(self):
         classDef_nodes = [node for node in self.nodes if isinstance(node, ast.ClassDef)]
@@ -477,11 +483,15 @@ class CodeInspection:
         :param list functions_definitions: represent a list with all functions or methods nodes
         :return dictionary: a dictionary with the all the information at function/method level
         """
-
+        # print(functions_definitions)
         funcs_info = {}
         for f in functions_definitions:
+            # for node in ast.walk(f):
+            #     print(node.name)
+
             funcs_info[f.name] = {}
             ds_f = ast.get_docstring(f)
+            # print(ds_f)
             try:
                 docstring = doc_parse(ds_f)
                 funcs_info[f.name]["doc"] = {}
@@ -577,7 +587,10 @@ class CodeInspection:
                 funcs_info[f.name]["ast"] = ast_to_json(f)
             if self.source_code:
                 funcs_info[f.name]["source_code"] = ast_to_source_code(f)
-
+            if self.data_flow:
+                code_tokens, dfg = extract_dataflow(funcs_info[f.name]["source_code"], self.parser, "python")
+                funcs_info[f.name]["data_flow"] = dfg
+                funcs_info[f.name]["code_tokens"] = code_tokens
         return funcs_info
 
     def _skip_dynamic_calls(self, funcs_info, classes_info, check_name, name, var_name):
@@ -1204,6 +1217,7 @@ def create_output_dirs(output_dir, control_flow):
 @click.option('-i', '--input_path', type=str, required=True, help="input path of the file or directory to inspect.")
 @click.option('-o', '--output_dir', type=str, default="output_dir",
               help="output directory path to store results. If the directory does not exist, the tool will create it.")
+@click.option('-st','--symbol_table', type=str, default="my_language.so", help="symbol table for the target function")
 @click.option('-ignore_dir', '--ignore_dir_pattern', multiple=True, default=[".", "__pycache__"],
               help="ignore directories starting with a certain pattern. This parameter can be provided multiple times "
                    "to ignore multiple directory patterns.")
@@ -1231,16 +1245,28 @@ def create_output_dirs(output_dir, control_flow):
               help="extract all readme files in the target repository.")
 @click.option('-md', '--metadata', type=bool, is_flag=True, 
               help="extract metadata of the target repository using Github API. (requires repository to have the .git folder)")
+@click.option('-df', '--data_flow', type=bool, is_flag=True,
+              help="extract data flow graph of every function in the target repository")
+
 def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
          control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection, readme,
-         metadata):
+         metadata, data_flow, symbol_table):
+    if data_flow:
+        LANGUAGE = Language(symbol_table, "python")
+        parser = Parser()
+        parser.set_language(LANGUAGE)
+        parser = [parser, DFG_python]
+    else:
+        parser = []
+
+    # print(parsers)
     if (not os.path.isfile(input_path)) and (not os.path.isdir(input_path)):
         print('The file or directory specified does not exist')
         sys.exit()
 
     if os.path.isfile(input_path):
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
 
         # Generate the call list of a file
         call_list_data = call_list_file(code_info)
@@ -1279,11 +1305,13 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
             for f in files:
                 if ".py" in f and not f.endswith(".pyc"):
                     try:
+
                         path = os.path.join(subdir, f)
                         relative_path = Path(subdir).relative_to(Path(input_path).parent)
                         out_dir = str(Path(output_dir) / relative_path)
                         cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
-                        code_info = CodeInspection(path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+                        code_info = CodeInspection(path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
+                        # print(parsers)
                         if code_info.fileJson:
                             if out_dir not in dir_info:
                                 dir_info[out_dir] = [code_info.fileJson[0]]
@@ -1356,4 +1384,5 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
 
 if __name__ == "__main__":
     main()
+
 
