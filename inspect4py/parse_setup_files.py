@@ -56,7 +56,9 @@ def parse_setup_py(parent_dir):
         if single_line:
             elem = setup_content[console_index]
             cs = elem.split("=")
-            cs_string = cs[0].strip().replace('\'', '').split('["')[1]
+            # print(cs)
+            # print(cs[1].strip())
+            cs_string = cs[1].strip().replace('\'', '').split('["')[1]
             cs_list.append(normalize(cs_string))
             setup_info["installation"] = "pip install " + cs_string
             setup_info["run"].append(cs_string)

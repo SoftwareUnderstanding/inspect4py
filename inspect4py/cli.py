@@ -1392,5 +1392,3 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
 if __name__ == "__main__":
     main()
 
-
-

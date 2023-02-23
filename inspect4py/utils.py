@@ -714,7 +714,7 @@ def detect_license(license_text, licenses_path, threshold=0.9):
 
     rank_list = []
     for licen in os.listdir(licenses_path):
-        with open(os.path.join(licenses_path, licen), "r") as f:
+        with open(os.path.join(licenses_path, licen), "r", encoding='UTF-8') as f:
             parser = pattern.search(f.read())
             if parser is None:
                 continue
