@@ -79,7 +79,7 @@ We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 
 
 
 ### Operative System
-We have tested `inspect4py` in Unix and MacOs.
+We have tested `inspect4py` in Unix, MacOs and Windows.
 
 ### Installation from pypi
 `inspect4py` is [available in pypi!](https://pypi.org/project/inspect4py/) Just install it like a regular package:
