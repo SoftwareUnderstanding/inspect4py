@@ -27,6 +27,8 @@ Inspect4py currently works **only for Python 3 projects**.
 
 ## Background:
 
+`inspect4py` uses [tree-sitter](https://github.com/tree-sitter/py-tree-sitter) for the python symbol table for extracting data flow graph from each functions, the example can be found in [GraphCodeBERT](https://arxiv.org/abs/2009.08366).
+
 `inspect4py` uses [ASTs](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
 the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating
 a tree of objects (per file) whose classes all inherit from [ast.AST](https://docs.python.org/3/library/ast.html#ast.AST).
@@ -64,6 +66,12 @@ Make sure you have graphviz installed:
 
 ```
 sudo apt-get install graphviz
+```
+
+If data flow functionality is needed, make sure tree-sitter is installed, noted, C complier is needed:
+
+```
+pip3 install tree_sitter
 ```
 
 ### Python version
@@ -106,6 +114,9 @@ pigar
 setuptools==54.2.0
 json2html
 configparser
+bigcode_astgen
+GitPython
+tree-sitter
 ```
 
 If you want to run the evaluations, do not forget to add `pandas` to the previous set.
@@ -218,6 +229,10 @@ Options:
   -rm, --readme                   extract all readme files in the target repository.
   -md, --metadata                 extract metadata of the target repository using
                                   Github API.
+  -df, --data_flow                extract data flow graph of every function 
+                                  in the target repository    
+  -st, --symbol_table             symbol table for the target function 
+                                  example:"./resource/my-language.so"                                  
   --help                          Show this message and exit.
 ```
 
