@@ -232,7 +232,7 @@ Options:
   -df, --data_flow                extract data flow graph of every function 
                                   in the target repository    
   -st, --symbol_table             symbol table for the target function 
-                                  example:"./resource/my-language.so"                                  
+                                  example:"./resources/my-language.so"                                  
   --help                          Show this message and exit.
 ```
 
