@@ -232,8 +232,8 @@ Options:
   -rm, --readme                   extract all readme files in the target repository.
   -md, --metadata                 extract metadata of the target repository using
                                   Github API.
-  -df, --data_flow                extract data flow graph for every function
-  -st, --symbol_table             symbol table file location. 
+  -df, --data_flow                extract data flow graph for every function, BOOL
+  -st, --symbol_table             symbol table file location. STR
   --help                          Show this message and exit.
 ```
 
