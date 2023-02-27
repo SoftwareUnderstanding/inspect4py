@@ -1,0 +1,1 @@
+{"file": {"path": "D:\\inspect4py-main\\test\\Autumn945_MGNN-SPred\\MGNN-SPred-master\\models\\__init__.py", "fileNameBase": "__init__", "extension": "py"}, "dependencies": [{"from_module": "base", "import": "Base", "type": "internal", "type_element": "class"}, {"from_module": "base", "import": "GNN", "type": "internal", "type_element": "class"}], "is_test": false}
