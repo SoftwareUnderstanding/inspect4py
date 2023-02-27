@@ -65,6 +65,12 @@ Please cite our MSR 2022 demo paper:
 
 ### Preliminaries
 
+Make sure you have tree-sitter installed, C complier is needed, more [info](https://github.com/tree-sitter/tree-sitter):
+
+```
+pip install tree-sitter
+```
+
 Make sure you have graphviz installed:
 
 ```
@@ -76,7 +82,7 @@ We have tested `inspect4py` in Python 3.7+. **Our recommended version is Python 
 
 
 ### Operative System
-We have tested `inspect4py` in Unix and MacOs.
+We have tested `inspect4py` in Unix, MacOS and Windows 11(22621.1265).
 
 ### Installation from pypi
 `inspect4py` is [available in pypi!](https://pypi.org/project/inspect4py/) Just install it like a regular package:
@@ -111,6 +117,7 @@ pigar
 setuptools==54.2.0
 json2html
 configparser
+tree-sitter
 ```
 
 If you want to run the evaluations, do not forget to add `pandas` to the previous set.
@@ -223,6 +230,8 @@ Options:
   -rm, --readme                   extract all readme files in the target repository.
   -md, --metadata                 extract metadata of the target repository using
                                   Github API.
+  -df, --data_flow                extract data flow graph for every function
+  -st, --symbol_table             symbol table file location. 
   --help                          Show this message and exit.
 ```
 
