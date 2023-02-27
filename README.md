@@ -27,6 +27,11 @@ Inspect4py currently works **only for Python 3 projects**.
 
 ## Background:
 
+`inspect4py` added the functionality of capture [Data Flow Graphs](http://bears.ece.ucsb.edu/research-info/DP/dfg.html) for each function inspired by GraphCodeBERT: [Github](https://github.com/microsoft/CodeBERT) & [Paper](https://arxiv.org/abs/2009.08366). The illustration is given:
+|Source Code|List Output|Networkx Image|
+|:-:|:-:|:-:|
+|<pre>def max(a, b):<br>    x = 0<br>    if a > b:<br>        x = a<br>    else:<br>        x = b<br>    return x</pre>|<pre>('a', 3, 'comesFrom', [], [])<br>('b', 5, 'comesFrom', [], [])<br>('x', 8, 'computedFrom', ['0'], [10])<br>('0', 10, 'comesFrom', [], [])<br>('a', 12, 'comesFrom', ['a'], [3])<br>('b', 14, 'comesFrom', ['b'], [5])<br>('x', 16, 'computedFrom', ['a'], [18])<br>('a', 18, 'comesFrom', ['a'], [3])<br>('x', 21, 'computedFrom', ['b'], [23])<br>('b', 23, 'comesFrom', ['b'], [5])<br>('x', 25, 'comesFrom', ['x'], [16, 21])</pre>|![image](docs/images/data_flow.png)|
+
 `inspect4py` uses [ASTs](https://en.wikipedia.org/wiki/Abstract_syntax_tree), more specifically
 the [ast](https://docs.python.org/3/library/ast.html) module in Python, generating
 a tree of objects (per file) whose classes all inherit from [ast.AST](https://docs.python.org/3/library/ast.html#ast.AST).
