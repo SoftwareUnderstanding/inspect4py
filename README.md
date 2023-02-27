@@ -117,6 +117,8 @@ pigar
 setuptools==54.2.0
 json2html
 configparser
+bigcode_astgen
+GitPython
 tree-sitter
 ```
 
