@@ -1259,9 +1259,16 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
          control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection, readme,
          metadata, data_flow, symbol_table):
     if data_flow:
-        LANGUAGE = Language(symbol_table, "python")
+        if symbol_table == "my_language.so": # default option
+            path_to_languages = str(Path(__file__).parent / "resources")
+            if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
+                language = Language(path_to_languages + os.path.sep + "python_win.so", "python")
+            else:
+                language = Language(path_to_languages + os.path.sep + "python_unix.so", "python")
+        else:
+            language = Language(symbol_table, "python")
         parser = Parser()
-        parser.set_language(LANGUAGE)
+        parser.set_language(language)
         parser = [parser, DFG_python]
     else:
         parser = []
@@ -1367,7 +1374,7 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
                     dir_info["software_type"] = "not found"
         if license_detection:
             try:
-                licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "licenses")
+                licenses_path = str(Path(__file__).parent / "licenses")
                 license_text = extract_license(input_path)
                 rank_list = detect_license(license_text, licenses_path)
                 dir_info["license"] = {}

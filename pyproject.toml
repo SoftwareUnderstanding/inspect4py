@@ -9,5 +9,6 @@ requires = [
     "setuptools==54.2.0",
     "json2html",
     "configparser",
+    "tree-sitter"
 ]
 build-backend = "setuptools.build_meta"
