@@ -55,7 +55,8 @@ def extract_directory_tree(input_path, ignore_dirs, ignore_files, visual=0):
     ignore_set = tuple(list(ignore_dirs) + list(ignore_files) + ignore_set)
     if visual:
         paths = DisplayablePath.make_tree(Path(input_path), criteria=lambda
-            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(".pyc") else False)
+            path: True if path.name not in ignore_set and not os.path.join("../", path.name).endswith(
+            ".pyc") else False)
         for path in paths:
             print(path.displayable())
     return get_directory_structure(input_path, ignore_set)
@@ -75,7 +76,7 @@ def prune_json(json_dict):
     else:
         for a, b in json_dict.items():
             if a == "ast" and b:
-                final_dict[a] = b # Avoid pruning AST fields
+                final_dict[a] = b  # Avoid pruning AST fields
                 continue
             if b or isinstance(b, bool):
                 if isinstance(b, dict):
@@ -100,14 +101,13 @@ def extract_requirements(input_path):
         # Answering yes (echo y), we allow searching for PyPI
         # for the missing modules and filter some unnecessary modules.
 
-
-        #print(sys.version_info)   
-        if sys.version_info[0] <=3 and sys.version_info[1]<=9:
+        # print(sys.version_info)
+        if sys.version_info[0] <= 3 and sys.version_info[1] <= 9:
             cmd = 'echo y | pigar -P ' + input_path + ' -p ' + file_name
         else:
             cmd = ' pigar generate ' + input_path + ' -f ' + file_name + ' --question-answer yes --auto-select'
-       
-        #print("-----> cmd: %s" %cmd)
+
+        # print("-----> cmd: %s" %cmd)
         proc = subprocess.Popen(cmd.encode('utf-8'), shell=True, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
@@ -118,7 +118,7 @@ def extract_requirements(input_path):
         for line in lines:
             try:
                 if line != "\n":
-                    if " == " in line: 
+                    if " == " in line:
                         splitLine = line.split(" == ")
                     else:
                         splitLine = line.split("==")
@@ -128,8 +128,8 @@ def extract_requirements(input_path):
 
         # Note: Pigar requirement file is being deleted
         # in the future we might want to keep it (just commenting the line bellow)
-        #os.system('rm ' + file_name)
-        #print("Exracted requirements :%s" %req_dict)
+        # os.system('rm ' + file_name)
+        # print("Exracted requirements :%s" %req_dict)
         return req_dict
 
     except:
@@ -175,7 +175,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     body_only_files = []
     flag_service_main = 0
     for key in dir_info:  # filter (lambda key: key not in "directory_tree", dir_info):
-        if key!="requirements" and key!="directory_tree": # Note: We need to filter out directory_tree
+        if key != "requirements" and key != "directory_tree":  # Note: We need to filter out directory_tree
             for elem in dir_info[key]:
                 if elem["main_info"]["main_flag"]:
                     flag_service_main = 0
@@ -188,7 +188,7 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
                         try:
                             # 2. Exploration for services in files with "mains"
                             flag_service, software_invocation_info = service_check(elem, software_invocation_info,
-                                                                               server_dependencies, "main", readme)
+                                                                                   server_dependencies, "main", readme)
                         except:
                             main_files.append(elem["file"]["path"])
 
@@ -209,19 +209,19 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
 
     # this list (of lists) stores the mains that each main import
     import_mains = []
-   
+
     # this list (of lists) stores the mains that each main is imported by
-    imported_by = [None]*len(main_files)
+    imported_by = [None] * len(main_files)
 
     # 3. Exploration for main scripts
     for m in range(0, len(main_files)):
         m_calls = find_file_calls(main_files[m], call_list)
         # HERE I STORE WHICH OTHER MAIN FILES CALLS EACH "M" MAIN_FILE
         m_imports = extract_relations(main_files[m], m_calls, main_files, call_list)
-      
+
         # storing those m_imports in the import_mains[m]
         import_mains.append(m_imports)
-      
+
         for m_i in m_imports:
             m_secondary[main_files.index(m_i)] = 1
 
@@ -286,7 +286,6 @@ def extract_software_invocation(dir_info, dir_tree_info, input_path, call_list, 
     return software_invocation_info
 
 
-
 def generate_output_html(pruned_json, output_file_html):
     """
     Method to generate a simple HTML view of the obtained JSON.
@@ -331,9 +330,9 @@ def list_functions_classes_from_module(m, path):
 
         type = "internal"
     except:
-        
-        #module = __import__(m)
-        #functions = dir(module)
+
+        # module = __import__(m)
+        # functions = dir(module)
         type = "external"
     return functions, classes, type
 
@@ -352,22 +351,22 @@ def type_module(m, i, path):
         return "internal"
     else:
         if m:
-           m = m.replace(".", "/")
-           file_module = abs_repo_path + "/" + m + ".py"
-           file_module_path = Path(file_module)
-           if file_module_path.is_file():
-               return "internal"
-           else:
-               file_module = abs_repo_path + "/" + m + "/main.py"
-               file_module_path = Path(file_module)
-               if file_module_path.is_file():
-                   return "internal"
-               else:
-                   return "external"
+            m = m.replace(".", "/")
+            file_module = abs_repo_path + "/" + m + ".py"
+            file_module_path = Path(file_module)
+            if file_module_path.is_file():
+                return "internal"
+            else:
+                file_module = abs_repo_path + "/" + m + "/main.py"
+                file_module_path = Path(file_module)
+                if file_module_path.is_file():
+                    return "internal"
+                else:
+                    return "external"
         else:
             dir_module = abs_repo_path + "/" + i
             if os.path.exists(dir_module):
-                   return "internal"
+                return "internal"
             else:
                 return "external"
 
@@ -419,7 +418,8 @@ def call_list_dir(dir_info):
             call_list[dir][file_path]["body"] = extract_call_functions(file_info, body=1)
             call_list[dir][file_path]["classes"] = {}
             for class_n in file_info["classes"]:
-                call_list[dir][file_path]["classes"][class_n] = extract_call_methods(file_info["classes"][class_n]["methods"])
+                call_list[dir][file_path]["classes"][class_n] = extract_call_methods(
+                    file_info["classes"][class_n]["methods"])
     return call_list
 
 
@@ -433,8 +433,8 @@ def find_file_calls(file_name, call_list):
 def find_module_calls(module, call_list):
     for dir in call_list:
         for elem in call_list[dir]:
-            if "/"+module+"." in elem:
-                #print("---MODULE %s, elem %s, giving call_list[%s][%s]" %(module, elem, dir, elem))
+            if "/" + module + "." in elem:
+                # print("---MODULE %s, elem %s, giving call_list[%s][%s]" %(module, elem, dir, elem))
                 return call_list[dir][elem]
 
             # DFS algorithm - Allowing up to 2 levels of depth.
@@ -457,7 +457,7 @@ def file_in_call(base, call, file, m_imports, call_list, orig_base, level):
     elif orig_base in call:
         return 0
 
-    elif level < level_depth and call!="":
+    elif level < level_depth and call != "":
         m_calls_extern = {}
         module_base = call.split(".")[0]
         module_base = module_base + "."
@@ -522,7 +522,7 @@ def extract_relations(file_name, m_calls, main_files, call_list):
                 level = 0
                 flag_found = extract_data(base, m_calls[m_c], file, m_imports, flag_found, call_list, orig_base, level)
                 if flag_found:
-                    #return m_imports
+                    # return m_imports
                     break
 
     return m_imports
@@ -622,6 +622,7 @@ def rank_software_invocation(soft_invocation_info_list):
         entry["ranking"] = position
     return soft_invocation_info_list
 
+
 def ast_to_json(ast_obj):
     """
     Function to convert the AST object into JSON format.
@@ -630,6 +631,7 @@ def ast_to_json(ast_obj):
     ast_generator = ASTGenerator("")
     ast_generator.tree = ast_obj
     return ast_generator.generate_ast()
+
 
 def ast_to_source_code(ast_obj):
     """
@@ -650,8 +652,8 @@ def dice_coefficient(a, b):
     if len(b) == 1:
         b = b + u"."
 
-    a_bigrams = {a[i : i + 2] for i in range(len(a) - 1)}
-    b_bigrams = {b[i : i + 2] for i in range(len(b) - 1)}
+    a_bigrams = {a[i: i + 2] for i in range(len(a) - 1)}
+    b_bigrams = {b[i: i + 2] for i in range(len(b) - 1)}
 
     overlap = len(a_bigrams & b_bigrams)
     dice_coeff = overlap * 2.0 / (len(a_bigrams) + len(b_bigrams))
@@ -714,7 +716,7 @@ def detect_license(license_text, licenses_path, threshold=0.9):
 
     rank_list = []
     for licen in os.listdir(licenses_path):
-        with open(os.path.join(licenses_path, licen), "r") as f:
+        with open(os.path.join(licenses_path, licen), "r", encoding='UTF-8') as f:
             parser = pattern.search(f.read())
             if parser is None:
                 continue
@@ -726,6 +728,7 @@ def detect_license(license_text, licenses_path, threshold=0.9):
             rank_list.append((spdx_id, dice_coeff))
 
     return sorted(rank_list, key=lambda t: t[1], reverse=True)
+
 
 def extract_readme(input_path: str, output_dir: str) -> dict:
     """
@@ -743,6 +746,7 @@ def extract_readme(input_path: str, output_dir: str) -> dict:
             print(f"Error when opening {file}: {e}")
 
     return readme_files
+
 
 def get_github_metadata(input_path: str) -> dict:
     """
@@ -775,7 +779,7 @@ def get_github_metadata(input_path: str) -> dict:
 
 
 def find_index_init(depInfo, calls, class_init):
-    index_remove=[]
+    index_remove = []
     for dep in depInfo:
         if dep["type_element"] == "class":
             if dep["import"] in calls:
@@ -787,15 +791,273 @@ def find_index_init(depInfo, calls, class_init):
             index_remove.append(calls.index(i))
     return index_remove
 
+
 def update_list_calls(info, index_remove):
-    updated_calls=[]
+    updated_calls = []
     for i in range(0, len(info["calls"])):
         if i in index_remove:
             continue
         updated_calls.append(info["calls"][i])
-    ### These lines are for removing duplicate calls 
+    ### These lines are for removing duplicate calls
     res = []
-    for i in updated_calls :
+    for i in updated_calls:
         if i not in res:
             res.append(i)
     return res
+
+
+def tree_to_variable_index(root_node, index_to_code):
+    if (len(root_node.children) == 0 or root_node.type == 'string') and root_node.type != 'comment':
+        index = (root_node.start_point, root_node.end_point)
+        _, code = index_to_code[index]
+        if root_node.type != code:
+            return [(root_node.start_point, root_node.end_point)]
+        else:
+            return []
+    else:
+        code_tokens = []
+        for child in root_node.children:
+            code_tokens += tree_to_variable_index(child, index_to_code)
+        return code_tokens
+
+
+def DFG_python(root_node, index_to_code, states):
+    assignment = ['assignment', 'augmented_assignment', 'for_in_clause']
+    if_statement = ['if_statement']
+    for_statement = ['for_statement']
+    while_statement = ['while_statement']
+    do_first_statement = ['for_in_clause']
+    def_statement = ['default_parameter']
+    states = states.copy()
+    if (len(root_node.children) == 0 or root_node.type == 'string') and root_node.type != 'comment':
+        idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
+        if root_node.type == code:
+            return [], states
+        elif code in states:
+            return [(code, idx, 'comesFrom', [code], states[code].copy())], states
+        else:
+            if root_node.type == 'identifier':
+                states[code] = [idx]
+            return [(code, idx, 'comesFrom', [], [])], states
+    elif root_node.type in def_statement:
+        name = root_node.child_by_field_name('name')
+        value = root_node.child_by_field_name('value')
+        DFG = []
+        if value is None:
+            indexs = tree_to_variable_index(name, index_to_code)
+            for index in indexs:
+                idx, code = index_to_code[index]
+                DFG.append((code, idx, 'comesFrom', [], []))
+                states[code] = [idx]
+            return sorted(DFG, key=lambda x: x[1]), states
+        else:
+            name_indexs = tree_to_variable_index(name, index_to_code)
+            value_indexs = tree_to_variable_index(value, index_to_code)
+            temp, states = DFG_python(value, index_to_code, states)
+            DFG += temp
+            for index1 in name_indexs:
+                idx1, code1 = index_to_code[index1]
+                for index2 in value_indexs:
+                    idx2, code2 = index_to_code[index2]
+                    DFG.append((code1, idx1, 'comesFrom', [code2], [idx2]))
+                states[code1] = [idx1]
+            return sorted(DFG, key=lambda x: x[1]), states
+    elif root_node.type in assignment:
+        if root_node.type == 'for_in_clause':
+            right_nodes = [root_node.children[-1]]
+            left_nodes = [root_node.child_by_field_name('left')]
+        else:
+            if root_node.child_by_field_name('right') is None:
+                return [], states
+            left_nodes = [x for x in root_node.child_by_field_name('left').children if x.type != ',']
+            right_nodes = [x for x in root_node.child_by_field_name('right').children if x.type != ',']
+            if len(right_nodes) != len(left_nodes):
+                left_nodes = [root_node.child_by_field_name('left')]
+                right_nodes = [root_node.child_by_field_name('right')]
+            if len(left_nodes) == 0:
+                left_nodes = [root_node.child_by_field_name('left')]
+            if len(right_nodes) == 0:
+                right_nodes = [root_node.child_by_field_name('right')]
+        DFG = []
+        for node in right_nodes:
+            temp, states = DFG_python(node, index_to_code, states)
+            DFG += temp
+
+        for left_node, right_node in zip(left_nodes, right_nodes):
+            left_tokens_index = tree_to_variable_index(left_node, index_to_code)
+            right_tokens_index = tree_to_variable_index(right_node, index_to_code)
+            temp = []
+            for token1_index in left_tokens_index:
+                idx1, code1 = index_to_code[token1_index]
+                temp.append((code1, idx1, 'computedFrom', [index_to_code[x][1] for x in right_tokens_index],
+                             [index_to_code[x][0] for x in right_tokens_index]))
+                states[code1] = [idx1]
+            DFG += temp
+        return sorted(DFG, key=lambda x: x[1]), states
+    elif root_node.type in if_statement:
+        DFG = []
+        current_states = states.copy()
+        others_states = []
+        tag = False
+        if 'else' in root_node.type:
+            tag = True
+        for child in root_node.children:
+            if 'else' in child.type:
+                tag = True
+            if child.type not in ['elif_clause', 'else_clause']:
+                temp, current_states = DFG_python(child, index_to_code, current_states)
+                DFG += temp
+            else:
+                temp, new_states = DFG_python(child, index_to_code, states)
+                DFG += temp
+                others_states.append(new_states)
+        others_states.append(current_states)
+        if tag is False:
+            others_states.append(states)
+        new_states = {}
+        for dic in others_states:
+            for key in dic:
+                if key not in new_states:
+                    new_states[key] = dic[key].copy()
+                else:
+                    new_states[key] += dic[key]
+        for key in new_states:
+            new_states[key] = sorted(list(set(new_states[key])))
+        return sorted(DFG, key=lambda x: x[1]), new_states
+    elif root_node.type in for_statement:
+        DFG = []
+        for i in range(2):
+            right_nodes = [x for x in root_node.child_by_field_name('right').children if x.type != ',']
+            left_nodes = [x for x in root_node.child_by_field_name('left').children if x.type != ',']
+            if len(right_nodes) != len(left_nodes):
+                left_nodes = [root_node.child_by_field_name('left')]
+                right_nodes = [root_node.child_by_field_name('right')]
+            if len(left_nodes) == 0:
+                left_nodes = [root_node.child_by_field_name('left')]
+            if len(right_nodes) == 0:
+                right_nodes = [root_node.child_by_field_name('right')]
+            for node in right_nodes:
+                temp, states = DFG_python(node, index_to_code, states)
+                DFG += temp
+            for left_node, right_node in zip(left_nodes, right_nodes):
+                left_tokens_index = tree_to_variable_index(left_node, index_to_code)
+                right_tokens_index = tree_to_variable_index(right_node, index_to_code)
+                temp = []
+                for token1_index in left_tokens_index:
+                    idx1, code1 = index_to_code[token1_index]
+                    temp.append((code1, idx1, 'computedFrom', [index_to_code[x][1] for x in right_tokens_index],
+                                 [index_to_code[x][0] for x in right_tokens_index]))
+                    states[code1] = [idx1]
+                DFG += temp
+            if root_node.children[-1].type == "block":
+                temp, states = DFG_python(root_node.children[-1], index_to_code, states)
+                DFG += temp
+        dic = {}
+        for x in DFG:
+            if (x[0], x[1], x[2]) not in dic:
+                dic[(x[0], x[1], x[2])] = [x[3], x[4]]
+            else:
+                dic[(x[0], x[1], x[2])][0] = list(set(dic[(x[0], x[1], x[2])][0] + x[3]))
+                dic[(x[0], x[1], x[2])][1] = sorted(list(set(dic[(x[0], x[1], x[2])][1] + x[4])))
+        DFG = [(x[0], x[1], x[2], y[0], y[1]) for x, y in sorted(dic.items(), key=lambda t: t[0][1])]
+        return sorted(DFG, key=lambda x: x[1]), states
+    elif root_node.type in while_statement:
+        DFG = []
+        for i in range(2):
+            for child in root_node.children:
+                temp, states = DFG_python(child, index_to_code, states)
+                DFG += temp
+        dic = {}
+        for x in DFG:
+            if (x[0], x[1], x[2]) not in dic:
+                dic[(x[0], x[1], x[2])] = [x[3], x[4]]
+            else:
+                dic[(x[0], x[1], x[2])][0] = list(set(dic[(x[0], x[1], x[2])][0] + x[3]))
+                dic[(x[0], x[1], x[2])][1] = sorted(list(set(dic[(x[0], x[1], x[2])][1] + x[4])))
+        DFG = [(x[0], x[1], x[2], y[0], y[1]) for x, y in sorted(dic.items(), key=lambda t: t[0][1])]
+        return sorted(DFG, key=lambda x: x[1]), states
+    else:
+        DFG = []
+        for child in root_node.children:
+            if child.type in do_first_statement:
+                temp, states = DFG_python(child, index_to_code, states)
+                DFG += temp
+        for child in root_node.children:
+            if child.type not in do_first_statement:
+                temp, states = DFG_python(child, index_to_code, states)
+                DFG += temp
+
+        return sorted(DFG, key=lambda x: x[1]), states
+
+
+def tree_to_variable_index(root_node, index_to_code):
+    if (len(root_node.children) == 0 or root_node.type == 'string') and root_node.type != 'comment':
+        index = (root_node.start_point, root_node.end_point)
+        _, code = index_to_code[index]
+        if root_node.type != code:
+            return [(root_node.start_point, root_node.end_point)]
+        else:
+            return []
+    else:
+        code_tokens = []
+        for child in root_node.children:
+            code_tokens += tree_to_variable_index(child, index_to_code)
+        return code_tokens
+
+
+def index_to_code_token(index, code):
+    start_point = index[0]
+    end_point = index[1]
+    if start_point[0] == end_point[0]:
+        s = code[start_point[0]][start_point[1]:end_point[1]]
+    else:
+        s = ""
+        s += code[start_point[0]][start_point[1]:]
+        for i in range(start_point[0] + 1, end_point[0]):
+            s += code[i]
+        s += code[end_point[0]][:end_point[1]]
+    return s
+
+
+def tree_to_token_index(root_node):
+    if (len(root_node.children) == 0 or root_node.type == 'string') and root_node.type != 'comment':
+        return [(root_node.start_point, root_node.end_point)]
+    else:
+        code_tokens = []
+        for child in root_node.children:
+            code_tokens += tree_to_token_index(child)
+        return code_tokens
+
+
+def extract_dataflow(code, parser, lang):
+    # obtain dataflow
+    if lang == "php":
+        code = "<?php" + code + "?>"
+    try:
+        tree = parser[0].parse(bytes(code, 'utf8'))
+        root_node = tree.root_node
+        tokens_index = tree_to_token_index(root_node)
+        code = code.split('\n')
+        code_tokens = [index_to_code_token(x, code) for x in tokens_index]
+        index_to_code = {}
+        for idx, (index, code) in enumerate(zip(tokens_index, code_tokens)):
+            index_to_code[index] = (idx, code)
+        try:
+            DFG, _ = parser[1](root_node, index_to_code, {})
+        except:
+            DFG = []
+        DFG = sorted(DFG, key=lambda x: x[1])
+        indexs = set()
+        for d in DFG:
+            if len(d[-1]) != 0:
+                indexs.add(d[1])
+            for x in d[-1]:
+                indexs.add(x)
+        new_DFG = []
+        for d in DFG:
+            if d[1] in indexs:
+                new_DFG.append(d)
+        dfg = new_DFG
+    except:
+        dfg = []
+    return code_tokens, dfg
