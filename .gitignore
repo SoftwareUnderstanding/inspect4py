@@ -2,6 +2,7 @@ build/*
 dist/*
 env/*
 .vscode/
+.idea/
 .ipynb_checkpoints/
 config.json
 __pycache__/

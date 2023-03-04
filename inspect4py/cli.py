@@ -56,7 +56,7 @@ class CodeInspection:
             self.bodyInfo = self.inspect_body()
             if control_flow:
                 self.out_control_flow_path = out_control_flow_path
-                self.controlFlowInfo = self.inspect_controlflow()
+                self.controlFlowInfo = self.inspect_controlflow("png")
             else:
                 self.controlFlowInfo = {}
             self.fileJson = self.file_json()
@@ -1325,7 +1325,7 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
                             else:
                                 dir_info[out_dir].append(code_info.fileJson[0])
                     except:
-                        print("Error when processing " + f + ": ", sys.exc_info()[0])
+                        print("Error when processing " + f + ": ", sys.exc_info())
                         continue
 
         # Generate the call list of the Dir
