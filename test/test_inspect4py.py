@@ -15,8 +15,10 @@ class Test(unittest.TestCase):
         control_flow = False
         abstract_syntax_tree = False
         source_code = False
+        data_flow = False
+        parser = []
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data["classes"]['Rectangle'] == dictionary['Rectangle'])
@@ -35,8 +37,10 @@ class Test(unittest.TestCase):
         control_flow = False
         abstract_syntax_tree = False
         source_code = False
+        data_flow = False
+        parser = []
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['body'] == dictionary['body'])
@@ -48,11 +52,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_inheritance/nested_call.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -68,11 +73,13 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_inheritance/super_nested_call.py"
         output_dir = "./output_dir"
         control_flow = False
+        data_flow = False
+        parser = []
         
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -85,11 +92,13 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_inheritance/test_import.py"
         output_dir = "./output_dir"
         control_flow = False
+        data_flow = False
+        parser = []
         
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -100,11 +109,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_random.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['body'] == dictionary['body'])
@@ -116,11 +126,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/argument_call.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data['body'] == dictionary['body'])
@@ -131,11 +142,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -146,11 +158,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_func.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -162,11 +175,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_import.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -178,11 +192,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_from_import.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -194,11 +209,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_import_alias.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -210,11 +226,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_method.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -228,11 +245,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_method_variable.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
@@ -244,19 +262,21 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_dynamic/test_dynamic_class_import.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         call_list_data = call_list_file(code_info)
         shutil.rmtree(output_dir)
         assert (call_list_data == dictionary)
 
     def test_service(self):
-        input_path = "./test_files/Chowlk"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\Chowlk"
         output_dir = "./output_dir"
-        
+        data_flow = False
+        symbol_table = ""
         ignore_dir_pattern = [".", "__pycache__"]
         ignore_file_pattern = [".", "__pycache__"]
         requirements = False
@@ -271,14 +291,14 @@ class Test(unittest.TestCase):
         metadata = False
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-                                    source_code, license_detection, readme, metadata)
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "service"
 
     def test_package(self):
-        input_path = "./test_files/somef"
-        output_dir = "./output_dir"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\somef"
+        output_dir = "D:\\inspect4py-main\\test\\output_dir"
         
         ignore_dir_pattern = [".", "__pycache__"]
         ignore_file_pattern = [".", "__pycache__"]
@@ -292,9 +312,11 @@ class Test(unittest.TestCase):
         license_detection = False
         readme = False
         metadata = False
+        data_flow = False
+        symbol_table = ""
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-                                    source_code, license_detection, readme, metadata)        
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "package"
@@ -315,9 +337,11 @@ class Test(unittest.TestCase):
         license_detection = False
         readme = False
         metadata = False
+        data_flow = False
+        symbol_table = ""
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-                                    source_code, license_detection, readme, metadata)
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "library"
@@ -339,9 +363,11 @@ class Test(unittest.TestCase):
         license_detection = False
         readme = False
         metadata = False
+        data_flow = False
+        symbol_table = ""
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree,
-                                    source_code, license_detection, readme, metadata)
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table)
         imports = dir_info['software_invocation']
         shutil.rmtree(output_dir)
         for i in imports:
@@ -353,7 +379,7 @@ class Test(unittest.TestCase):
 
 
     def test_script(self):
-        input_path = "./test_files/BoostingMonocularDepth"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\BoostingMonocularDepth"
         output_dir = "./output_dir"
         
         ignore_dir_pattern = [".", "__pycache__"]
@@ -368,9 +394,11 @@ class Test(unittest.TestCase):
         license_detection = False
         readme = False
         metadata = False
+        data_flow = False
+        symbol_table = ""
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree,
-                                    source_code, license_detection, readme, metadata)
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table)
         current_type = dir_info['software_type']
         shutil.rmtree(output_dir)
         assert current_type[0]["type"] == "script"
@@ -402,8 +430,10 @@ class Test(unittest.TestCase):
         
         abstract_syntax_tree = True
         source_code = False
+        data_flow = False
+        parser = []
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         shutil.rmtree(output_dir)
 
         expected_ast = [
@@ -426,15 +456,45 @@ class Test(unittest.TestCase):
         actual_ast = code_info.fileJson[0]["functions"]["foo"]["ast"]
         assert expected_ast == actual_ast
 
+    def test_data_flow(self):
+        input_path = "D:\\inspect4py-main\\test\\test_files\\test_data_flow.py"
+        output_dir = "./output_dir"
+        control_flow = False
+        abstract_syntax_tree = False
+        source_code = True
+        data_flow=True
+        LANGUAGE = Language("D:\\inspect4py-main\\my-languages.so", "python")
+        parser = Parser()
+        parser.set_language(LANGUAGE)
+        parser = [parser, DFG_python]
+        cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
+        expected_dfg = [('a', 3, 'comesFrom', [], []),
+                    ('b', 5, 'comesFrom', [], []),
+                    ('x', 8, 'computedFrom', ['0'], [10]),
+                    ('0', 10, 'comesFrom', [], []),
+                    ('a', 12, 'comesFrom', ['a'], [3]),
+                    ('b', 14, 'comesFrom', ['b'], [5]),
+                    ('x', 16, 'computedFrom', ['a'], [18]),
+                    ('a', 18, 'comesFrom', ['a'], [3]),
+                    ('x', 21, 'computedFrom', ['b'], [23]),
+                    ('b', 23, 'comesFrom', ['b'], [5]),
+                    ('x', 25, 'comesFrom', ['x'], [16, 21])]
+        actual_dfg = code_info.fileJson[0]["functions"]["max"]["data_flow"]
+        assert actual_dfg == expected_dfg
+
+
+
     def test_ast_method(self):
         input_path = "./test_files/test_basic/test_basic_method.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = True
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         shutil.rmtree(output_dir)
 
         expected_ast = [
@@ -467,11 +527,12 @@ class Test(unittest.TestCase):
         input_path = "./test_files/test_basic/test_basic_body.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = True
         source_code = False
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         shutil.rmtree(output_dir)
 
         expected_ast = [
@@ -490,14 +551,15 @@ class Test(unittest.TestCase):
         assert expected_ast == actual_ast
 
     def test_source_code_function(self):
-        input_path = "./test_files/test_basic/test_basic_function.py"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\test_basic\\test_basic_function.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = True
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         shutil.rmtree(output_dir)
 
         expected_code = "def foo(arg1, arg2):\n    print('Hello %s', arg1)\n    return arg2" # Single double quote sensitive
@@ -506,14 +568,15 @@ class Test(unittest.TestCase):
 
 
     def test_source_code_method(self):
-        input_path = "./test_files/test_basic/test_basic_method.py"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\test_basic\\test_basic_method.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = True
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         shutil.rmtree(output_dir)
 
         expected_code = "def __init__(self, arg):\n    self.arg = arg\n    print('Hello %s' % self.arg)"
@@ -521,14 +584,15 @@ class Test(unittest.TestCase):
         assert expected_code == actual_code
 
     def test_source_code_body(self):
-        input_path = "./test_files/test_basic/test_basic_body.py"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\test_basic\\test_basic_body.py"
         output_dir = "./output_dir"
         control_flow = False
-        
+        data_flow = False
+        parser = []
         abstract_syntax_tree = False
         source_code = True
         cf_dir, json_dir = create_output_dirs(output_dir, control_flow)
-        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+        code_info = CodeInspection(input_path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
         shutil.rmtree(output_dir)
 
         expected_code = ["print('Hello world')", "print(var)"]
@@ -537,8 +601,8 @@ class Test(unittest.TestCase):
 
 
     def test_license_detection(self):
-        input_paths = ["./test_files/Chowlk", "./test_files/pylops", "./test_files/somef"]
-        output_dir = "./output_dir"
+        input_paths = ["D:\\inspect4py-main\\test\\test_files\Chowlk", "D:\\inspect4py-main\\test\\test_files\\pylops", "D:\\inspect4py-main\\test\\test_files\\somef"]
+        output_dir = "D:\\inspect4py-main\\test\\output_dir"
         fig = False
         ignore_dir_pattern = [".", "__pycache__"]
         ignore_file_pattern = [".", "__pycache__"]
@@ -552,7 +616,8 @@ class Test(unittest.TestCase):
         license_detection = True
         readme = False
         metadata = False
-
+        data_flow = False
+        symbol_table = ""
         expected_liceses = ['Apache-2.0', 'LGPL-3.0', 'MIT']
         first_rank_licenses = []
         for input_path in input_paths:
@@ -560,7 +625,7 @@ class Test(unittest.TestCase):
                                         ignore_file_pattern, requirements,
                                         call_list, control_flow, directory_tree,
                                         software_invocation, abstract_syntax_tree,
-                                        source_code, license_detection, readme, metadata)
+                                        source_code, license_detection, readme, metadata, data_flow, symbol_table)
             first_rank_licenses.append(next(iter(dir_info["license"]["detected_type"][0])))
             shutil.rmtree(output_dir)
 
@@ -568,8 +633,8 @@ class Test(unittest.TestCase):
 
     def test_license_text_extraction(self):
         license_text = "A random license."
-        input_path = "./test_files/test_license_extraction"
-        output_dir = "./output_dir"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\test_license_extraction"
+        output_dir = "D:\\inspect4py-main\\test\\output_dir"
         fig = False
         ignore_dir_pattern = [".", "__pycache__"]
         ignore_file_pattern = [".", "__pycache__"]
@@ -583,19 +648,20 @@ class Test(unittest.TestCase):
         license_detection = True
         readme = False
         metadata = False
-
+        data_flow = False
+        symbol_table = ""
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern,
                                     ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation,
                                     abstract_syntax_tree,
-                                    source_code, license_detection, readme, metadata)
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table=symbol_table)
 
         assert dir_info["license"]["extracted_text"] == license_text
 
 
     def test_readme(self):
-        input_path = "./test_files/test_readme"
-        output_dir = "./output_dir"
+        input_path = "D:\\inspect4py-main\\test\\test_files\\test_readme"
+        output_dir = "D:\\inspect4py-main\\test\\output_dir"
         
         ignore_dir_pattern = [".", "__pycache__"]
         ignore_file_pattern = [".", "__pycache__"]
@@ -609,59 +675,31 @@ class Test(unittest.TestCase):
         license_detection = False
         readme = True
         metadata = False
-
+        data_flow = False
+        symbol_table = ""
         dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
                                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-                                    source_code, license_detection, readme, metadata)
+                                    source_code, license_detection, readme, metadata, data_flow, symbol_table)
 
         expected_readme_files = {
-            f"{output_dir}/test_readme/README.md": "README.md in root dir\n",
-            f"{output_dir}/test_readme/subdir/README.txt": "README.txt in subdir\n",
-            f"{output_dir}/test_readme/subdir/subsubdir/README.rst": "README.rst in subsubdir\n"
+            f"{output_dir}\\test_readme\\README.md": "README.md in root dir\n",
+            f"{output_dir}\\test_readme\\subdir\\README.txt": "README.txt in subdir\n",
+            f"{output_dir}\\test_readme\\subdir\\subsubdir\\README.rst": "README.rst in subsubdir\n"
         }
         actual_readme_files = dir_info["readme_files"]
         assert expected_readme_files == actual_readme_files        
 
 
-    #def test_metadata(self):
-    #    """ 
-    #    Need to execute under test/test_files/: 
-    #    `git clone https://github.com/githubtraining/hellogitworld.git`
-    #    to pass this test, as getting metadata requires the local repository
-    #    to have a .git folder.
-    #    """
-    #    input_path = "./test_files/hellogitworld"
-    #    output_dir = "./output_dir"
-    #    
-    #    ignore_dir_pattern = [".", "__pycache__"]
-    #    ignore_file_pattern = [".", "__pycache__"]
-    #    requirements = False
-    #    call_list = False
-    #    control_flow = False
-    #    directory_tree = False
-    #    software_invocation = False
-    ##    abstract_syntax_tree = False
-    #    source_code = False
-    #    license_detection = False
-    #    readme = False
-    #    metadata = True
-    #
-    #    dir_info = invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-    #                                call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree, 
-    #                                source_code, license_detection, readme, metadata)
-    #    try:
-    #        response = requests.get("https://api.github.com/repos/githubtraining/hellogitworld")
-    #        expected_metadata = response.json()
-    #    except requests.RequestException as e:
-    #        print(f"Error sending requests to Github API: {e}")
-    #        raise e
-    #    actual_metadata = dir_info["metadata"]
-    #    assert expected_metadata == actual_metadata   
-
-
-def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements,
-                     call_list, control_flow, directory_tree, software_invocation, abstract_syntax_tree,
-                     source_code, license_detection, readme, metadata):
+def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, call_list,
+         control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection, readme,
+         metadata, data_flow, symbol_table):
+    if data_flow:
+        LANGUAGE = Language(symbol_table, "python")
+        parser = Parser()
+        parser.set_language(LANGUAGE)
+        parser = [parser, DFG_python]
+    else:
+        parser = []
     dir_info = {}
     # retrieve readme text at the root level (if any)
     readme = ""
@@ -684,7 +722,7 @@ def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pat
                     relative_path = Path(subdir).relative_to(Path(input_path).parent)
                     out_dir = str(Path(output_dir) / relative_path)
                     cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
-                    code_info = CodeInspection(path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code)
+                    code_info = CodeInspection(path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
                     if out_dir not in dir_info:
                         dir_info[out_dir] = [code_info.fileJson[0]]
                     else:
@@ -700,7 +738,7 @@ def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pat
         call_file_html = output_dir + "/call_graph.html"
         generate_output_html(pruned_call_list_data, call_file_html)
         call_json_file = output_dir + "/call_graph.json"
-        with open(call_json_file, 'w') as outfile:
+        with open(call_json_file, 'rb') as outfile:
             json.dump(pruned_call_list_data, outfile)
     # Note:1 for visualising the tree, nothing or 0 for not.
     if requirements:
@@ -729,7 +767,7 @@ def invoke_inspector(input_path, output_dir, ignore_dir_pattern, ignore_file_pat
             dir_info["software_type"] = rank_software_invocation(soft_invocation_info_list)
     if license_detection:
         licenses_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                     "../inspect4py/licenses")
+                                     "..\\inspect4py\\licenses")
         license_text = extract_license(input_path)
         rank_list = detect_license(license_text, licenses_path)
         dir_info["license"] = {}
