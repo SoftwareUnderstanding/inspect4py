@@ -1255,24 +1255,26 @@ def create_output_dirs(output_dir, control_flow):
               help="extract metadata of the target repository using Github API. (requires repository to have the .git folder)")
 @click.option('-df', '--data_flow', type=bool, is_flag=True,
               help="extract data flow graph of every function in the target repository")
-
 def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
          control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection, readme,
          metadata, data_flow, symbol_table):
     if data_flow:
-        if symbol_table == "my_language.so": # default option
-            path_to_languages = str(Path(__file__).parent / "resources")
-            if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
-                language = Language(path_to_languages + os.path.sep + "python_win.so", "python")
-            elif sys.platform.startswith("darwin"):
-                language = Language(path_to_languages + os.path.sep + "python_mac.so", "python")
+        try:
+            if symbol_table == "my_language.so":  # default option
+                path_to_languages = str(Path(__file__).parent / "resources")
+                if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
+                    language = Language(path_to_languages + os.path.sep + "python_win.so", "python")
+                elif sys.platform.startswith("darwin"):
+                    language = Language(path_to_languages + os.path.sep + "python_mac.so", "python")
+                else:
+                    language = Language(path_to_languages + os.path.sep + "python_unix.so", "python")
             else:
-                language = Language(path_to_languages + os.path.sep + "python_unix.so", "python")
-        else:
-            language = Language(symbol_table, "python")
-        parser = Parser()
-        parser.set_language(language)
-        parser = [parser, DFG_python]
+                language = Language(symbol_table, "python")
+            parser = Parser()
+            parser.set_language(language)
+            parser = [parser, DFG_python]
+        except Exception as e:
+            print("Problem loading language file " + str(e))
     else:
         parser = []
 

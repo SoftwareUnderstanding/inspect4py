@@ -486,7 +486,9 @@ class Test(unittest.TestCase):
         path_to_languages = str(Path(__file__).parent.parent / "inspect4py" / "resources")
         if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
             language = Language(path_to_languages + os.path.sep + "python_win.so", "python")
-        else:  # mac and unix should be compatible
+        elif sys.platform.startswith("darwin"):
+            language = Language(path_to_languages + os.path.sep + "python_mac.so", "python")
+        else:  # unix should be compatible
             language = Language(path_to_languages + os.path.sep + "python_unix.so", "python")
         parser = Parser()
         parser.set_language(language)
