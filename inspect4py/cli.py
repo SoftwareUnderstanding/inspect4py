@@ -595,7 +595,8 @@ class CodeInspection:
             if self.source_code:
                 funcs_info[f.name]["source_code"] = ast_to_source_code(f)
             if self.data_flow:
-                code_tokens, dfg = extract_dataflow(funcs_info[f.name]["source_code"], self.parser, "python")
+                temp_source_code = ast_to_source_code(f)
+                code_tokens, dfg = extract_dataflow(temp_source_code, self.parser, "python")
                 funcs_info[f.name]["data_flow"] = dfg
                 funcs_info[f.name]["code_tokens"] = code_tokens
         return funcs_info
@@ -1254,22 +1255,26 @@ def create_output_dirs(output_dir, control_flow):
               help="extract metadata of the target repository using Github API. (requires repository to have the .git folder)")
 @click.option('-df', '--data_flow', type=bool, is_flag=True,
               help="extract data flow graph of every function in the target repository")
-
 def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requirements, html_output, call_list,
          control_flow, directory_tree, software_invocation, abstract_syntax_tree, source_code, license_detection, readme,
          metadata, data_flow, symbol_table):
     if data_flow:
-        if symbol_table == "my_language.so": # default option
-            path_to_languages = str(Path(__file__).parent / "resources")
-            if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
-                language = Language(path_to_languages + os.path.sep + "python_win.so", "python")
+        try:
+            if symbol_table == "my_language.so":  # default option
+                path_to_languages = str(Path(__file__).parent / "resources")
+                if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
+                    language = Language(path_to_languages + os.path.sep + "python_win.so", "python")
+                elif sys.platform.startswith("darwin"):
+                    language = Language(path_to_languages + os.path.sep + "python_mac.so", "python")
+                else:
+                    language = Language(path_to_languages + os.path.sep + "python_unix.so", "python")
             else:
-                language = Language(path_to_languages + os.path.sep + "python_unix.so", "python")
-        else:
-            language = Language(symbol_table, "python")
-        parser = Parser()
-        parser.set_language(language)
-        parser = [parser, DFG_python]
+                language = Language(symbol_table, "python")
+            parser = Parser()
+            parser.set_language(language)
+            parser = [parser, DFG_python]
+        except Exception as e:
+            print("Problem loading language file " + str(e))
     else:
         parser = []
 
@@ -1311,22 +1316,37 @@ def main(input_path, output_dir, ignore_dir_pattern, ignore_file_pattern, requir
             except:
                 print("Readme not found at root level")
         for subdir, dirs, files in os.walk(input_path):
-
+            # print(subdir, dirs, files)
             for ignore_d in ignore_dir_pattern:
                 dirs[:] = [d for d in dirs if not d.startswith(ignore_d)]
             for ignore_f in ignore_file_pattern:
                 files[:] = [f for f in files if not f.startswith(ignore_f)]
             for f in files:
                 if ".py" in f and not f.endswith(".pyc"):
+                    # path = os.path.join(subdir, f)
+                    # # print(path)
+                    # relative_path = Path(subdir).relative_to(Path(input_path).parent)
+                    # out_dir = str(Path(output_dir) / relative_path)
+                    # cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
+                    # code_info = CodeInspection(path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code,
+                    #                            data_flow, parser)
+                    #
+                    # if code_info.fileJson:
+                    #     print(code_info.fileJson[0])
+                    #     if out_dir not in dir_info:
+                    #         dir_info[out_dir] = [code_info.fileJson[0]]
+                    #     else:
+                    #         dir_info[out_dir].append(code_info.fileJson[0])
                     try:
-
                         path = os.path.join(subdir, f)
+                        # print(path)
                         relative_path = Path(subdir).relative_to(Path(input_path).parent)
                         out_dir = str(Path(output_dir) / relative_path)
                         cf_dir, json_dir = create_output_dirs(out_dir, control_flow)
                         code_info = CodeInspection(path, cf_dir, json_dir, control_flow, abstract_syntax_tree, source_code, data_flow, parser)
-                        # print(parsers)
+
                         if code_info.fileJson:
+                            # print(code_info.fileJson[0])
                             if out_dir not in dir_info:
                                 dir_info[out_dir] = [code_info.fileJson[0]]
                             else:
