@@ -70,6 +70,12 @@ Make sure you have tree-sitter installed, C complier is needed, more [info](http
 ```
 pip install tree-sitter
 ```
+Note that if the ".so" file is not working properly, it is recommended that run the following commeds to generate a so file for your OS:
+```
+git clone https://github.com/tree-sitter/tree-sitter-python
+
+python inspect4py/build.py
+```
 
 Make sure you have graphviz installed:
 
