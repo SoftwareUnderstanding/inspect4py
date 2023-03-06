@@ -481,7 +481,7 @@ class Test(unittest.TestCase):
         output_dir = test_out_path + os.path.sep + "output_dir"
         control_flow = False
         abstract_syntax_tree = False
-        source_code = True
+        source_code = False
         data_flow = True
         path_to_languages = str(Path(__file__).parent.parent / "inspect4py" / "resources")
         if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
