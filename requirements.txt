@@ -9,3 +9,4 @@ configparser
 bigcode_astgen
 GitPython
 tree-sitter
+requests
