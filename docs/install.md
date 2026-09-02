@@ -61,7 +61,7 @@ astor
 graphviz
 click
 pigar
-setuptools==54.2.0
+setuptools>=54.2.0
 json2html
 configparser
 ```
